@@ -18,6 +18,7 @@ C:\VTI_Local_4\Veda_FE\GAMS_WrkTIMES\upload_results
 *	Batch file processes all the VD files in the folder. It creates a CSV called "ResultsOut.csv" in the same folder. This contains the results for standard cross-tabs.
 
 **2)	To run manual (bespoke) queries:**
+
 SQL script generated as part of above is called "VedaBatchUpload.sql" in the same folder
 
 Run manual postgres queries with PostgreSQL by: 
