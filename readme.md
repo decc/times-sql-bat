@@ -3,7 +3,7 @@ Guide to extracting/viewing UKTM outputs through PostGres database
 
 The batch files described below create SQL scripts which upload and process all the VD files in the directory they're in. The SQL crosstab queries run by the batch files are repeated in "HumanReadableQueries.sql" with added commentary and formatted for readability.
 
-Because the SQL scripts include all the VD files and create temporary database tables, they can be used to generate the same temporary tables for an interactive query session—-you can then run bespoke cross-tabs or other analyses against these. Instructions for this below.
+Because the SQL scripts include all the VD files and create temporary database tables, they can be used to generate the same temporary tables for an interactive query session—you can then run bespoke cross-tabs or other analyses against these. Instructions for this below.
 
 Note that the code creates the following 2 temp tables on the database:
 *	*vedastore:* contains the data from all the VD files. Point any bespoke code at this
@@ -48,7 +48,7 @@ Run manual postgres queries with PostgreSQL by:
     *	electricity = ("CHP+Other_elec" - "WasteHeat_elec")/3600
     *	Intensity (gCO2e/KWh) = emissions / electricity
 
-*4)   List of BAT files
+*4)   List of BAT files*
 *  UploadResults.bat. The main batch file with high level outputs like GHG by main sector
 *  transport.bat. Road transport-specific queries giving mileage, emissions, capacity etc. for various types of vehicle
 *  Ag_&_LULUCF.bat. Queries relating to agriculture and Land Use and Land Use Change and Forestry (LULUCF)
