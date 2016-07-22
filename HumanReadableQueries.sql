@@ -1522,10 +1522,10 @@ order by tablename,  analysis, attribute
 /* *Marginal prices for emissions* */
 -- Note that the "all" column is left blank since it doesn't make sense to sum the marginal prices- Could substitute an average or similar if required
 COPY ( 
-select 'marg-price|' || tablename || '|VAR_ComnetM|' || commodity || '|-'::varchar(300) "id",
+select 'marg-price|' || tablename || '|EQ_CombalM|' || commodity || '|-'::varchar(300) "id",
         'marg-price'::varchar(50) "analysis",
         tablename,
-        'VAR_ComnetM'::varchar(50) "attribute",
+        'EQ_CombalM'::varchar(50) "attribute",
         commodity,
         '-'::varchar(50) "process",
         NULL::numeric "all",
@@ -1543,7 +1543,7 @@ select 'marg-price|' || tablename || '|VAR_ComnetM|' || commodity || '|-'::varch
         sum(case when period='2055' then pv else 0 end)::numeric "2055",
         sum(case when period='2060' then pv else 0 end)::numeric "2060"
 from vedastore
-where attribute='VAR_ComnetM' and commodity in('GHG-NO-IAS-YES-LULUCF-NET','GHG-ETS-NO-IAS-NET',
+where attribute='EQ_CombalM' and commodity in('GHG-NO-IAS-YES-LULUCF-NET','GHG-ETS-NO-IAS-NET',
     'GHG-YES-IAS-YES-LULUCF-NET','GHG-ETS-YES-IAS-NET')
 group by tablename, commodity
 order by tablename, commodity
