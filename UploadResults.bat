@@ -497,8 +497,8 @@ echo in('Cost_Act','Cost_Flo','Cost_Fom','Cost_Inv','Cost_Salv','ObjZ') ) a grou
 echo order by tablename, analysis, attribute ) TO '%~dp0CostsBySec.csv' delimiter ',' >> VedaBatchUpload.sql
 echo CSV; >> VedaBatchUpload.sql
 rem /* *Marginal prices for emissions* */
-echo /* *Marginal prices for emissions* */ COPY ( select 'marg-price^|' ^|^| tablename ^|^| '^|VAR_ComnetM^|' ^|^| >> VedaBatchUpload.sql
-echo commodity ^|^| '^|-'::varchar(300) "id", 'marg-price'::varchar(50) "analysis", tablename, 'VAR_ComnetM'::varchar(50) >> VedaBatchUpload.sql
+echo /* *Marginal prices for emissions* */ COPY ( select 'marg-price^|' ^|^| tablename ^|^| '^|EQ_CombalM^|' ^|^| >> VedaBatchUpload.sql
+echo commodity ^|^| '^|-'::varchar(300) "id", 'marg-price'::varchar(50) "analysis", tablename, 'EQ_CombalM'::varchar(50) >> VedaBatchUpload.sql
 echo "attribute", commodity, '-'::varchar(50) "process", NULL::numeric "all", sum(case when period='2010' then pv else 0 >> VedaBatchUpload.sql
 echo end)::numeric "2010", sum(case when period='2011' then pv else 0 end)::numeric "2011", sum(case when period='2012' >> VedaBatchUpload.sql
 echo then pv else 0 end)::numeric "2012", sum(case when period='2015' then pv else 0 end)::numeric "2015", sum(case when >> VedaBatchUpload.sql
@@ -507,7 +507,7 @@ echo sum(case when period='2030' then pv else 0 end)::numeric "2030", sum(case w
 echo end)::numeric "2035", sum(case when period='2040' then pv else 0 end)::numeric "2040", sum(case when period='2045' >> VedaBatchUpload.sql
 echo then pv else 0 end)::numeric "2045", sum(case when period='2050' then pv else 0 end)::numeric "2050", sum(case when >> VedaBatchUpload.sql
 echo period='2055' then pv else 0 end)::numeric "2055", sum(case when period='2060' then pv else 0 end)::numeric "2060" >> VedaBatchUpload.sql
-echo from vedastore where attribute='VAR_ComnetM' and commodity in('GHG-NO-IAS-YES-LULUCF-NET','GHG-ETS-NO-IAS-NET', >> VedaBatchUpload.sql
+echo from vedastore where attribute='EQ_CombalM' and commodity in('GHG-NO-IAS-YES-LULUCF-NET','GHG-ETS-NO-IAS-NET', >> VedaBatchUpload.sql
 echo 'GHG-YES-IAS-YES-LULUCF-NET','GHG-ETS-YES-IAS-NET') group by tablename, commodity order by tablename, commodity ) TO >> VedaBatchUpload.sql
 echo '%~dp0MarginalPricesOut.csv' delimiter ',' >> VedaBatchUpload.sql
 echo CSV; >> VedaBatchUpload.sql
