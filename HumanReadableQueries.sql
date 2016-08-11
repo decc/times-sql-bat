@@ -1,6 +1,8 @@
 /* ***Human readable versions of "standard" queries analysing results from the UK TIMES [UKTM] model***
 
-/*This file is a "human readable" (= formatted) version of key regularly re-used crosstabs in various DOS batch files (.BAT). As far as possible, these replicate
+/*Developed against model ver = uktm_model_v1.2.3_d0.1.2_DNP
+
+This file is a "human readable" (= formatted) version of key regularly re-used crosstabs in various DOS batch files (.BAT). As far as possible, these replicate
 Veda BE tables (here reproduced as CTEs). There are several sections in the file, each corresponding to a different BAT. These are themed
 (e.g. transport), and the final batch is a general set of model output metrics which are likely to be useful most of the time. This version of the code includes
 comments which are not included in the BAT versions.
@@ -96,6 +98,9 @@ Revised:
 8:50 PM 14 July, 2016:
     Changes to vehicle queries including apportioning of emissions for CNG vehicles, adding total lines, and calculating emission intensity. Also broke out buses and "bikes" as new categories.
     These transport queries moved to new batch file; agriculture / LULUCF formatted qs moved into this (present) file.
+4:12 PM 11 August, 2016:
+    Changed to match updated model (uktm_model_v1.2.3_d0.1.2_DNP) with some elc gen techs removed (ENUCAGRN00, ENUCAGRO00) and a couple added (ENGARCPE0*,EDSTRCPE0*). Sign of the interconn- reversed.
+    Changes made to elec gen by source and capacity by type
 */
 
 /* ******List of completed queries*******/
@@ -113,21 +118,21 @@ Revised:
 
 /* **Main "key outputs" crosstabs** */
 /* -------------------------------*/
-/* *Dummy imports by table* */
-/* *All GHG emissions* */
-/* *GHG emissions by sector* */
-/* *GHG and sequestered emissions by industry sub-sector* */
-/* *Electricity generation by source* */
-/* *Elec storage* */
-/* *Electricity capacity by process* */
-/* *Costs by sector and type* */
-/* *Marginal prices for emissions* */
-/* *Whole stock heat output by process for residential* */
-/* *New build residential heat output by source* */
-/* *Whole stock heat output for services* */
-/* *New build services heat output by source* */
-/* *End user final energy demand by sector* */
-/* *Primary energy demand & biomass, imports exports and domestic production* */
+/* *Dummy imports by table* */ --line 598
+/* *All GHG emissions* */ --line 628
+/* *GHG emissions by sector* */ --line 659
+/* *GHG and sequestered emissions by industry sub-sector* */ --line 724
+/* *Electricity generation by source* */ --line 818
+/* *Elec storage* */ --line 1337
+/* *Electricity capacity by process* */ --line 1365
+/* *Costs by sector and type* */ --line 1473
+/* *Marginal prices for emissions* */ -- line 1526
+/* *Whole stock heat output by process for residential* */ -- line 1556
+/* *New build residential heat output by source* */ -- line 1629
+/* *Whole stock heat output for services* */ -- line 1690
+/* *New build services heat output by source* */ -- line 1769
+/* *End user final energy demand by sector* */ -- line 1830
+/* *Primary energy demand & biomass, imports exports and domestic production* */ -- line 2458
 
 
 /*  *Land use and crop / livestock mitigation (MACC) measures* */
@@ -957,7 +962,7 @@ with emissions_chp as (
             when process in('ECOARR01') then 'ELC FROM COAL RR'
             when process in('ECOABIO00','ECOA00') then 'ELC FROM COAL-COF'
             when process in('ECOAQ01') then 'ELC FROM COALCOF CCS'
-            when process in('ENGAOCT01','ENGAOCT00','ENGACCT00') then 'ELC FROM GAS'
+            when process in('ENGAOCT00','ENGAOCT01','ENGACCT00','ENGARCPE00','ENGARCPE01') then 'ELC FROM GAS'
             when process in('ENGACCTQ01') then 'ELC FROM GAS CCS'
             when process='ENGAQR01' then 'ELC FROM GAS CCSRET'
             when process in('ENGACCTRR01') then 'ELC FROM GAS RR'
@@ -966,8 +971,9 @@ with emissions_chp as (
             when process in('EHYGCCT01','EHYGOCT01') then 'ELC FROM HYDROGEN'
             when process in('ELCIE00','ELCIE01') then 'ELC FROM IMPORTS'
             when process in('EMANOCT00','EMANOCT01') then 'ELC FROM MANFUELS'
-            when process in('ENUCAGRN00','ENUCPWR101','ENUCPWR102','ENUCAGRO00','ENUCPWR00') then 'ELC FROM NUCLEAR'
-            when process in('EOILS00','EHFOIGCC01','EOILL00','EOILS01','EOILL01') then 'ELC FROM OIL'
+            when process in('ENUCPWR00','ENUCPWR101','ENUCPWR102') then 'ELC FROM NUCLEAR'
+            when process in('EOILS00','EOILS01','EOILL00','EOILL01','EHFOIGCC01','EDSTRCPE00',
+                'EDSTRCPE01') then 'ELC FROM OIL'
             when process in('EHFOIGCCQ01') then 'ELC FROM OIL CCS'
             when process in('ESOL01','ESOLPV00','ESOLPV01','ESOL00') then 'ELC FROM SOL-PV'
             when process in('ETIB101','ETIS101','ETIR101') then 'ELC FROM TIDAL'
@@ -1100,13 +1106,13 @@ with emissions_chp as (
     sum(case when "waste_heat"='Oil' then pv else 0 end) "Oil",
     sum(case when "waste_heat"='OIL CCS' then pv else 0 end) "OIL CCS"
     from (
-    -- These are the are the first category of waste heat by process - in formula c2061ff
+    -- These are the first category of waste heat by process - in formula c2061ff
         select tablename,attribute,period,pv,
         case
             when process in('ESTWWST00','EPOLWST00','EBIOS00','EBOG-LFE00','EBOG-SWE00','EMSW00','EBIOCON00','ESTWWST01','EBIO01','EBOG-ADE01','EBOG-LFE01','EBOG-SWE01','EMSW01') then 'Biomass'
             when process in('EBIOQ01') then 'Biomass CCS'
             when process in('EHYGCCT01') then 'Hydrogen'
-            when process in('ENUCPWR00','ENUCAGRN00','ENUCAGRO00','ENUCPWR101','ENUCPWR102') then 'Nuclear'
+            when process in('ENUCPWR00','ENUCPWR101','ENUCPWR102') then 'Nuclear'
             end "waste_heat"
         from elc_waste_heat_available
         union all
@@ -1117,10 +1123,10 @@ with emissions_chp as (
             when process in('ECOA00','ECOABIO00') then 'Coal'
             when process in('ECOAQ01','ECOAQDEMO01') then 'Coal CCS'
             when process in('ECOARR01') then 'Coal RR'
-            when process in('ENGACCT00') then 'Natural Gas'
+            when process in('ENGACCT00','ENGAOCT00','ENGAOCT01','ENGARCPE00','ENGARCPE01') then 'Natural Gas'
             when process in('ENGACCTQ01','ENGACCTQDEMO01') then 'Natural Gas CCS'
             when process in('ENGACCTRR01') then 'Natural Gas RR'
-            when process in('EOILL00','EOILS00','EOILS01','EOILL01','EHFOIGCC01') then 'Oil'
+            when process in('EDSTRCPE00','EDSTRCPE01','EOILL00','EOILS00','EOILS01','EOILL01','EHFOIGCC01') then 'Oil'
             when process in('EHFOIGCCQ01') then 'OIL CCS'
             end "waste_heat"
         from elc_waste_heat_available
@@ -1280,8 +1286,9 @@ select cols || '|' || tablename || '|' ||
             "elec-gen_offw",
             "elec-gen_onw",
             "elec-gen_chp",
-            "coal-unad"*b.coal-d.coal+"coalccs-unad"*b.coal-d.coalccs+"gas-unad"*b.gas-d.gas+"gasccs-unad"*b.gas-d.gasccs+("ELC FROM OIL"*b.oil+"coal-unad"*b.oilcoal)-d.oil+("ELC FROM OIL CCS"*b.oil+"coalccs-unad"*b.oilcoal)-d.oilccs+
-            "ELC FROM MANFUELS"+("ELC FROM BIO"+"coal-unad"*b.biocoal+"ELC FROM OIL"*b.biooil+"gas-unad"*b.biogas)-d.bio+("ELC FROM BIO CCS"+"coalccs-unad"*b.biocoal+"ELC FROM OIL CCS"*b.biooil+
+            "coal-unad"*b.coal-d.coal+"coalccs-unad"*b.coal-d.coalccs+"gas-unad"*b.gas-d.gas+"gasccs-unad"*b.gas-d.gasccs+("ELC FROM OIL"*b.oil+"coal-unad"*b.oilcoal)-d.oil+
+            ("ELC FROM OIL CCS"*b.oil+"coalccs-unad"*b.oilcoal)-d.oilccs+"ELC FROM MANFUELS"+("ELC FROM BIO"+"coal-unad"*b.biocoal+"ELC FROM OIL"*b.biooil+
+            "gas-unad"*b.biogas)-d.bio+("ELC FROM BIO CCS"+"coalccs-unad"*b.biocoal+"ELC FROM OIL CCS"*b.biooil+
             "gasccs-unad"*b.biogas)-d.bioccs+"elec-gen_other-rens"-d.h2+"elec-gen_solar"+"elec-gen_nuclear"-d.nuclear+"elec-gen_offw"+"elec-gen_onw"+"elec-gen_chp" "elec-gen_total-cen",
             -- i.e. everything above except interconn- NB includes not just "centralised" chp [in refineries etc] but all chp- Done this way to reduce rounding errors cf the individual [constituent] lines above
             "elec-gen_intercon",
@@ -1295,7 +1302,7 @@ select cols || '|' || tablename || '|' ||
             -- i.e. emissions (from sub-qs near top) / elc generated * conversion to get to g/kWh- Need to capture any net elc exports hence the case---when statement*/
             from(
                 select a.period, a.tablename,
-                sum(case when proc_set='ELC TO EXPORTS' then pv when proc_set='ELC FROM IMPORTS' then -pv else 0 end) "elec-gen_intercon",
+                sum(case when proc_set='ELC TO EXPORTS' then -pv when proc_set='ELC FROM IMPORTS' then pv else 0 end) "elec-gen_intercon",
                 sum(case when proc_set in ('ELC FROM TIDAL','ELC FROM WAVE','ELC FROM GEO','ELC FROM HYDRO','ELC FROM HYDROGEN') then pv else 0 end) "elec-gen_other-rens",
 --incls e- from H2                
                 sum(case when proc_set in ('ELC FROM SOL-PV') then pv else 0 end) "elec-gen_solar",
@@ -1389,17 +1396,17 @@ from (
             when process in('ECOA00','ECOABIO00', 'ECOARR01') then 'elec-cap_coal'::varchar(50)
             when process in('ECOAQ01' ,'ECOAQDEMO01') then 'elec-cap_coal-ccs'::varchar(50)
             when process in('EHYGCCT01' ,'EHYGOCT01') then 'elec-cap_h2'::varchar(50)
-            when process in('ENGACCT00' ,'ENGAOCT00' ,'ENGACCTRR01' ,'ENGAOCT01') then 
+            when process in('ENGACCT00','ENGACCTRR01','ENGAOCT00','ENGAOCT01','ENGARCPE00','ENGARCPE01') then 
                 'elec-cap_nga'::varchar(50)
             when process in('ENGACCTQ01' ,'ENGACCTQDEMO01') then 'elec-cap_nga-ccs'::varchar(50)
-            when process in('ENUCPWR00' ,'ENUCAGRN00' ,'ENUCAGRO00' ,'ENUCPWR101' ,'ENUCPWR102') then
+            when process in('ENUCPWR00','ENUCPWR101','ENUCPWR102') then
                 'elec-cap_nuclear'::varchar(50)
             when process in('EWNDOFF00' ,'EWNDOFF101' ,'EWNDOFF201' ,'EWNDOFF301') then 
                 'elec-cap_offw'::varchar(50)
             when process in('EWNDONS00','EWNDONS101','EWNDONS201','EWNDONS301','EWNDONS401','EWNDONS501',
                 'EWNDONS601','EWNDONS701','EWNDONS801','EWNDONS901') then 'elec-cap_onw'::varchar(50)
             when process ='EHFOIGCCQ01' then 'elec-cap_other-ccs'::varchar(50)
-            when process in('EOILL00','EOILS00','EMANOCT00','EMANOCT01','EOILS01','EOILL01','EHFOIGCC01') then 
+            when process in('EOILL00','EOILL01','EMANOCT00','EMANOCT01','EOILS00','EOILS01','EHFOIGCC01',    'EDSTRCPE00','EDSTRCPE01') then 
                 'elec-cap_other-ff'::varchar(50)
             when process in('EHYD00','EHYD01','EGEO01','ETIR101','ETIB101','ETIS101','EWAV101') then 
                 'elec-cap_other-rens'::varchar(50)
@@ -1429,39 +1436,9 @@ from (
         end as "analysis",
     tablename, attribute
     from vedastore 
-    where attribute = 'VAR_Cap' and commodity = '-' AND process in(
-        'ESTWWST00','EPOLWST00', 'EBIOS00','EBOG-LFE00','EBOG-SWE00','EMSW00',
-        'EBIOCON00','ESTWWST01','EBIO01','EBOG-ADE01','EBOG-LFE01','EBOG-SWE01','EMSW01',
-        'EBIOQ01' ,'ECOA00','ECOABIO00', 'ECOARR01','ECOAQ01' ,'ECOAQDEMO01',
-        'EHYGCCT01' ,'EHYGOCT01','ENGACCT00' ,'ENGAOCT00' ,'ENGACCTRR01' ,'ENGAOCT01',
-        'ENGACCTQ01' ,'ENGACCTQDEMO01','ENUCPWR00' ,'ENUCAGRN00' ,'ENUCAGRO00' ,
-        'ENUCPWR101' ,'ENUCPWR102','EWNDOFF00' ,'EWNDOFF101' ,'EWNDOFF201' ,'EWNDOFF301',
-        'EWNDONS00','EWNDONS101','EWNDONS201','EWNDONS301','EWNDONS401','EWNDONS501',
-        'EWNDONS601','EWNDONS701','EWNDONS801','EWNDONS901','EHFOIGCCQ01' ,'EOILL00',
-        'EOILS00','EMANOCT00','EMANOCT01','EOILS01','EOILL01','EHFOIGCC01','EHYD00',
-        'EHYD01','EGEO01','ETIR101','ETIB101','ETIS101','EWAV101','ESOL00','ESOLPV00',
-        'ESOL01','ESOLPV01','ICHCHPBIOG01','ICHCHPBIOS00','ICHCHPBIOS01','ICHCHPCCGT01',
-        'ICHCHPCCGTH01','ICHCHPCOA00','ICHCHPCOA01','ICHCHPFCH01','ICHCHPGT01',
-        'ICHCHPHFO00','ICHCHPLFO00','ICHCHPLPG00','ICHCHPLPG01','ICHCHPNGA00',
-        'ICHCHPPRO00','ICHCHPPRO01','IFDCHPBIOG01','IFDCHPBIOS00','IFDCHPBIOS01',
-        'IFDCHPCCGT01','IFDCHPCCGTH01','IFDCHPCOA00','IFDCHPCOA01','IFDCHPFCH01',
-        'IFDCHPGT01','IFDCHPHFO00','IFDCHPLFO00','IFDCHPNGA00','IISCHPBFG00',
-        'IISCHPBFG01','IISCHPBIOG01','IISCHPBIOS01','IISCHPCCGT01','IISCHPCCGTH01',
-        'IISCHPCOG00','IISCHPCOG01','IISCHPFCH01','IISCHPGT01','IISCHPHFO00',
-        'IISCHPNGA00','INMCHPBIOG01','INMCHPBIOS01','INMCHPCCGT01','INMCHPCCGTH01',
-        'INMCHPCOA01','INMCHPCOG00','INMCHPCOG01','INMCHPFCH01','INMCHPGT01',
-        'INMCHPNGA00','IOICHPBIOG01','IOICHPBIOS00','IOICHPBIOS01','IOICHPCCGT01',
-        'IOICHPCCGTH01','IOICHPCOA01','IOICHPFCH01','IOICHPGT01','IOICHPHFO00',
-        'IOICHPNGA00','IPPCHPBIOG01','IPPCHPBIOS00','IPPCHPBIOS01','IPPCHPCCGT01',
-        'IPPCHPCCGTH01','IPPCHPCOA00','IPPCHPCOA01','IPPCHPFCH01','IPPCHPGT01',
-        'IPPCHPNGA00','IPPCHPWST00','IPPCHPWST01','PCHP-CCP00','PCHP-CCP01',
-        'RCHPEA-CCG00','RCHPEA-CCG01','RCHPEA-CCH01','RCHPEA-FCH01','RCHPEA-STW01',
-        'RCHPNA-CCG01','RCHPNA-CCH01','RCHPNA-FCH01','RCHPNA-STW01','RHEACHPRG01',
-        'RHEACHPRH01','RHEACHPRW01','RHNACHPRG01','RHNACHPRH01','RHNACHPRW01',
-        'SCHP-ADM01','SCHP-CCG00','SCHP-CCG01','SCHP-CCH01','SCHP-FCH01','SCHP-GES00',
-        'SCHP-GES01','SCHP-STM01','SCHP-STW00','SCHP-STW01','SHLCHPRG01','SHLCHPRH01',
-        'SHLCHPRW01','UCHP-CCG00','UCHP-CCG01','ELCIE00','ELCII00','ELCIE01','ELCII01')
+    where attribute = 'VAR_Cap' and commodity = '-'
 ) a
+where analysis is not null
 group by id, analysis,tablename, attribute
 order by tablename,  analysis, attribute, commodity
 ) TO '%~dp0ElecCap.csv' delimiter ',' CSV;
@@ -1522,10 +1499,10 @@ order by tablename,  analysis, attribute
 /* *Marginal prices for emissions* */
 -- Note that the "all" column is left blank since it doesn't make sense to sum the marginal prices- Could substitute an average or similar if required
 COPY ( 
-select 'marg-price|' || tablename || '|EQ_CombalM|' || commodity || '|-'::varchar(300) "id",
+select 'marg-price|' || tablename || '|VAR_ComnetM|' || commodity || '|-'::varchar(300) "id",
         'marg-price'::varchar(50) "analysis",
         tablename,
-        'EQ_CombalM'::varchar(50) "attribute",
+        'VAR_ComnetM'::varchar(50) "attribute",
         commodity,
         '-'::varchar(50) "process",
         NULL::numeric "all",
@@ -1543,7 +1520,7 @@ select 'marg-price|' || tablename || '|EQ_CombalM|' || commodity || '|-'::varcha
         sum(case when period='2055' then pv else 0 end)::numeric "2055",
         sum(case when period='2060' then pv else 0 end)::numeric "2060"
 from vedastore
-where attribute='EQ_CombalM' and commodity in('GHG-NO-IAS-YES-LULUCF-NET','GHG-ETS-NO-IAS-NET',
+where attribute='VAR_ComnetM' and commodity in('GHG-NO-IAS-YES-LULUCF-NET','GHG-ETS-NO-IAS-NET',
     'GHG-YES-IAS-YES-LULUCF-NET','GHG-ETS-YES-IAS-NET')
 group by tablename, commodity
 order by tablename, commodity
@@ -2319,7 +2296,7 @@ elc_prd_fuel as (
             when process in('EHYGCCT01','EHYGOCT01') then 'ELC FROM HYDROGEN'
             when process in('ELCIE00','ELCIE01') then 'ELC FROM IMPORTS'
             when process in('EMANOCT00','EMANOCT01') then 'ELC FROM MANFUELS'
-            when process in('ENUCAGRN00','ENUCPWR101','ENUCPWR102','ENUCAGRO00','ENUCPWR00') then 'ELC FROM NUCLEAR'
+            when process in('ENUCPWR101','ENUCPWR102','ENUCPWR00') then 'ELC FROM NUCLEAR'
             when process in('EOILS00','EHFOIGCC01','EOILL00','EOILS01','EOILL01') then 'ELC FROM OIL'
             when process in('EHFOIGCCQ01') then 'ELC FROM OIL CCS'
             when process in('ESOL01','ESOLPV00','ESOLPV01','ESOL00') then 'ELC FROM SOL-PV'
@@ -2695,7 +2672,7 @@ with rsr_min as(
     from vedastore
     where attribute='VAR_FOut'
         and commodity in('ELCDUMMY','ELC','ELC-E-IRE','ELC-E-EU','ELCGEN')
-        and process in('ENUCAGRN00','ENUCPWR101','ENUCPWR102','ENUCAGRO00','ENUCPWR00')
+        and process in('ENUCPWR101','ENUCPWR102','ENUCPWR00')
     group by tablename,period order by tablename,period 
  )
  ,end_demand as(
