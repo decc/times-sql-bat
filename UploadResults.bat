@@ -9,6 +9,24 @@ rem 2) adding analysis SQL to generate summaries which are output to CSVs
 rem 3) amalgamates the CSVs
 rem 4) deletes the intermediate CSVs leaving a single output file
 rem By Fernley Symons
+rem *****Instructions for updating from "HumanReadableQueries.sql" in Notepad++*****
+rem It will be rare that you'll need to change the first, dynamic bit of the script which creates one SQL statement set
+rem for each VD file in the folder. These instructions ignore that and assume that block's unchanged.
+rem 1) Copy the appropriate block of SQL from "Human..." to a blank doc
+rem 2) Remove indentation from the copied text: select it and press shift-tab repeatedly to do this
+rem 3) Comment lines starting "--" should be removed (comments starting "/*" retained). Do this by doing a regex search / replace for 
+rem    "^--.+\r\n" (no quotes) replace with blank. Remove embedded comments [appearing on same line as code] with regex replace "--.+" with blank
+rem    remove extraneous blank lines with regex replace "(\r\n){2,}" with "\r\n"
+rem 4) Change the single "%" to double "%%" but leave filenames for copy statements unchanged. Regex replace "(%[^~])" with "%\1"
+rem 5) Escape other characters: Regex replace "(\||<|>)" with "^\1"
+rem 6) Make replacements for other reserved DOS words. See below for example (set "texta..." etc). In general there will only be a few of these; define more as needed
+REM    NB No need to replace "~" in output file locations since these are DOS commands meaning "put it in the same folder as this BAT file". "~" only needs replacing if part of a query
+REM    (i.e. regex in postgres)
+rem 7) Regex replace "(.+)" with "echo \1 >> VedaBatchUpload.sql"
+rem 8) Regex replace "echo (\/\*.+\/)" with "rem \1\r\necho \1". This duplicates the header in a way which is more obvious to read in the BAT file
+rem 9) Copy the edited text back over the body of the BAT below (below the upload statements and before the run SQL statement) and save file
+rem 10) comment out the run SQL statement, run the BAT and check the SQL appears sensible.
+rem 11) Uncomment the run SQL statement and use the file
 rem ***********
 rem 9:34 PM 19 January, 2016 Correction of error in new vehicles capacity script
 rem 2:04 PM 01 February, 2016; addition of whole vehicle stock capacity
@@ -68,7 +86,6 @@ echo where process in('IMPDEMZ','IMPMATZ','IMPNRGZ') and attribute = 'Cost_Act' 
 echo group by tablename >> VedaBatchUpload.sql
 echo order by tablename, analysis >> VedaBatchUpload.sql
 echo ) TO '%~dp0dummiesout.csv' delimiter ',' CSV HEADER; >> VedaBatchUpload.sql
-rem /* *All GHG emissions* */
 echo /* *All GHG emissions* */ >> VedaBatchUpload.sql
 echo COPY (  >> VedaBatchUpload.sql
 echo select 'ghg_all^|' ^|^| tablename ^|^| '^|Var_FOut^|' ^|^| commodity ^|^| '^|all'::varchar(300) "id", >> VedaBatchUpload.sql
@@ -98,7 +115,6 @@ echo 'GHG-YES-IAS-YES-LULUCF-NET','GHG-YES-IAS-YES-LULUCF-TER') >> VedaBatchUplo
 echo group by tablename, commodity >> VedaBatchUpload.sql
 echo order by tablename, commodity >> VedaBatchUpload.sql
 echo ) TO '%~dp0GHGOut.csv' delimiter ',' CSV; >> VedaBatchUpload.sql
-rem /* *GHG emissions by sector* */
 echo /* *GHG emissions by sector* */ >> VedaBatchUpload.sql
 echo COPY (  >> VedaBatchUpload.sql
 echo select analysis ^|^| '^|' ^|^| tablename ^|^| '^|' ^|^| attribute ^|^| '^|' ^|^| commodity ^|^| '^|' ^|^| process::varchar(300) "id", analysis, tablename,attribute, >> VedaBatchUpload.sql
@@ -154,7 +170,6 @@ echo where analysis ^<^>'' >> VedaBatchUpload.sql
 echo group by id, analysis,tablename, attribute, commodity,process >> VedaBatchUpload.sql
 echo order by tablename,  analysis, attribute, commodity >> VedaBatchUpload.sql
 echo ) TO '%~dp0GHGsectorOut.csv' delimiter ',' CSV; >> VedaBatchUpload.sql
-rem /* *GHG and sequestered emissions by industry sub-sector* */
 echo /* *GHG and sequestered emissions by industry sub-sector* */ >> VedaBatchUpload.sql
 echo COPY (  >> VedaBatchUpload.sql
 echo select 'ghg_ind-subsec-'^|^|sector ^|^| '^|' ^|^| tablename ^|^| '^|' ^|^| 'VAR_FOut' ^|^| '^|' ^|^| 'various' ^|^| '^|various'::varchar(300) "id",  >> VedaBatchUpload.sql
@@ -237,7 +252,6 @@ echo ) a >> VedaBatchUpload.sql
 echo where sector is not null >> VedaBatchUpload.sql
 echo group by tablename, sector >> VedaBatchUpload.sql
 echo ) TO '%~dp0IndSubGHG.csv' CSV; >> VedaBatchUpload.sql
-rem /* *Electricity generation by source* */
 echo /* *Electricity generation by source* */ >> VedaBatchUpload.sql
 echo COPY (  >> VedaBatchUpload.sql
 echo with emissions_chp as ( >> VedaBatchUpload.sql
@@ -322,7 +336,7 @@ echo ) a where comm_set is not null >> VedaBatchUpload.sql
 echo ) >> VedaBatchUpload.sql
 echo , "elc-emis" as( >> VedaBatchUpload.sql
 echo select  >> VedaBatchUpload.sql
-echo tablename,period,sum(pv)/1000 "elc-emis" --/1000 = Convert from kilo to Mega tonnes >> VedaBatchUpload.sql
+echo tablename,period,sum(pv)/1000 "elc-emis"  >> VedaBatchUpload.sql
 echo from ( >> VedaBatchUpload.sql
 echo select tablename,pv,period from "emis_co2_sector" where comm_set='EMIS CO2 ELC' >> VedaBatchUpload.sql
 echo union all >> VedaBatchUpload.sql
@@ -357,8 +371,7 @@ echo when process in('EHYGCCT01','EHYGOCT01') then 'ELC FROM HYDROGEN' >> VedaBa
 echo when process in('ELCIE00','ELCIE01') then 'ELC FROM IMPORTS' >> VedaBatchUpload.sql
 echo when process in('EMANOCT00','EMANOCT01') then 'ELC FROM MANFUELS' >> VedaBatchUpload.sql
 echo when process in('ENUCPWR00','ENUCPWR101','ENUCPWR102') then 'ELC FROM NUCLEAR' >> VedaBatchUpload.sql
-echo when process in('EOILS00','EOILS01','EOILL00','EOILL01','EHFOIGCC01','EDSTRCPE00', >> VedaBatchUpload.sql
-echo 'EDSTRCPE01') then 'ELC FROM OIL' >> VedaBatchUpload.sql
+echo when process in('EOILS00','EOILS01','EOILL00','EOILL01','EHFOIGCC01','EDSTRCPE00','EDSTRCPE01') then 'ELC FROM OIL' >> VedaBatchUpload.sql
 echo when process in('EHFOIGCCQ01') then 'ELC FROM OIL CCS' >> VedaBatchUpload.sql
 echo when process in('ESOL01','ESOLPV00','ESOLPV01','ESOL00') then 'ELC FROM SOL-PV' >> VedaBatchUpload.sql
 echo when process in('ETIB101','ETIS101','ETIR101') then 'ELC FROM TIDAL' >> VedaBatchUpload.sql
@@ -553,10 +566,10 @@ echo "nuclear_grp"/("coal_grp"+"coalccs_grp"+"gas_grp"+"gasccs_grp"+"oil_grp"+"o
 echo "h2_grp"/("coal_grp"+"coalccs_grp"+"gas_grp"+"gasccs_grp"+"oil_grp"+"oilccs_grp"+"bio_grp"+"bioccs_grp"+"nuclear_grp"+"h2_grp") "h2_grp" >> VedaBatchUpload.sql
 echo from ( >> VedaBatchUpload.sql
 echo select a.tablename, a.period, >> VedaBatchUpload.sql
-echo (sum(c."Coal")+sum("coal_rr"))*sum(a.coal) "coal_grp", --row 2061 = row2043 >> VedaBatchUpload.sql
-echo (sum(c."Coal CCS")+sum("coalccs_rr"))*sum(a.coal) "coalccs_grp", --row 2062 = row2046 >> VedaBatchUpload.sql
-echo (sum(c."Natural Gas")+sum("gas_rr"))*sum(a.gas) "gas_grp", --row 2063 = row2049 >> VedaBatchUpload.sql
-echo (sum(c."Natural Gas CCS")+sum("gasccs_rr"))*sum(a.gas) "gasccs_grp", --row 2064 = row2051 >> VedaBatchUpload.sql
+echo (sum(c."Coal")+sum("coal_rr"))*sum(a.coal) "coal_grp",  >> VedaBatchUpload.sql
+echo (sum(c."Coal CCS")+sum("coalccs_rr"))*sum(a.coal) "coalccs_grp",  >> VedaBatchUpload.sql
+echo (sum(c."Natural Gas")+sum("gas_rr"))*sum(a.gas) "gas_grp",  >> VedaBatchUpload.sql
+echo (sum(c."Natural Gas CCS")+sum("gasccs_rr"))*sum(a.gas) "gasccs_grp",  >> VedaBatchUpload.sql
 echo (sum(c."Coal")+sum("coal_rr"))*sum(a.oilcoal) + sum(c."Oil")*sum(a.oil) "oil_grp", >> VedaBatchUpload.sql
 echo sum(c."OIL CCS")*sum(a.oil) + (sum(c."Coal CCS")+sum("coalccs_rr"))*sum(a.oilcoal) "oilccs_grp", >> VedaBatchUpload.sql
 echo sum(c."Biomass") + (sum(c."Coal")+sum("coal_rr"))*sum(a.biocoal) + >> VedaBatchUpload.sql
@@ -691,7 +704,6 @@ echo ) d >> VedaBatchUpload.sql
 echo group by tablename,cols >> VedaBatchUpload.sql
 echo ORDER BY tablename,analysis >> VedaBatchUpload.sql
 echo ) TO '%~dp0ElecGenOut.csv' delimiter ',' CSV; >> VedaBatchUpload.sql
-rem /* *Elec storage* */
 echo /* *Elec storage* */ >> VedaBatchUpload.sql
 echo copy ( >> VedaBatchUpload.sql
 echo select 'elec-stor^|' ^|^| tablename ^|^| '^|Var_FOut^|ELC^|various'::varchar(300) "id", >> VedaBatchUpload.sql
@@ -719,7 +731,6 @@ echo where attribute = 'VAR_FOut' and commodity = 'ELC' >> VedaBatchUpload.sql
 echo and process in('EHYDPMP00','EHYDPMP01','ECAESCON01','ESTGCAES01','ECAESTUR01','ESTGAACAES01','ESTGBNAS01','ESTGBALA01','ESTGBRF01') >> VedaBatchUpload.sql
 echo group by tablename >> VedaBatchUpload.sql
 echo ) to '%~dp0ElecStor.csv' delimiter ',' CSV; >> VedaBatchUpload.sql
-rem /* *Electricity capacity by process* */
 echo /* *Electricity capacity by process* */ >> VedaBatchUpload.sql
 echo COPY (  >> VedaBatchUpload.sql
 echo select analysis ^|^| '^|' ^|^| tablename ^|^| '^|' ^|^| attribute ^|^| '^|' ^|^| '-^|various'::varchar(300) "id", analysis, tablename,attribute, >> VedaBatchUpload.sql
@@ -796,7 +807,6 @@ echo where analysis is not null >> VedaBatchUpload.sql
 echo group by id, analysis,tablename, attribute >> VedaBatchUpload.sql
 echo order by tablename,  analysis, attribute, commodity >> VedaBatchUpload.sql
 echo ) TO '%~dp0ElecCap.csv' delimiter ',' CSV; >> VedaBatchUpload.sql
-rem /* *costs by sector and type* */
 echo /* *costs by sector and type* */ >> VedaBatchUpload.sql
 echo COPY (  >> VedaBatchUpload.sql
 echo select analysis ^|^| '^|' ^|^| tablename ^|^|'^|'^|^| attribute ^|^| '^|various' ^|^| '^|various'::varchar(300) "id", analysis, tablename,attribute, >> VedaBatchUpload.sql
@@ -844,13 +854,12 @@ echo ) a >> VedaBatchUpload.sql
 echo group by id, analysis, tablename, attribute >> VedaBatchUpload.sql
 echo order by tablename,  analysis, attribute >> VedaBatchUpload.sql
 echo ) TO '%~dp0CostsBySec.csv' delimiter ',' CSV; >> VedaBatchUpload.sql
-rem /* *Marginal prices for emissions* */
 echo /* *Marginal prices for emissions* */ >> VedaBatchUpload.sql
 echo COPY (  >> VedaBatchUpload.sql
-echo select 'marg-price^|' ^|^| tablename ^|^| '^|VAR_ComnetM^|' ^|^| commodity ^|^| '^|-'::varchar(300) "id", >> VedaBatchUpload.sql
+echo select 'marg-price^|' ^|^| tablename ^|^| '^|EQ_CombalM^|' ^|^| commodity ^|^| '^|-'::varchar(300) "id", >> VedaBatchUpload.sql
 echo 'marg-price'::varchar(50) "analysis", >> VedaBatchUpload.sql
 echo tablename, >> VedaBatchUpload.sql
-echo 'VAR_ComnetM'::varchar(50) "attribute", >> VedaBatchUpload.sql
+echo 'EQ_CombalM'::varchar(50) "attribute", >> VedaBatchUpload.sql
 echo commodity, >> VedaBatchUpload.sql
 echo '-'::varchar(50) "process", >> VedaBatchUpload.sql
 echo NULL::numeric "all", >> VedaBatchUpload.sql
@@ -868,12 +877,11 @@ echo sum(case when period='2050' then pv else 0 end)::numeric "2050", >> VedaBat
 echo sum(case when period='2055' then pv else 0 end)::numeric "2055", >> VedaBatchUpload.sql
 echo sum(case when period='2060' then pv else 0 end)::numeric "2060" >> VedaBatchUpload.sql
 echo from vedastore >> VedaBatchUpload.sql
-echo where attribute='VAR_ComnetM' and commodity in('GHG-NO-IAS-YES-LULUCF-NET','GHG-ETS-NO-IAS-NET', >> VedaBatchUpload.sql
+echo where attribute='EQ_CombalM' and commodity in('GHG-NO-IAS-YES-LULUCF-NET','GHG-ETS-NO-IAS-NET', >> VedaBatchUpload.sql
 echo 'GHG-YES-IAS-YES-LULUCF-NET','GHG-ETS-YES-IAS-NET') >> VedaBatchUpload.sql
 echo group by tablename, commodity >> VedaBatchUpload.sql
 echo order by tablename, commodity >> VedaBatchUpload.sql
 echo ) TO '%~dp0MarginalPricesOut.csv' delimiter ',' CSV; >> VedaBatchUpload.sql
-rem /* *Whole stock heat output by process for residential* */
 echo /* *Whole stock heat output by process for residential* */ >> VedaBatchUpload.sql
 echo COPY (  >> VedaBatchUpload.sql
 echo select analysis ^|^| '^|' ^|^| tablename ^|^| '^|' ^|^| attribute ^|^| '^|' ^|^| 'various^|various'::varchar(300) "id", analysis, tablename,attribute, >> VedaBatchUpload.sql
@@ -945,7 +953,6 @@ echo ) a >> VedaBatchUpload.sql
 echo group by id, analysis,tablename, attribute >> VedaBatchUpload.sql
 echo order by tablename,  analysis, attribute, commodity >> VedaBatchUpload.sql
 echo ) TO '%~dp0ResWholeHeatOut.csv' delimiter ',' CSV; >> VedaBatchUpload.sql
-rem /* *New build residential heat output by source* */
 echo /* *New build residential heat output by source* */ >> VedaBatchUpload.sql
 echo COPY ( >> VedaBatchUpload.sql
 echo select analysis ^|^| '^|' ^|^| tablename ^|^| '^|' ^|^| attribute ^|^| '^|' ^|^| 'various^|various'::varchar(300) "id", analysis, tablename,attribute, >> VedaBatchUpload.sql
@@ -1006,7 +1013,6 @@ echo ) a where analysis ^<^> '' >> VedaBatchUpload.sql
 echo group by id, analysis,tablename, attribute >> VedaBatchUpload.sql
 echo order by tablename,  analysis, attribute, commodity >> VedaBatchUpload.sql
 echo ) TO '%~dp0NewResHeatOut.csv' delimiter ',' CSV; >> VedaBatchUpload.sql
-rem /* *Whole stock heat output for services* */
 echo /* *Whole stock heat output for services* */ >> VedaBatchUpload.sql
 echo COPY (  >> VedaBatchUpload.sql
 echo select analysis ^|^| '^|' ^|^| tablename ^|^| '^|' ^|^| attribute ^|^| '^|' ^|^| 'various^|various'::varchar(300) "id", analysis, tablename,attribute, >> VedaBatchUpload.sql
@@ -1066,7 +1072,6 @@ echo ) a >> VedaBatchUpload.sql
 echo group by id, analysis,tablename, attribute >> VedaBatchUpload.sql
 echo order by tablename,  analysis, attribute, commodity >> VedaBatchUpload.sql
 echo ) TO '%~dp0ServWholeHeatOut.csv' delimiter ',' CSV; >> VedaBatchUpload.sql
-rem /* *New build services heat output by source* */
 echo /* *New build services heat output by source* */ >> VedaBatchUpload.sql
 echo COPY (  >> VedaBatchUpload.sql
 echo select analysis ^|^| '^|' ^|^| tablename ^|^| '^|' ^|^| attribute ^|^| '^|' ^|^| 'various^|various'::varchar(300) "id", analysis, tablename,attribute, >> VedaBatchUpload.sql
@@ -1127,7 +1132,6 @@ echo ) a >> VedaBatchUpload.sql
 echo group by id, analysis,tablename, attribute >> VedaBatchUpload.sql
 echo order by tablename,  analysis, attribute, commodity >> VedaBatchUpload.sql
 echo ) TO '%~dp0NewServHeatOut.csv' delimiter ',' CSV; >> VedaBatchUpload.sql
-rem /* *End user final energy demand by sector* */
 echo /* *End user final energy demand by sector* */ >> VedaBatchUpload.sql
 echo COPY (  >> VedaBatchUpload.sql
 echo with hydrogen_chp as ( >> VedaBatchUpload.sql
@@ -1555,7 +1559,7 @@ echo when process='ECOAQR01' then 'ELC FROM COAL CCSRET' >> VedaBatchUpload.sql
 echo when process in('ECOARR01') then 'ELC FROM COAL RR' >> VedaBatchUpload.sql
 echo when process in('ECOABIO00','ECOA00') then 'ELC FROM COAL-COF' >> VedaBatchUpload.sql
 echo when process in('ECOAQ01') then 'ELC FROM COALCOF CCS' >> VedaBatchUpload.sql
-echo when process in('ENGAOCT01','ENGAOCT00','ENGACCT00') then 'ELC FROM GAS' >> VedaBatchUpload.sql
+echo when process in('ENGAOCT00','ENGAOCT01','ENGACCT00','ENGARCPE00','ENGARCPE01') then 'ELC FROM GAS' >> VedaBatchUpload.sql
 echo when process in('ENGACCTQ01') then 'ELC FROM GAS CCS' >> VedaBatchUpload.sql
 echo when process='ENGAQR01' then 'ELC FROM GAS CCSRET' >> VedaBatchUpload.sql
 echo when process in('ENGACCTRR01') then 'ELC FROM GAS RR' >> VedaBatchUpload.sql
@@ -1564,8 +1568,8 @@ echo when process in('EHYD01','EHYD00') then 'ELC FROM HYDRO' >> VedaBatchUpload
 echo when process in('EHYGCCT01','EHYGOCT01') then 'ELC FROM HYDROGEN' >> VedaBatchUpload.sql
 echo when process in('ELCIE00','ELCIE01') then 'ELC FROM IMPORTS' >> VedaBatchUpload.sql
 echo when process in('EMANOCT00','EMANOCT01') then 'ELC FROM MANFUELS' >> VedaBatchUpload.sql
-echo when process in('ENUCPWR101','ENUCPWR102','ENUCPWR00') then 'ELC FROM NUCLEAR' >> VedaBatchUpload.sql
-echo when process in('EOILS00','EHFOIGCC01','EOILL00','EOILS01','EOILL01') then 'ELC FROM OIL' >> VedaBatchUpload.sql
+echo when process in('ENUCPWR00','ENUCPWR101','ENUCPWR102') then 'ELC FROM NUCLEAR' >> VedaBatchUpload.sql
+echo when process in('EOILS00','EOILS01','EOILL00','EOILL01','EHFOIGCC01','EDSTRCPE00','EDSTRCPE01') then 'ELC FROM OIL' >> VedaBatchUpload.sql
 echo when process in('EHFOIGCCQ01') then 'ELC FROM OIL CCS' >> VedaBatchUpload.sql
 echo when process in('ESOL01','ESOLPV00','ESOLPV01','ESOL00') then 'ELC FROM SOL-PV' >> VedaBatchUpload.sql
 echo when process in('ETIB101','ETIS101','ETIR101') then 'ELC FROM TIDAL' >> VedaBatchUpload.sql
@@ -1685,8 +1689,7 @@ echo from end_demand a >> VedaBatchUpload.sql
 echo group by tablename,sec_fuel >> VedaBatchUpload.sql
 echo order by tablename,analysis >> VedaBatchUpload.sql
 echo ) TO '%~dp0FinEnOut.csv' delimiter ',' CSV; >> VedaBatchUpload.sql
-rem /* *Primary energy demand !texte! biomass, imports exports and domestic production* */
-echo /* *Primary energy demand !texte! biomass, imports exports and domestic production* */ >> VedaBatchUpload.sql
+echo /* *Primary energy demand and biomass, imports exports and domestic production* */ >> VedaBatchUpload.sql
 echo COPY (  >> VedaBatchUpload.sql
 echo with rsr_min as( >> VedaBatchUpload.sql
 echo select  >> VedaBatchUpload.sql

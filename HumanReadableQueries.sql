@@ -101,6 +101,8 @@ Revised:
 4:12 PM 11 August, 2016:
     Changed to match updated model (uktm_model_v1.2.3_d0.1.2_DNP) with some elc gen techs removed (ENUCAGRN00, ENUCAGRO00) and a couple added (ENGARCPE0*,EDSTRCPE0*). Sign of the interconn- reversed.
     Changes made to elec gen by source and capacity by type
+2:43 PM 12 August, 2016:
+    Corrections to script including change from VAR_ComnetM to EQ_CombalM
 */
 
 /* ******List of completed queries*******/
@@ -132,7 +134,7 @@ Revised:
 /* *Whole stock heat output for services* */ -- line 1690
 /* *New build services heat output by source* */ -- line 1769
 /* *End user final energy demand by sector* */ -- line 1830
-/* *Primary energy demand & biomass, imports exports and domestic production* */ -- line 2458
+/* *Primary energy demand and biomass, imports exports and domestic production* */ -- line 2458
 
 
 /*  *Land use and crop / livestock mitigation (MACC) measures* */
@@ -972,8 +974,7 @@ with emissions_chp as (
             when process in('ELCIE00','ELCIE01') then 'ELC FROM IMPORTS'
             when process in('EMANOCT00','EMANOCT01') then 'ELC FROM MANFUELS'
             when process in('ENUCPWR00','ENUCPWR101','ENUCPWR102') then 'ELC FROM NUCLEAR'
-            when process in('EOILS00','EOILS01','EOILL00','EOILL01','EHFOIGCC01','EDSTRCPE00',
-                'EDSTRCPE01') then 'ELC FROM OIL'
+            when process in('EOILS00','EOILS01','EOILL00','EOILL01','EHFOIGCC01','EDSTRCPE00','EDSTRCPE01') then 'ELC FROM OIL'
             when process in('EHFOIGCCQ01') then 'ELC FROM OIL CCS'
             when process in('ESOL01','ESOLPV00','ESOLPV01','ESOL00') then 'ELC FROM SOL-PV'
             when process in('ETIB101','ETIS101','ETIR101') then 'ELC FROM TIDAL'
@@ -1499,10 +1500,10 @@ order by tablename,  analysis, attribute
 /* *Marginal prices for emissions* */
 -- Note that the "all" column is left blank since it doesn't make sense to sum the marginal prices- Could substitute an average or similar if required
 COPY ( 
-select 'marg-price|' || tablename || '|VAR_ComnetM|' || commodity || '|-'::varchar(300) "id",
+select 'marg-price|' || tablename || '|EQ_CombalM|' || commodity || '|-'::varchar(300) "id",
         'marg-price'::varchar(50) "analysis",
         tablename,
-        'VAR_ComnetM'::varchar(50) "attribute",
+        'EQ_CombalM'::varchar(50) "attribute",
         commodity,
         '-'::varchar(50) "process",
         NULL::numeric "all",
@@ -1520,7 +1521,7 @@ select 'marg-price|' || tablename || '|VAR_ComnetM|' || commodity || '|-'::varch
         sum(case when period='2055' then pv else 0 end)::numeric "2055",
         sum(case when period='2060' then pv else 0 end)::numeric "2060"
 from vedastore
-where attribute='VAR_ComnetM' and commodity in('GHG-NO-IAS-YES-LULUCF-NET','GHG-ETS-NO-IAS-NET',
+where attribute='EQ_CombalM' and commodity in('GHG-NO-IAS-YES-LULUCF-NET','GHG-ETS-NO-IAS-NET',
     'GHG-YES-IAS-YES-LULUCF-NET','GHG-ETS-YES-IAS-NET')
 group by tablename, commodity
 order by tablename, commodity
@@ -2287,7 +2288,7 @@ elc_prd_fuel as (
             when process in('ECOARR01') then 'ELC FROM COAL RR'
             when process in('ECOABIO00','ECOA00') then 'ELC FROM COAL-COF'
             when process in('ECOAQ01') then 'ELC FROM COALCOF CCS'
-            when process in('ENGAOCT01','ENGAOCT00','ENGACCT00') then 'ELC FROM GAS'
+            when process in('ENGAOCT00','ENGAOCT01','ENGACCT00','ENGARCPE00','ENGARCPE01') then 'ELC FROM GAS'
             when process in('ENGACCTQ01') then 'ELC FROM GAS CCS'
             when process='ENGAQR01' then 'ELC FROM GAS CCSRET'
             when process in('ENGACCTRR01') then 'ELC FROM GAS RR'
@@ -2296,8 +2297,8 @@ elc_prd_fuel as (
             when process in('EHYGCCT01','EHYGOCT01') then 'ELC FROM HYDROGEN'
             when process in('ELCIE00','ELCIE01') then 'ELC FROM IMPORTS'
             when process in('EMANOCT00','EMANOCT01') then 'ELC FROM MANFUELS'
-            when process in('ENUCPWR101','ENUCPWR102','ENUCPWR00') then 'ELC FROM NUCLEAR'
-            when process in('EOILS00','EHFOIGCC01','EOILL00','EOILS01','EOILL01') then 'ELC FROM OIL'
+            when process in('ENUCPWR00','ENUCPWR101','ENUCPWR102') then 'ELC FROM NUCLEAR'
+            when process in('EOILS00','EOILS01','EOILL00','EOILL01','EHFOIGCC01','EDSTRCPE00','EDSTRCPE01') then 'ELC FROM OIL'
             when process in('EHFOIGCCQ01') then 'ELC FROM OIL CCS'
             when process in('ESOL01','ESOLPV00','ESOLPV01','ESOL00') then 'ELC FROM SOL-PV'
             when process in('ETIB101','ETIS101','ETIR101') then 'ELC FROM TIDAL'
@@ -2428,7 +2429,7 @@ order by tablename,analysis
   ) TO '%~dp0FinEnOut.csv' delimiter ',' CSV;
 -- **END OF End user final energy demand by sector**
 
-/* *Primary energy demand & biomass, imports exports and domestic production* */
+/* *Primary energy demand and biomass, imports exports and domestic production* */
 -- Includes non-energy use of fuels in the industry chemicals sub-sector
 COPY ( 
 with rsr_min as(
