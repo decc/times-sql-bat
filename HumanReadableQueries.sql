@@ -31,80 +31,7 @@ Fernley Symons, 2015 ff
 
 Original version:
 FS 7:12 PM 20-Nov-15
-Revised:
-3:07 PM 12 January, 2016. Changes include:
-    revisions to code (more compact, faster; substituting subqueries for unions.)
-    Changing [standardising] nomenclature.
-    Reordering queries to put related things together
-    New queries:- incorporating stand alone queries for (e.g. elec gen)
-    Expansion of existing queries (e.g. cars=> all road vehicles)
-12:59 PM 14 January, 2016:
-    correction to case...when statement for all vehicles to ensure more refined filters come first (prevent incorrect assignments)
-    All other case...whens in other queries checked
-    Other syntactic refinements
-    Standardisation of commodities etc with the equivalent component of the id
-    Addition of new build vehicles
-5:14 PM 14 January, 2016
-    Addition of the marginal emissions prices analysis
-1:42 PM 15 January, 2016
-    Addition of ghg by sector analysis
-2:02 PM 01 February, 2016
-    Addition of whole vehicle stock capacity, some changes to descriptions
-2:42 PM 04 February, 2016
-    Addition of new vehicle emissions intensity (cars,lgs,hgv)
-1:38 PM 08 February, 2016
-    Correction of the new veh emissions intensity to remove misleading CNG conversion GHG
-    change of new residential heat capacity to new res heat output
-    added objective function to costs by sector, and deleted "all costs" query
-    changed biofuel to not report biofuel (broad) type, just overall quantity
-    whole stock vehicle kms, emissions amalgamated to single query; original kms one removed. Expanded to 19 veh types
-    "CHP & other elec generation" query removed (was sum of individual queries for CHP and other gen, within rounding errors: largest difference = 7.95808E-12)
-    GHG from electricity generation; Elec Interconnectors; Electricity Generation and Elec waste heat removed (duplicated in "GHG emissions by sector" or the revised 
-    Electricity generation by source query)
-    Electricity generation by source revised to include a temporary table giving total generation & interconnectors
-    Services whole stock, and new build heat output added
-    Addition of dummy imports by table, incomplete industrial fuel use by sub-sector
-    Elec generation part of the chp emissions generated/saved query removed
-7:50 PM 04 April, 2016:
-    Addition of final energy demand by main sector
-1:48 PM 12 April, 2016:
-    Addition of primary energy demand by main fuel, correction of errors in previous query
-5:49 PM 26 April, 2016:
-    Conversion of some wildcard filters into explicit lists of commodities/processes
-4:44 PM 16 May, 2016:
-    [changes listed here represent those over a period but prior to the next major released]
-    Addition of 2 LNG processes for TRA to the main final energy demand query
-    Changed the name of the CTEs in the final energy demand by sector to reflect Veda BE table names and expanded defs to match
-    Corrected small error in final energy CHP services calc part of the final e by end user [was referring to res chp, not ser]
-    elec-gen_exports, elec-gen_imports removed from elec gen by source. 'elec-gen_total' renamed 'elec-gen_total-cen', 'elec-gen_inter' renamed 'elec-gen_intercon'
-    corrected an error in the biofuels q [missing commodity filter]
-    Changes to main final energy q to make its sub-queries better conform to Veda BE tables
-    Correction to minor error in services chp heat sub query where filter was preventing some tech being included
-    "All" costs added back into costs q
-    Biofuels by sector q removed (is in final e- by sector q)
-    Addition of bio- domestic production, imports and exports (added to primary energy q). Addition of dummy code for exported biomass to primary e quality (doesn't
-    exist in model)
-    Addition of FE use for h2 production to FE use by sector q
-    Changed GHG by sector so that ETS is nett emissions
-    Correction to e- gen. q: total excluded elec-gen_h2, elec-gen_other-ccs. elec-gen_h2 added into orens, e- gen q aligned with UCL template
-    CHP emissions from generation removed, grid intensity (which incorporates emissions from CHP) added to elec gen by source
-    Addition of emissions by industrial sub-sector
-5:36 PM 01 July, 2016:
-    Elec gen. q updated to be net of heat offtake penalty. Sources now report e- only (waste heat reported separately)
-    FE by end user expanded to include e- for H2 prod, for elec and for process sector
-    GHG sequestered by industry sub-sector added
-5:21 PM 08 July, 2016:
-    E85 added for vehicle qs
-8:50 PM 14 July, 2016:
-    Changes to vehicle queries including apportioning of emissions for CNG vehicles, adding total lines, and calculating emission intensity. Also broke out buses and "bikes" as new categories.
-    These transport queries moved to new batch file; agriculture / LULUCF formatted qs moved into this (present) file.
-4:12 PM 11 August, 2016:
-    Changed to match updated model (uktm_model_v1.2.3_d0.1.2_DNP) with some elc gen techs removed (ENUCAGRN00, ENUCAGRO00) and a couple added (ENGARCPE0*,EDSTRCPE0*). Sign of the interconn- reversed.
-    Changes made to elec gen by source and capacity by type
-2:43 PM 12 August, 2016:
-    Corrections to script including change from VAR_ComnetM to EQ_CombalM
-7:47 PM 12 August, 2016:
-    Consistency check and correction of all set definitions (were some legacy errors from Veda BE)
+Revisions section placed at end of file.
 */
 
 /* ******List of completed queries*******/
@@ -1191,20 +1118,24 @@ with emissions_chp as (
 -- i.e. take the below as a proportion of the total
     from (
         select a.tablename, a.period,
-            (sum(c."Coal")+sum("coal_rr"))*sum(a.coal) "coal_grp", --row 2061 = row2043
-            (sum(c."Coal CCS")+sum("coalccs_rr"))*sum(a.coal) "coalccs_grp", --row 2062 = row2046
-            (sum(c."Natural Gas")+sum("gas_rr"))*sum(a.gas) "gas_grp", --row 2063 = row2049
-            (sum(c."Natural Gas CCS")+sum("gasccs_rr"))*sum(a.gas) "gasccs_grp", --row 2064 = row2051
+            (sum(c."Coal")+sum("coal_rr"))*sum(a.coal) "coal_grp", 
+--row 2061 = row2043
+            (sum(c."Coal CCS")+sum("coalccs_rr"))*sum(a.coal) "coalccs_grp",
+--row 2062 = row2046
+            (sum(c."Natural Gas")+sum("gas_rr"))*sum(a.gas) "gas_grp",
+--row 2063 = row2049
+            (sum(c."Natural Gas CCS")+sum("gasccs_rr"))*sum(a.gas) "gasccs_grp",
+--row 2064 = row2051
             (sum(c."Coal")+sum("coal_rr"))*sum(a.oilcoal) + sum(c."Oil")*sum(a.oil) "oil_grp",
-    -- This is the sum of oil pure, and oil in coal fired generation (rows 2045, 2053)
+-- This is the sum of oil pure, and oil in coal fired generation (rows 2045, 2053)
             sum(c."OIL CCS")*sum(a.oil) + (sum(c."Coal CCS")+sum("coalccs_rr"))*sum(a.oilcoal) "oilccs_grp",
-    -- This is sum of oil ccs pure, and oil in coal fired ccs generation (rows (2048+2055)=2066)
+-- This is sum of oil ccs pure, and oil in coal fired ccs generation (rows (2048+2055)=2066)
             sum(c."Biomass") + (sum(c."Coal")+sum("coal_rr"))*sum(a.biocoal) +
                 (sum("Natural Gas")+sum("gas_rr"))*sum(a.biogas) + sum(c."Oil")*sum(a.biooil) "bio_grp",
-    -- This is sum of biomass pure (from "waste_heat"), bio in coal fired, bio in oil fired and bio in gas fired generation (rows 2044+2050+2054)
+-- This is sum of biomass pure (from "waste_heat"), bio in coal fired, bio in oil fired and bio in gas fired generation (rows 2044+2050+2054)
             sum(c."Biomass CCS") + (sum(c."Coal CCS")+sum("coalccs_rr"))*sum(a.biocoal) +
                 (sum(c."Natural Gas CCS")+sum("gasccs_rr"))*sum(a.biogas) + sum(c."OIL CCS")*sum(a.biooil) "bioccs_grp",
-    -- This is sum of biomass CCS pure (from "waste_heat"), bio in coal fired, bio in oil fired and bio in gas fired generation (rows 2044+2050+2054)        
+-- This is sum of biomass CCS pure (from "waste_heat"), bio in coal fired, bio in oil fired and bio in gas fired generation (rows 2044+2050+2054)        
             sum(c."Nuclear") "nuclear_grp",
             sum(c."Hydrogen") "h2_grp"
         from cofiring_fuel_percents a full outer join retrofit_plants b
@@ -1282,7 +1213,13 @@ select cols || '|' || tablename || '|' ||
             "coalccs-unad"*b.coal-d.coalccs "elec-gen_coal-ccs",
             "gas-unad"*b.gas-d.gas "elec-gen_nga",
             "gasccs-unad"*b.gas-d.gasccs "elec-gen_nga-ccs",    
-            ("ELC FROM OIL"*b.oil+"coal-unad"*b.oilcoal)-d.oil/*ie oil*/+("ELC FROM OIL CCS"*b.oil+"coalccs-unad"*b.oilcoal)-d.oilccs/*oil ccs*/+"ELC FROM MANFUELS"/*man fuels*/ "elec-gen_other-ff",
+            ("ELC FROM OIL"*b.oil+"coal-unad"*b.oilcoal)-d.oil
+            --ie oil
+            +("ELC FROM OIL CCS"*b.oil+"coalccs-unad"*b.oilcoal)-d.oilccs
+            -- oil ccs
+            +"ELC FROM MANFUELS"
+            --man fuels
+             "elec-gen_other-ff",
             ("ELC FROM BIO"+"coal-unad"*biocoal+"ELC FROM OIL"*biooil+"gas-unad"*b.biogas)-d.bio "elec-gen_bio",
             ("ELC FROM BIO CCS"+"coalccs-unad"*biocoal+"ELC FROM OIL CCS"*biooil+"gasccs-unad"*b.biogas)-d.bioccs "elec-gen_bio-ccs",
             "elec-gen_other-rens"-d.h2 "elec-gen_other-rens",
@@ -1309,7 +1246,7 @@ select cols || '|' || tablename || '|' ||
                 select a.period, a.tablename,
                 sum(case when proc_set='ELC TO EXPORTS' then -pv when proc_set='ELC FROM IMPORTS' then pv else 0 end) "elec-gen_intercon",
                 sum(case when proc_set in ('ELC FROM TIDAL','ELC FROM WAVE','ELC FROM GEO','ELC FROM HYDRO','ELC FROM HYDROGEN') then pv else 0 end) "elec-gen_other-rens",
---incls e- from H2                
+                --incls e- from H2
                 sum(case when proc_set in ('ELC FROM SOL-PV') then pv else 0 end) "elec-gen_solar",
                 sum(case when proc_set in ('ELC FROM NUCLEAR') then pv else 0 end) "elec-gen_nuclear",
                 sum(case when proc_set in ('ELC FROM WIND-OFFSH') then pv else 0 end) "elec-gen_offw",
@@ -2752,3 +2689,78 @@ select 'bio-en_' || cols || '|' || tablename || '|VAR_FOut|various|' || process:
 group by tablename,cols,process
 ORDER BY tablename,analysis
  ) TO '%~dp0PriEnOut.csv' delimiter ',' CSV;
+-- Change log follows:
+ -- 3:07 PM 12 January, 2016. Changes include:
+    -- revisions to code (more compact, faster; substituting subqueries for unions.)
+    -- Changing [standardising] nomenclature.
+    -- Reordering queries to put related things together
+    -- New queries:- incorporating stand alone queries for (e.g. elec gen)
+    -- Expansion of existing queries (e.g. cars=> all road vehicles)
+-- 12:59 PM 14 January, 2016:
+    -- correction to case...when statement for all vehicles to ensure more refined filters come first (prevent incorrect assignments)
+    -- All other case...whens in other queries checked
+    -- Other syntactic refinements
+    -- Standardisation of commodities etc with the equivalent component of the id
+    -- Addition of new build vehicles
+-- 5:14 PM 14 January, 2016
+    -- Addition of the marginal emissions prices analysis
+-- 1:42 PM 15 January, 2016
+    -- Addition of ghg by sector analysis
+-- 2:02 PM 01 February, 2016
+    -- Addition of whole vehicle stock capacity, some changes to descriptions
+-- 2:42 PM 04 February, 2016
+    -- Addition of new vehicle emissions intensity (cars,lgs,hgv)
+-- 1:38 PM 08 February, 2016
+    -- Correction of the new veh emissions intensity to remove misleading CNG conversion GHG
+    -- change of new residential heat capacity to new res heat output
+    -- added objective function to costs by sector, and deleted "all costs" query
+    -- changed biofuel to not report biofuel (broad) type, just overall quantity
+    -- whole stock vehicle kms, emissions amalgamated to single query; original kms one removed. Expanded to 19 veh types
+    -- "CHP & other elec generation" query removed (was sum of individual queries for CHP and other gen, within rounding errors: largest difference = 7.95808E-12)
+    -- GHG from electricity generation; Elec Interconnectors; Electricity Generation and Elec waste heat removed (duplicated in "GHG emissions by sector" or the revised 
+    -- Electricity generation by source query)
+    -- Electricity generation by source revised to include a temporary table giving total generation & interconnectors
+    -- Services whole stock, and new build heat output added
+    -- Addition of dummy imports by table, incomplete industrial fuel use by sub-sector
+    -- Elec generation part of the chp emissions generated/saved query removed
+-- 7:50 PM 04 April, 2016:
+    -- Addition of final energy demand by main sector
+-- 1:48 PM 12 April, 2016:
+    -- Addition of primary energy demand by main fuel, correction of errors in previous query
+-- 5:49 PM 26 April, 2016:
+    -- Conversion of some wildcard filters into explicit lists of commodities/processes
+-- 4:44 PM 16 May, 2016:
+    -- [changes listed here represent those over a period but prior to the next major released]
+    -- Addition of 2 LNG processes for TRA to the main final energy demand query
+    -- Changed the name of the CTEs in the final energy demand by sector to reflect Veda BE table names and expanded defs to match
+    -- Corrected small error in final energy CHP services calc part of the final e by end user [was referring to res chp, not ser]
+    -- elec-gen_exports, elec-gen_imports removed from elec gen by source. 'elec-gen_total' renamed 'elec-gen_total-cen', 'elec-gen_inter' renamed 'elec-gen_intercon'
+    -- corrected an error in the biofuels q [missing commodity filter]
+    -- Changes to main final energy q to make its sub-queries better conform to Veda BE tables
+    -- Correction to minor error in services chp heat sub query where filter was preventing some tech being included
+    -- "All" costs added back into costs q
+    -- Biofuels by sector q removed (is in final e- by sector q)
+    -- Addition of bio- domestic production, imports and exports (added to primary energy q). Addition of dummy code for exported biomass to primary e quality (doesn't
+    -- exist in model)
+    -- Addition of FE use for h2 production to FE use by sector q
+    -- Changed GHG by sector so that ETS is nett emissions
+    -- Correction to e- gen. q: total excluded elec-gen_h2, elec-gen_other-ccs. elec-gen_h2 added into orens, e- gen q aligned with UCL template
+    -- CHP emissions from generation removed, grid intensity (which incorporates emissions from CHP) added to elec gen by source
+    -- Addition of emissions by industrial sub-sector
+-- 5:36 PM 01 July, 2016:
+    -- Elec gen. q updated to be net of heat offtake penalty. Sources now report e- only (waste heat reported separately)
+    -- FE by end user expanded to include e- for H2 prod, for elec and for process sector
+    -- GHG sequestered by industry sub-sector added
+-- 5:21 PM 08 July, 2016:
+    -- E85 added for vehicle qs
+-- 8:50 PM 14 July, 2016:
+    -- Changes to vehicle queries including apportioning of emissions for CNG vehicles, adding total lines, and calculating emission intensity. Also broke out buses and "bikes" as new categories.
+    -- These transport queries moved to new batch file; agriculture / LULUCF formatted qs moved into this (present) file.
+-- 4:12 PM 11 August, 2016:
+    -- Changed to match updated model (uktm_model_v1.2.3_d0.1.2_DNP) with some elc gen techs removed (ENUCAGRN00, ENUCAGRO00) and a couple added (ENGARCPE0*,EDSTRCPE0*). Sign of the interconn- reversed.
+    -- Changes made to elec gen by source and capacity by type
+-- 2:43 PM 12 August, 2016:
+    -- Corrections to script including change from VAR_ComnetM to EQ_CombalM
+-- 7:47 PM 12 August, 2016:
+    -- Consistency check and correction of all set definitions (were some legacy errors from Veda BE)
+    
