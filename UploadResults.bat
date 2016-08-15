@@ -10,6 +10,12 @@ rem 3) amalgamates the CSVs
 rem 4) deletes the intermediate CSVs leaving a single output file
 rem By Fernley Symons
 rem *****Instructions for updating from "HumanReadableQueries.sql" in Notepad++*****
+rem Things to bear in mind:
+rem if '%' is part of a sql query (e.g. "like 'x%'), then % needs to be doubled "like 'x%%'"
+rem Other characters (|, <, > etc) need to be escaped in a similar way with ^:- ^| etc
+rem can't have very long lines - need to break statements
+rem filename at end of line, no spaces afterwards
+REM Also note that doesn't like labels (col names or values etc) which break across lines. Inserts a break into them so that they don't match any more
 rem It will be rare that you'll need to change the first, dynamic bit of the script which creates one SQL statement set
 rem for each VD file in the folder. These instructions ignore that and assume that block's unchanged.
 rem 1) Copy the appropriate block of SQL from "Human..." to a blank doc
@@ -36,17 +42,12 @@ rem 3:30 PM 16 February, 2016; a slew of new queries, refactored code, re-ordere
 rem 7:50 PM 04 April, 2016: addition of final end use energy demand by main sector; renamed some analysis entities
 rem 1:48 PM 12 April, 2016: addition of primary energy demand by main fuel
 rem 8:47 PM 11 August, 2016: updated to reflect changes to elec gen techs
+rem 11:53 AM 15 August, 2016: updated to reflect corrected and standardised set definitions
 rem ***********
 echo processing vd files...
 @echo off
 rem The following allows us to insert text which is otherwise outlawed in DOS:
 setlocal enableDelayedExpansion
-rem Things to bear in mind:
-rem if '%' is part of a sql query (e.g. "like 'x%'), then % needs to be doubled "like 'x%%'"
-rem Other characters (|, <, > etc) need to be escaped in a similar way with ^:- ^| etc
-rem can't have very long lines - need to break statements
-rem filename at end of line, no spaces afterwards
-REM Also note that doesn't like labels (col names or values etc) which break across lines. Inserts a break into them so that they don't match any more
 rem delete the SQL script if it exists - code below (re-) generates it.
 IF EXIST VedaBatchUpload.sql del /F VedaBatchUpload.sql
 rem need to define some variables which contain DOS reserved words. These are replaced by the preprocessor in the script:
@@ -60,7 +61,7 @@ rem queries are run.
 echo CREATE temp TABLE !textb! EXISTS vedastore( tablename varchar(100), id serial, attribute varchar(50), commodity varchar(50), process varchar(50), period varchar(50), region varchar(50), vintage varchar(50), timeslice varchar(50), userconstraint varchar(50), pv numeric ); drop table !texta! exists veda; create temp table veda( id serial, stuff varchar(1000) ); >> VedaBatchUpload.sql
 rem the following creates a block of sql for each VD file to upload it, delete the header rows and break the entries into fields
 for /f "delims=|" %%i in ('dir /b *.vd') do echo delete from veda; ALTER SEQUENCE veda_id_seq RESTART WITH 1; copy veda (stuff) from '%%~fi'; insert into vedastore (tablename, attribute ,commodity ,process ,period ,region ,vintage ,timeslice ,userconstraint ,pv) select '%%~ni', trim(both '"' from a[1]), trim(both '"' from a[2]), trim(both '"' from a[3]), trim(both '"' from a[4]), trim(both '"' from a[5]), trim(both '"' from a[6]), trim(both '"' from a[7]), trim(both '"' from a[8]), cast(a[9] as numeric) from ( select string_to_array(stuff, ',') from veda order by id offset 13 ) as dt(a); >> VedaBatchUpload.sql
-rem /* *Dummy imports by table* */
+echo rem /* *Dummy imports by table* */
 echo /* *Dummy imports by table* */ >> VedaBatchUpload.sql
 echo COPY (  >> VedaBatchUpload.sql
 echo select 'dummies' ^|^| '^|' ^|^| tablename ^|^| '^|' ^|^| 'Cost_Act' ^|^| '^|' ^|^| 'various' ^|^| '^|various'::varchar(300) "id",  >> VedaBatchUpload.sql
@@ -86,6 +87,7 @@ echo where process in('IMPDEMZ','IMPMATZ','IMPNRGZ') and attribute = 'Cost_Act' 
 echo group by tablename >> VedaBatchUpload.sql
 echo order by tablename, analysis >> VedaBatchUpload.sql
 echo ) TO '%~dp0dummiesout.csv' delimiter ',' CSV HEADER; >> VedaBatchUpload.sql
+echo rem /* *All GHG emissions* */
 echo /* *All GHG emissions* */ >> VedaBatchUpload.sql
 echo COPY (  >> VedaBatchUpload.sql
 echo select 'ghg_all^|' ^|^| tablename ^|^| '^|Var_FOut^|' ^|^| commodity ^|^| '^|all'::varchar(300) "id", >> VedaBatchUpload.sql
@@ -115,6 +117,7 @@ echo 'GHG-YES-IAS-YES-LULUCF-NET','GHG-YES-IAS-YES-LULUCF-TER') >> VedaBatchUplo
 echo group by tablename, commodity >> VedaBatchUpload.sql
 echo order by tablename, commodity >> VedaBatchUpload.sql
 echo ) TO '%~dp0GHGOut.csv' delimiter ',' CSV; >> VedaBatchUpload.sql
+echo rem /* *GHG emissions by sector* */
 echo /* *GHG emissions by sector* */ >> VedaBatchUpload.sql
 echo COPY (  >> VedaBatchUpload.sql
 echo select analysis ^|^| '^|' ^|^| tablename ^|^| '^|' ^|^| attribute ^|^| '^|' ^|^| commodity ^|^| '^|' ^|^| process::varchar(300) "id", analysis, tablename,attribute, >> VedaBatchUpload.sql
@@ -170,6 +173,7 @@ echo where analysis ^<^>'' >> VedaBatchUpload.sql
 echo group by id, analysis,tablename, attribute, commodity,process >> VedaBatchUpload.sql
 echo order by tablename,  analysis, attribute, commodity >> VedaBatchUpload.sql
 echo ) TO '%~dp0GHGsectorOut.csv' delimiter ',' CSV; >> VedaBatchUpload.sql
+echo rem /* *GHG and sequestered emissions by industry sub-sector* */
 echo /* *GHG and sequestered emissions by industry sub-sector* */ >> VedaBatchUpload.sql
 echo COPY (  >> VedaBatchUpload.sql
 echo select 'ghg_ind-subsec-'^|^|sector ^|^| '^|' ^|^| tablename ^|^| '^|' ^|^| 'VAR_FOut' ^|^| '^|' ^|^| 'various' ^|^| '^|various'::varchar(300) "id",  >> VedaBatchUpload.sql
@@ -252,6 +256,7 @@ echo ) a >> VedaBatchUpload.sql
 echo where sector is not null >> VedaBatchUpload.sql
 echo group by tablename, sector >> VedaBatchUpload.sql
 echo ) TO '%~dp0IndSubGHG.csv' CSV; >> VedaBatchUpload.sql
+echo rem /* *Electricity generation by source* */
 echo /* *Electricity generation by source* */ >> VedaBatchUpload.sql
 echo COPY (  >> VedaBatchUpload.sql
 echo with emissions_chp as ( >> VedaBatchUpload.sql
@@ -259,19 +264,19 @@ echo select tablename, proc_set, commodity,period,sum(pv) "pv" >> VedaBatchUploa
 echo from ( >> VedaBatchUpload.sql
 echo select period, pv,commodity,process,tablename, >> VedaBatchUpload.sql
 echo case >> VedaBatchUpload.sql
-echo when process in('IISCHPCCGT01','IISCHPGT01','IPPCHPCCGTH01','IFDCHPFCH01','IISCHPHFO00','IPPCHPBIOG01','IOICHPCOA01','IOICHPFCH01','ICHCHPCCGTH01','IPPCHPFCH01','INMCHPCCGT01','IOICHPBIOG01' >> VedaBatchUpload.sql
-echo ,'IFDCHPNGA00','ICHCHPLFO00','IISCHPCOG00','IOICHPNGA00','IOICHPHFO00','IOICHPCCGTH01','INMCHPCOG00','ICHCHPCOA00','IFDCHPBIOS00','IOICHPBIOS00','IISCHPBFG00','IISCHPBIOS01' >> VedaBatchUpload.sql
-echo ,'ICHCHPCCGT01','IISCHPCCGTH01','IFDCHPBIOS01','IISCHPCOG01','IISCHPNGA00','ICHCHPBIOS00','IFDCHPCCGTH01','IOICHPCCGT01','INMCHPBIOS01','ICHCHPLPG00','IISCHPBIOG01','IPPCHPCOA00' >> VedaBatchUpload.sql
-echo ,'ICHCHPFCH01','IFDCHPBIOG01','IFDCHPHFO00','IPPCHPWST01','ICHCHPHFO00','IISCHPBFG01','ICHCHPBIOS01','ICHCHPNGA00','IPPCHPCCGT01','IFDCHPGT01','IPPCHPBIOS01','INMCHPBIOG01' >> VedaBatchUpload.sql
-echo ,'ICHCHPGT01','INMCHPGT01','IPPCHPCOA01','IISCHPFCH01','IOICHPBIOS01','ICHCHPCOA01','IFDCHPLFO00','IPPCHPNGA00','IFDCHPCOA00','INMCHPFCH01','IFDCHPCCGT01','ICHCHPPRO01' >> VedaBatchUpload.sql
-echo ,'INMCHPNGA00','INMCHPCOG01','IOICHPGT01','IPPCHPGT01','ICHCHPBIOG01','ICHCHPLPG01','INMCHPCCGTH01','ICHCHPPRO00','INMCHPCOA01','IPPCHPWST00','IFDCHPCOA01', >> VedaBatchUpload.sql
-echo 'IPPCHPBIOS00') then 'CHP IND SECTOR' >> VedaBatchUpload.sql
-echo when process in('PCHP-CCP01','PCHP-CCP00') then 'CHP PRC SECTOR' >> VedaBatchUpload.sql
-echo when process in('SHLCHPRH01','SCHP-STM01','SHLCHPRW01','SCHP-FCH01','SHLCHPRG01','SHHFCLRH01','SCHP-CCH01','SCHP-STW00','SCHP-CCG00','SCHP-CCG01','SCHP-GES00','SCHP-STW01' >> VedaBatchUpload.sql
-echo ,'SCHP-GES01','SCHP-ADM01') then 'CHP SER SECTOR' >> VedaBatchUpload.sql
-echo when process in('UCHP-CCG01','UCHP-CCG00') then 'CHP UPS SECTOR' >> VedaBatchUpload.sql
-echo when process in('RHEACHPRG01','RHEACHPRW01','RHEACHPRH01','RHHCCHPRG01','RHHCCHPRW01','RHHCCHPRH01','RHHSCHPRG01','RHHSCHPRW01','RHHSCHPRH01','RHFCCHPRG01','RHFCCHPRW01', >> VedaBatchUpload.sql
-echo 'RHFCCHPRH01','RHFSCHPRG01','RHFSCHPRW01','RHFSCHPRH01','RHNACHPRG01','RHNACHPRW01','RHNACHPRH01') then 'CHP RES MICRO' >> VedaBatchUpload.sql
+echo when process in('ICHCHPBIOG01','ICHCHPBIOS00','ICHCHPBIOS01','ICHCHPCCGT01','ICHCHPCCGTH01','ICHCHPCOA00','ICHCHPCOA01','ICHCHPFCH01','ICHCHPGT01','ICHCHPHFO00','ICHCHPLFO00','ICHCHPLPG00' >> VedaBatchUpload.sql
+echo ,'ICHCHPLPG01','ICHCHPNGA00','ICHCHPPRO00','ICHCHPPRO01','IFDCHPBIOG01','IFDCHPBIOS00','IFDCHPBIOS01','IFDCHPCCGT01','IFDCHPCCGTH01','IFDCHPCOA00','IFDCHPCOA01','IFDCHPFCH01' >> VedaBatchUpload.sql
+echo ,'IFDCHPGT01','IFDCHPHFO00','IFDCHPLFO00','IFDCHPNGA00','IISCHPBFG00','IISCHPBFG01','IISCHPBIOG01','IISCHPBIOS01','IISCHPCCGT01','IISCHPCCGTH01','IISCHPCOG00','IISCHPCOG01' >> VedaBatchUpload.sql
+echo ,'IISCHPFCH01','IISCHPGT01','IISCHPHFO00','IISCHPNGA00','INMCHPBIOG01','INMCHPBIOS01','INMCHPCCGT01','INMCHPCCGTH01','INMCHPCOA01','INMCHPCOG00','INMCHPCOG01','INMCHPFCH01' >> VedaBatchUpload.sql
+echo ,'INMCHPGT01','INMCHPNGA00','IOICHPBIOG01','IOICHPBIOS00','IOICHPBIOS01','IOICHPCCGT01','IOICHPCCGTH01','IOICHPCOA01','IOICHPFCH01','IOICHPGT01','IOICHPHFO00','IOICHPNGA00' >> VedaBatchUpload.sql
+echo ,'IPPCHPBIOG01','IPPCHPBIOS00','IPPCHPBIOS01','IPPCHPCCGT01','IPPCHPCCGTH01','IPPCHPCOA00','IPPCHPCOA01','IPPCHPFCH01','IPPCHPGT01','IPPCHPNGA00','IPPCHPWST00','IPPCHPWST01') >> VedaBatchUpload.sql
+echo then 'CHP IND SECTOR' >> VedaBatchUpload.sql
+echo when process in('PCHP-CCP00','PCHP-CCP01') then 'CHP PRC SECTOR' >> VedaBatchUpload.sql
+echo when process in('SCHP-ADM01','SCHP-CCG00','SCHP-CCG01','SCHP-CCH01','SCHP-FCH01','SCHP-GES00','SCHP-GES01','SCHP-STM01','SCHP-STW00','SCHP-STW01','SHHFCLRH01','SHLCHPRG01' >> VedaBatchUpload.sql
+echo ,'SHLCHPRH01','SHLCHPRW01') then 'CHP SER SECTOR' >> VedaBatchUpload.sql
+echo when process in('UCHP-CCG00','UCHP-CCG01') then 'CHP UPS SECTOR' >> VedaBatchUpload.sql
+echo when process in('RHEACHPRG01','RHEACHPRH01','RHEACHPRW01','RHFCCHPRG01','RHFCCHPRH01','RHFCCHPRW01','RHFSCHPRG01','RHFSCHPRH01','RHFSCHPRW01','RHHCCHPRG01','RHHCCHPRH01','RHHCCHPRW01' >> VedaBatchUpload.sql
+echo ,'RHHSCHPRG01','RHHSCHPRH01','RHHSCHPRW01','RHNACHPRG01','RHNACHPRH01','RHNACHPRW01') then 'CHP RES MICRO' >> VedaBatchUpload.sql
 echo end proc_set >> VedaBatchUpload.sql
 echo from vedastore >> VedaBatchUpload.sql
 echo where attribute='VAR_FOut' and commodity in('RESCH4N','SERN2ON','INDCO2N','SERCH4N','INDCH4N','INDN2ON','UPSN2ON','UPSCO2N','UPSCH4N','PRCCH4N','PRCCO2N','PRCN2ON' >> VedaBatchUpload.sql
@@ -279,12 +284,12 @@ echo ,'SERCO2N','RESCO2N','RESN2ON') >> VedaBatchUpload.sql
 echo union all >> VedaBatchUpload.sql
 echo select period, pv,commodity,process,tablename, >> VedaBatchUpload.sql
 echo case >> VedaBatchUpload.sql
-echo when process in('IPPCHPBIOS00','ICHCHPBIOS00','IPPCHPWST00','IFDCHPBIOS00','IFDCHPBIOS01','ICHCHPBIOS01','IPPCHPWST01','IOICHPBIOS00','INMCHPBIOS01','IPPCHPBIOS01', >> VedaBatchUpload.sql
-echo 'IOICHPBIOS01','IISCHPBIOS01') then 'CHP IND BIO' >> VedaBatchUpload.sql
-echo when process in('SCHP-ADM01','SCHP-STM01','SCHP-GES01','SCHP-GES00','SCHP-STW01','SHLCHPRW01','SCHP-STW00') then 'CHP SER BIO' >> VedaBatchUpload.sql
+echo when process in('ICHCHPBIOG01','ICHCHPBIOS00','ICHCHPBIOS01','IFDCHPBIOG01','IFDCHPBIOS00','IFDCHPBIOS01','IISCHPBIOG01','IISCHPBIOS01','INMCHPBIOG01','INMCHPBIOS01','IOICHPBIOG01' >> VedaBatchUpload.sql
+echo ,'IOICHPBIOS00','IOICHPBIOS01','IPPCHPBIOG01','IPPCHPBIOS00','IPPCHPBIOS01','IPPCHPWST00','IPPCHPWST01') then 'CHP IND BIO' >> VedaBatchUpload.sql
+echo when process in('SCHP-ADM01','SCHP-GES00','SCHP-GES01','SCHP-STM01','SCHP-STW00','SCHP-STW01','SHLCHPRW01') then 'CHP SER BIO' >> VedaBatchUpload.sql
 echo when process in('SHHFCLRH01','SHLCHPRG01','SHLCHPRH01','SHLCHPRW01') then 'CHP SER MICRO' >> VedaBatchUpload.sql
-echo when process in('RCHPEA-CCH01','RCHPEA-CCG00','RCHPNA-CCH01','RCHPEA-CCG01','RHEACHPRW01','RHNACHPRW01','RCHPNA-STW01','RCHPEA-STW01','RHNACHPRG01','RHEACHPRH01','RHNACHPRH01','RCHPNA-CCG01' >> VedaBatchUpload.sql
-echo ,'RCHPEA-FCH01','RHEACHPRG01','RCHPNA-FCH01') then 'CHP RES SECTOR' >> VedaBatchUpload.sql
+echo when process in('RCHPEA-CCG00','RCHPEA-CCG01','RCHPEA-CCH01','RCHPEA-FCH01','RCHPEA-STW01','RCHPNA-CCG01','RCHPNA-CCH01','RCHPNA-FCH01','RCHPNA-STW01','RHEACHPRG01','RHEACHPRH01','RHEACHPRW01' >> VedaBatchUpload.sql
+echo ,'RHNACHPRG01','RHNACHPRH01','RHNACHPRW01') then 'CHP RES SECTOR' >> VedaBatchUpload.sql
 echo else null >> VedaBatchUpload.sql
 echo end proc_set >> VedaBatchUpload.sql
 echo from vedastore >> VedaBatchUpload.sql
@@ -300,14 +305,14 @@ echo commodity,period, pv >> VedaBatchUpload.sql
 echo from ( >> VedaBatchUpload.sql
 echo select case          >> VedaBatchUpload.sql
 echo when commodity in('AGRCO2N','AGRCO2P') then 'EMIS CO2 AGR' >> VedaBatchUpload.sql
-echo when commodity in('ELCCO2N','ELCCO2P') then 'EMIS CO2 ELC' >> VedaBatchUpload.sql
-echo when commodity in('HYGCO2N','HYGCO2P') then 'EMIS CO2 HYG' >> VedaBatchUpload.sql
+echo when commodity in('ELCCO2N') then 'EMIS CO2 ELC' >> VedaBatchUpload.sql
+echo when commodity in('HYGCO2N') then 'EMIS CO2 HYG' >> VedaBatchUpload.sql
 echo when commodity in('INDCO2N','INDCO2P') then 'EMIS CO2 IND' >> VedaBatchUpload.sql
-echo when commodity in('INDNEUCO2N','PRCCO2N') then 'EMIS CO2 NEU' >> VedaBatchUpload.sql
-echo when commodity in('PRCCO2P') then 'EMIS CO2 PRC' >> VedaBatchUpload.sql
-echo when commodity in('RESCO2N','RESCO2P') then 'EMIS CO2 RES' >> VedaBatchUpload.sql
-echo when commodity in('SERCO2N','SERCO2P') then 'EMIS CO2 SER' >> VedaBatchUpload.sql
-echo when commodity in('TRACO2N','TRACO2P') then 'EMIS CO2 TRA' >> VedaBatchUpload.sql
+echo when commodity in('INDNEUCO2N') then 'EMIS CO2 NEU' >> VedaBatchUpload.sql
+echo when commodity in('PRCCO2N','PRCCO2P') then 'EMIS CO2 PRC' >> VedaBatchUpload.sql
+echo when commodity in('RESCO2N') then 'EMIS CO2 RES' >> VedaBatchUpload.sql
+echo when commodity in('SERCO2N') then 'EMIS CO2 SER' >> VedaBatchUpload.sql
+echo when commodity in('TRACO2N') then 'EMIS CO2 TRA' >> VedaBatchUpload.sql
 echo when commodity in('UPSCO2N','UPSCO2P') then 'EMIS CO2 UPS' >> VedaBatchUpload.sql
 echo end as comm_set,commodity,pv,period,tablename >> VedaBatchUpload.sql
 echo from vedastore >> VedaBatchUpload.sql
@@ -327,7 +332,8 @@ echo when commodity in ('INDNEUCO2N') then 'EMIS GHG NEU' >> VedaBatchUpload.sql
 echo when commodity in ('PRCCH4N','PRCCH4P','PRCCO2N','PRCCO2P','PRCHFCN','PRCHFCP','PRCN2ON','PRCN2OP','PRCNH3','PRCNOX','PRCPM10','PRCPM25','PRCSO2','PRCVOC') then 'EMIS GHG PRC' >> VedaBatchUpload.sql
 echo when commodity in ('RESCH4N','RESCH4P','RESCO2N','RESCO2P','RESHFCN','RESHFCP','RESN2ON','RESN2OP','RESNH3','RESNOX','RESPM10','RESPM25','RESSO2','RESVOC') then 'EMIS GHG RES' >> VedaBatchUpload.sql
 echo when commodity in ('SERCH4N','SERCH4P','SERCO2N','SERCO2P','SERHFCN','SERHFCP','SERN2ON','SERN2OP','SERNH3','SERNOX','SERPM10','SERPM25','SERSO2','SERVOC') then 'EMIS GHG SER' >> VedaBatchUpload.sql
-echo when commodity in ('TRACH4N','TRACH4P','TRACO2N','TRACO2P','Traded-Emission-ETS','Traded-Emission-Non-ETS','TRAHFCN','TRAHFCP','TRAN2ON','TRAN2OP','TRANH3','TRANOX','TRAPM10','TRAPM25','TRASO2','TRAVOC') then 'EMIS GHG TRA' >> VedaBatchUpload.sql
+echo when commodity in ('TRACH4N','TRACH4P','TRACO2N','TRACO2P','Traded-Emission-ETS','Traded-Emission-Non-ETS','TRAHFCN','TRAHFCP','TRAN2ON','TRAN2OP','TRANH3','TRANOX','TRAPM10' >> VedaBatchUpload.sql
+echo ,'TRAPM25','TRASO2','TRAVOC') then 'EMIS GHG TRA' >> VedaBatchUpload.sql
 echo when commodity in ('UPSCH4N','UPSCH4P','UPSCO2N','UPSCO2P','UPSHFCN','UPSHFCP','UPSN2ON','UPSN2OP') then 'EMIS GHG UPS' >> VedaBatchUpload.sql
 echo end as comm_set,commodity,pv,period, tablename >> VedaBatchUpload.sql
 echo from vedastore >> VedaBatchUpload.sql
@@ -336,7 +342,7 @@ echo ) a where comm_set is not null >> VedaBatchUpload.sql
 echo ) >> VedaBatchUpload.sql
 echo , "elc-emis" as( >> VedaBatchUpload.sql
 echo select  >> VedaBatchUpload.sql
-echo tablename,period,sum(pv)/1000 "elc-emis"  >> VedaBatchUpload.sql
+echo tablename,period,sum(pv)/1000 "elc-emis" --/1000 = Convert from kilo to Mega tonnes >> VedaBatchUpload.sql
 echo from ( >> VedaBatchUpload.sql
 echo select tablename,pv,period from "emis_co2_sector" where comm_set='EMIS CO2 ELC' >> VedaBatchUpload.sql
 echo union all >> VedaBatchUpload.sql
@@ -354,31 +360,32 @@ echo from ( >> VedaBatchUpload.sql
 echo select >> VedaBatchUpload.sql
 echo tablename,period, pv, >> VedaBatchUpload.sql
 echo case >> VedaBatchUpload.sql
-echo when process in('EBIOS00','EBIOCON00','EBIO01','EBOG-LFE00','EBOG-SWE00','EMSW00','EPOLWST00','ESTWWST01','EBOG-ADE01','EBOG-SWE01','EMSW01','ESTWWST00','EBOG-LFE01') then 'ELC FROM BIO' >> VedaBatchUpload.sql
+echo when process in('EBIO01','EBIOCON00','EBIOS00','EBOG-ADE01','EBOG-LFE00','EBOG-LFE01','EBOG-SWE00','EBOG-SWE01','EMSW00','EMSW01','EPOLWST00','ESTWWST00' >> VedaBatchUpload.sql
+echo ,'ESTWWST01') then 'ELC FROM BIO' >> VedaBatchUpload.sql
 echo when process in('EBIOQ01') then 'ELC FROM BIO CCS' >> VedaBatchUpload.sql
-echo when process in('PCHP-CCP00','UCHP-CCG00','PCHP-CCP01','UCHP-CCG01') then 'ELC FROM CHP' >> VedaBatchUpload.sql
+echo when process in('PCHP-CCP00','PCHP-CCP01','UCHP-CCG00','UCHP-CCG01') then 'ELC FROM CHP' >> VedaBatchUpload.sql
 echo when process='ECOAQR01' then 'ELC FROM COAL CCSRET' >> VedaBatchUpload.sql
 echo when process in('ECOARR01') then 'ELC FROM COAL RR' >> VedaBatchUpload.sql
-echo when process in('ECOABIO00','ECOA00') then 'ELC FROM COAL-COF' >> VedaBatchUpload.sql
+echo when process in('ECOA00','ECOABIO00') then 'ELC FROM COAL-COF' >> VedaBatchUpload.sql
 echo when process in('ECOAQ01') then 'ELC FROM COALCOF CCS' >> VedaBatchUpload.sql
-echo when process in('ENGAOCT00','ENGAOCT01','ENGACCT00','ENGARCPE00','ENGARCPE01') then 'ELC FROM GAS' >> VedaBatchUpload.sql
+echo when process in('ENGACCT00','ENGAOCT00','ENGAOCT01','ENGARCPE00','ENGARCPE01') then 'ELC FROM GAS' >> VedaBatchUpload.sql
 echo when process in('ENGACCTQ01') then 'ELC FROM GAS CCS' >> VedaBatchUpload.sql
 echo when process='ENGAQR01' then 'ELC FROM GAS CCSRET' >> VedaBatchUpload.sql
 echo when process in('ENGACCTRR01') then 'ELC FROM GAS RR' >> VedaBatchUpload.sql
 echo when process in('EGEO01') then 'ELC FROM GEO' >> VedaBatchUpload.sql
-echo when process in('EHYD01','EHYD00') then 'ELC FROM HYDRO' >> VedaBatchUpload.sql
+echo when process in('EHYD00','EHYD01') then 'ELC FROM HYDRO' >> VedaBatchUpload.sql
 echo when process in('EHYGCCT01','EHYGOCT01') then 'ELC FROM HYDROGEN' >> VedaBatchUpload.sql
 echo when process in('ELCIE00','ELCIE01') then 'ELC FROM IMPORTS' >> VedaBatchUpload.sql
 echo when process in('EMANOCT00','EMANOCT01') then 'ELC FROM MANFUELS' >> VedaBatchUpload.sql
 echo when process in('ENUCPWR00','ENUCPWR101','ENUCPWR102') then 'ELC FROM NUCLEAR' >> VedaBatchUpload.sql
-echo when process in('EOILS00','EOILS01','EOILL00','EOILL01','EHFOIGCC01','EDSTRCPE00','EDSTRCPE01') then 'ELC FROM OIL' >> VedaBatchUpload.sql
+echo when process in('EDSTRCPE00','EDSTRCPE01','EHFOIGCC01','EOILL00','EOILL01','EOILS00','EOILS01') then 'ELC FROM OIL' >> VedaBatchUpload.sql
 echo when process in('EHFOIGCCQ01') then 'ELC FROM OIL CCS' >> VedaBatchUpload.sql
-echo when process in('ESOL01','ESOLPV00','ESOLPV01','ESOL00') then 'ELC FROM SOL-PV' >> VedaBatchUpload.sql
-echo when process in('ETIB101','ETIS101','ETIR101') then 'ELC FROM TIDAL' >> VedaBatchUpload.sql
+echo when process in('ESOL00','ESOL01','ESOLPV00','ESOLPV01') then 'ELC FROM SOL-PV' >> VedaBatchUpload.sql
+echo when process in('ETIB101','ETIR101','ETIS101') then 'ELC FROM TIDAL' >> VedaBatchUpload.sql
 echo when process in('EWAV101') then 'ELC FROM WAVE' >> VedaBatchUpload.sql
-echo when process in('EWNDOFF301','EWNDOFF00','EWNDOFF101','EWNDOFF201') then 'ELC FROM WIND-OFFSH' >> VedaBatchUpload.sql
-echo when process in('EWNDONS501','EWNDONS401','EWNDONS00','EWNDONS301','EWNDONS601','EWNDONS101','EWNDONS901','EWNDONS201','EWNDONS801','EWNDONS701') then 'ELC FROM WIND-ONSH' >> VedaBatchUpload.sql
-echo when process in('ELCEE00','ELCEI00','ELCEE01','ELCEI01') then 'ELC TO EXPORTS' >> VedaBatchUpload.sql
+echo when process in('EWNDOFF00','EWNDOFF101','EWNDOFF201','EWNDOFF301') then 'ELC FROM WIND-OFFSH' >> VedaBatchUpload.sql
+echo when process in('EWNDONS00','EWNDONS101','EWNDONS201','EWNDONS301','EWNDONS401','EWNDONS501','EWNDONS601','EWNDONS701','EWNDONS801','EWNDONS901') then 'ELC FROM WIND-ONSH' >> VedaBatchUpload.sql
+echo when process in('ELCEE00','ELCEE01','ELCEI00','ELCEI01') then 'ELC TO EXPORTS' >> VedaBatchUpload.sql
 echo end as proc_set >> VedaBatchUpload.sql
 echo from vedastore >> VedaBatchUpload.sql
 echo where attribute='VAR_FOut' and commodity in('ELCDUMMY','ELC','ELC-E-IRE','ELC-E-EU','ELCGEN') >> VedaBatchUpload.sql
@@ -566,10 +573,10 @@ echo "nuclear_grp"/("coal_grp"+"coalccs_grp"+"gas_grp"+"gasccs_grp"+"oil_grp"+"o
 echo "h2_grp"/("coal_grp"+"coalccs_grp"+"gas_grp"+"gasccs_grp"+"oil_grp"+"oilccs_grp"+"bio_grp"+"bioccs_grp"+"nuclear_grp"+"h2_grp") "h2_grp" >> VedaBatchUpload.sql
 echo from ( >> VedaBatchUpload.sql
 echo select a.tablename, a.period, >> VedaBatchUpload.sql
-echo (sum(c."Coal")+sum("coal_rr"))*sum(a.coal) "coal_grp",  >> VedaBatchUpload.sql
-echo (sum(c."Coal CCS")+sum("coalccs_rr"))*sum(a.coal) "coalccs_grp",  >> VedaBatchUpload.sql
-echo (sum(c."Natural Gas")+sum("gas_rr"))*sum(a.gas) "gas_grp",  >> VedaBatchUpload.sql
-echo (sum(c."Natural Gas CCS")+sum("gasccs_rr"))*sum(a.gas) "gasccs_grp",  >> VedaBatchUpload.sql
+echo (sum(c."Coal")+sum("coal_rr"))*sum(a.coal) "coal_grp", --row 2061 = row2043 >> VedaBatchUpload.sql
+echo (sum(c."Coal CCS")+sum("coalccs_rr"))*sum(a.coal) "coalccs_grp", --row 2062 = row2046 >> VedaBatchUpload.sql
+echo (sum(c."Natural Gas")+sum("gas_rr"))*sum(a.gas) "gas_grp", --row 2063 = row2049 >> VedaBatchUpload.sql
+echo (sum(c."Natural Gas CCS")+sum("gasccs_rr"))*sum(a.gas) "gasccs_grp", --row 2064 = row2051 >> VedaBatchUpload.sql
 echo (sum(c."Coal")+sum("coal_rr"))*sum(a.oilcoal) + sum(c."Oil")*sum(a.oil) "oil_grp", >> VedaBatchUpload.sql
 echo sum(c."OIL CCS")*sum(a.oil) + (sum(c."Coal CCS")+sum("coalccs_rr"))*sum(a.oilcoal) "oilccs_grp", >> VedaBatchUpload.sql
 echo sum(c."Biomass") + (sum(c."Coal")+sum("coal_rr"))*sum(a.biocoal) + >> VedaBatchUpload.sql
@@ -650,7 +657,8 @@ echo select a.tablename,a.period, "coal-unad"*b.coal-d.coal "elec-gen_coal", >> 
 echo "coalccs-unad"*b.coal-d.coalccs "elec-gen_coal-ccs", >> VedaBatchUpload.sql
 echo "gas-unad"*b.gas-d.gas "elec-gen_nga", >> VedaBatchUpload.sql
 echo "gasccs-unad"*b.gas-d.gasccs "elec-gen_nga-ccs",     >> VedaBatchUpload.sql
-echo ("ELC FROM OIL"*b.oil+"coal-unad"*b.oilcoal)-d.oil/*ie oil*/+("ELC FROM OIL CCS"*b.oil+"coalccs-unad"*b.oilcoal)-d.oilccs/*oil ccs*/+"ELC FROM MANFUELS"/*man fuels*/ "elec-gen_other-ff", >> VedaBatchUpload.sql
+echo ("ELC FROM OIL"*b.oil+"coal-unad"*b.oilcoal)-d.oilrem /*ie oil*/+("ELC FROM OIL CCS"*b.oil+"coalccs-unad"*b.oilcoal)-d.oilccs/*oil ccs*/+"ELC FROM MANFUELS"/*man fuels*/
+echo /*ie oil*/+("ELC FROM OIL CCS"*b.oil+"coalccs-unad"*b.oilcoal)-d.oilccs/*oil ccs*/+"ELC FROM MANFUELS"/*man fuels*/ "elec-gen_other-ff", >> VedaBatchUpload.sql
 echo ("ELC FROM BIO"+"coal-unad"*biocoal+"ELC FROM OIL"*biooil+"gas-unad"*b.biogas)-d.bio "elec-gen_bio", >> VedaBatchUpload.sql
 echo ("ELC FROM BIO CCS"+"coalccs-unad"*biocoal+"ELC FROM OIL CCS"*biooil+"gasccs-unad"*b.biogas)-d.bioccs "elec-gen_bio-ccs", >> VedaBatchUpload.sql
 echo "elec-gen_other-rens"-d.h2 "elec-gen_other-rens", >> VedaBatchUpload.sql
@@ -704,6 +712,7 @@ echo ) d >> VedaBatchUpload.sql
 echo group by tablename,cols >> VedaBatchUpload.sql
 echo ORDER BY tablename,analysis >> VedaBatchUpload.sql
 echo ) TO '%~dp0ElecGenOut.csv' delimiter ',' CSV; >> VedaBatchUpload.sql
+echo rem /* *Elec storage* */
 echo /* *Elec storage* */ >> VedaBatchUpload.sql
 echo copy ( >> VedaBatchUpload.sql
 echo select 'elec-stor^|' ^|^| tablename ^|^| '^|Var_FOut^|ELC^|various'::varchar(300) "id", >> VedaBatchUpload.sql
@@ -731,6 +740,7 @@ echo where attribute = 'VAR_FOut' and commodity = 'ELC' >> VedaBatchUpload.sql
 echo and process in('EHYDPMP00','EHYDPMP01','ECAESCON01','ESTGCAES01','ECAESTUR01','ESTGAACAES01','ESTGBNAS01','ESTGBALA01','ESTGBRF01') >> VedaBatchUpload.sql
 echo group by tablename >> VedaBatchUpload.sql
 echo ) to '%~dp0ElecStor.csv' delimiter ',' CSV; >> VedaBatchUpload.sql
+echo rem /* *Electricity capacity by process* */
 echo /* *Electricity capacity by process* */ >> VedaBatchUpload.sql
 echo COPY (  >> VedaBatchUpload.sql
 echo select analysis ^|^| '^|' ^|^| tablename ^|^| '^|' ^|^| attribute ^|^| '^|' ^|^| '-^|various'::varchar(300) "id", analysis, tablename,attribute, >> VedaBatchUpload.sql
@@ -807,6 +817,7 @@ echo where analysis is not null >> VedaBatchUpload.sql
 echo group by id, analysis,tablename, attribute >> VedaBatchUpload.sql
 echo order by tablename,  analysis, attribute, commodity >> VedaBatchUpload.sql
 echo ) TO '%~dp0ElecCap.csv' delimiter ',' CSV; >> VedaBatchUpload.sql
+echo rem /* *costs by sector and type* */
 echo /* *costs by sector and type* */ >> VedaBatchUpload.sql
 echo COPY (  >> VedaBatchUpload.sql
 echo select analysis ^|^| '^|' ^|^| tablename ^|^|'^|'^|^| attribute ^|^| '^|various' ^|^| '^|various'::varchar(300) "id", analysis, tablename,attribute, >> VedaBatchUpload.sql
@@ -854,6 +865,7 @@ echo ) a >> VedaBatchUpload.sql
 echo group by id, analysis, tablename, attribute >> VedaBatchUpload.sql
 echo order by tablename,  analysis, attribute >> VedaBatchUpload.sql
 echo ) TO '%~dp0CostsBySec.csv' delimiter ',' CSV; >> VedaBatchUpload.sql
+echo rem /* *Marginal prices for emissions* */
 echo /* *Marginal prices for emissions* */ >> VedaBatchUpload.sql
 echo COPY (  >> VedaBatchUpload.sql
 echo select 'marg-price^|' ^|^| tablename ^|^| '^|EQ_CombalM^|' ^|^| commodity ^|^| '^|-'::varchar(300) "id", >> VedaBatchUpload.sql
@@ -882,6 +894,7 @@ echo 'GHG-YES-IAS-YES-LULUCF-NET','GHG-ETS-YES-IAS-NET') >> VedaBatchUpload.sql
 echo group by tablename, commodity >> VedaBatchUpload.sql
 echo order by tablename, commodity >> VedaBatchUpload.sql
 echo ) TO '%~dp0MarginalPricesOut.csv' delimiter ',' CSV; >> VedaBatchUpload.sql
+echo rem /* *Whole stock heat output by process for residential* */
 echo /* *Whole stock heat output by process for residential* */ >> VedaBatchUpload.sql
 echo COPY (  >> VedaBatchUpload.sql
 echo select analysis ^|^| '^|' ^|^| tablename ^|^| '^|' ^|^| attribute ^|^| '^|' ^|^| 'various^|various'::varchar(300) "id", analysis, tablename,attribute, >> VedaBatchUpload.sql
@@ -953,6 +966,7 @@ echo ) a >> VedaBatchUpload.sql
 echo group by id, analysis,tablename, attribute >> VedaBatchUpload.sql
 echo order by tablename,  analysis, attribute, commodity >> VedaBatchUpload.sql
 echo ) TO '%~dp0ResWholeHeatOut.csv' delimiter ',' CSV; >> VedaBatchUpload.sql
+echo rem /* *New build residential heat output by source* */
 echo /* *New build residential heat output by source* */ >> VedaBatchUpload.sql
 echo COPY ( >> VedaBatchUpload.sql
 echo select analysis ^|^| '^|' ^|^| tablename ^|^| '^|' ^|^| attribute ^|^| '^|' ^|^| 'various^|various'::varchar(300) "id", analysis, tablename,attribute, >> VedaBatchUpload.sql
@@ -1013,6 +1027,7 @@ echo ) a where analysis ^<^> '' >> VedaBatchUpload.sql
 echo group by id, analysis,tablename, attribute >> VedaBatchUpload.sql
 echo order by tablename,  analysis, attribute, commodity >> VedaBatchUpload.sql
 echo ) TO '%~dp0NewResHeatOut.csv' delimiter ',' CSV; >> VedaBatchUpload.sql
+echo rem /* *Whole stock heat output for services* */
 echo /* *Whole stock heat output for services* */ >> VedaBatchUpload.sql
 echo COPY (  >> VedaBatchUpload.sql
 echo select analysis ^|^| '^|' ^|^| tablename ^|^| '^|' ^|^| attribute ^|^| '^|' ^|^| 'various^|various'::varchar(300) "id", analysis, tablename,attribute, >> VedaBatchUpload.sql
@@ -1072,6 +1087,7 @@ echo ) a >> VedaBatchUpload.sql
 echo group by id, analysis,tablename, attribute >> VedaBatchUpload.sql
 echo order by tablename,  analysis, attribute, commodity >> VedaBatchUpload.sql
 echo ) TO '%~dp0ServWholeHeatOut.csv' delimiter ',' CSV; >> VedaBatchUpload.sql
+echo rem /* *New build services heat output by source* */
 echo /* *New build services heat output by source* */ >> VedaBatchUpload.sql
 echo COPY (  >> VedaBatchUpload.sql
 echo select analysis ^|^| '^|' ^|^| tablename ^|^| '^|' ^|^| attribute ^|^| '^|' ^|^| 'various^|various'::varchar(300) "id", analysis, tablename,attribute, >> VedaBatchUpload.sql
@@ -1132,16 +1148,17 @@ echo ) a >> VedaBatchUpload.sql
 echo group by id, analysis,tablename, attribute >> VedaBatchUpload.sql
 echo order by tablename,  analysis, attribute, commodity >> VedaBatchUpload.sql
 echo ) TO '%~dp0NewServHeatOut.csv' delimiter ',' CSV; >> VedaBatchUpload.sql
+echo rem /* *End user final energy demand by sector* */
 echo /* *End user final energy demand by sector* */ >> VedaBatchUpload.sql
 echo COPY (  >> VedaBatchUpload.sql
 echo with hydrogen_chp as ( >> VedaBatchUpload.sql
 echo select chp_hyd,commodity, period,tablename,sum(pv) "pv" >> VedaBatchUpload.sql
 echo from ( >> VedaBatchUpload.sql
 echo select case  >> VedaBatchUpload.sql
-echo when process in ('RHFCBLCRH01','RHFSBLCRH01','RHHCBLCRH01','RHHSBLCRH01','RHNABLCRH01', >> VedaBatchUpload.sql
-echo 'RHFCCHBRH01','RHFSCHBRH01','RHHCCHBRH01','RHHSCHBRH01','RHNACHBRH01','RHEABLCRH01','RHEACHBRH01') then 'RES BOI HYG' >> VedaBatchUpload.sql
+echo when process in ('RHEABLCRH01','RHEACHBRH01','RHFCBLCRH01','RHFCCHBRH01','RHFSBLCRH01','RHFSCHBRH01','RHHCBLCRH01' >> VedaBatchUpload.sql
+echo ,'RHHCCHBRH01','RHHSBLCRH01','RHHSCHBRH01','RHNABLCRH01','RHNACHBRH01') then 'RES BOI HYG' >> VedaBatchUpload.sql
 echo when process in ('RHFCCHPRH01','RHFSCHPRH01','RHHCCHPRH01','RHHSCHPRH01','RHNACHPRH01','RHEACHPRH01') then 'RES MCHP HYG' >> VedaBatchUpload.sql
-echo when process in ('RHFCREFCG01','RHFSREFCG01','RHHCREFCG01','RHHSREFCG01','RHNAREFCG01','RHEAREFCG01') then 'RES REFORMER' >> VedaBatchUpload.sql
+echo when process in ('RHEAREFCG01','RHFCREFCG01','RHFSREFCG01','RHHCREFCG01','RHHSREFCG01','RHNAREFCG01') then 'RES REFORMER' >> VedaBatchUpload.sql
 echo when process in ('SHHBLRRH01','SHLBLCRH01','SHLCHBRH01') then 'SER BOI HYG' >> VedaBatchUpload.sql
 echo when process in ('SHHFCLRH01','SHLCHPRH01') then 'SER MCHP HYG' >> VedaBatchUpload.sql
 echo when process in ('SHLREFCG01') then 'SER REFORMER' >> VedaBatchUpload.sql
@@ -1172,30 +1189,28 @@ echo , chp_fuels as ( >> VedaBatchUpload.sql
 echo select chp_sec, chp_fuel, period, tablename,sum(pv) "pv" >> VedaBatchUpload.sql
 echo from ( >> VedaBatchUpload.sql
 echo select case  >> VedaBatchUpload.sql
-echo when commodity in('AGRBIODST','AGRBIOLPG','AGRBOM','AGRGRASS', >> VedaBatchUpload.sql
-echo 'AGRMAINSBOM','AGRPOLWST','BGRASS','BIODST','BIODST-FT','BIOJET-FT','BIOKER-FT','BIOLFO','BIOLPG','BIOOIL','BOG-AD', >> VedaBatchUpload.sql
-echo 'BOG-G','BOG-LF','BOM','BPELH','BPELL','BRSEED','BSEWSLG','BSLURRY','BSTARCH','BSTWWST','BSUGAR','BTREATSTW', >> VedaBatchUpload.sql
-echo 'BTREATWOD','BVOIL','BWOD','BWODLOG','BWODWST','ELCBIOLFO','ELCBIOOIL','ELCBOG-AD','ELCBOG-LF','ELCBOG-SW', >> VedaBatchUpload.sql
-echo 'ELCBOM','ELCMAINSBOM','ELCMSWINO','ELCMSWORG','ELCPELH','ELCPELL','ELCPOLWST','ELCSTWWST','ELCTRANSBOM','ETH', >> VedaBatchUpload.sql
-echo 'HYGBIOO','HYGBPEL','HYGMSWINO','HYGMSWORG','INDBIOLFO','INDBIOLPG','INDBIOOIL','INDBOG-AD','INDBOG-LF','INDBOM', >> VedaBatchUpload.sql
-echo 'INDGRASS','INDMAINSBOM','INDMSWINO','INDMSWORG','INDPELH','INDPELL','INDPOLWST','INDWOD','INDWODWST','METH', >> VedaBatchUpload.sql
-echo 'MSWBIO','MSWINO','MSWORG','PWASTEDUM','RESBIOLFO','RESBOM','RESHOUSEBOM','RESMAINSBOM','RESPELH','RESWOD', >> VedaBatchUpload.sql
-echo 'RESWODL','SERBIOLFO','SERBOG','SERBOM','SERBUILDBOM','SERMAINSBOM','SERMSWBIO','SERMSWINO','SERMSWORG', >> VedaBatchUpload.sql
-echo 'SERPELH','SERWOD','TRABIODST','TRABIODST-FT','TRABIODST-FTL','TRABIODST-FTS','TRABIODSTL','TRABIODSTS','TRABIOJET-FTDA', >> VedaBatchUpload.sql
-echo 'TRABIOJET-FTDAL','TRABIOJET-FTIA','TRABIOJET-FTIAL','TRABIOLFO','TRABIOLFODS','TRABIOLFODSL','TRABIOLFOL','TRABIOOILIS', >> VedaBatchUpload.sql
-echo 'TRABIOOILISL','TRABOM','TRAETH','TRAETHL','TRAETHS','TRAMAINSBOM','TRAMETH','ELCBIOCOA','ELCBIOCOA2','TRAPET','TRAPETS' >> VedaBatchUpload.sql
-echo ) then 'ALL BIO' >> VedaBatchUpload.sql
-echo when commodity in ('AGRCOA','COA','COA-E','COACOK','ELCCOA','HYGCOA','INDCOA','INDCOACOK','INDSYNCOA','PRCCOA','PRCCOACOK','RESCOA','SERCOA','SYNCOA','TRACOA') then 'ALL COALS' >> VedaBatchUpload.sql
-echo when commodity in('AGRHYG','ELCHYG','ELCHYGIGCC','HYGL','HYGL-IGCC','HYGLHPD','HYGLHPT','HYL','HYLTK','INDHYG','INDMAINSHYG','RESHOUSEHYG', >> VedaBatchUpload.sql
-echo 'RESHYG','RESHYGREF-EA','RESHYGREF-NA','RESMAINSHYG','SERBUILDHYG','SERHYG','SERMAINSHYG','TRAHYG','TRAHYGDCN','TRAHYGL', >> VedaBatchUpload.sql
-echo 'TRAHYGS','TRAHYL','UPSHYG','UPSMAINSHYG') then 'ALL HYDROGEN' >> VedaBatchUpload.sql
-echo when commodity in ('BENZ','BFG','COG','COK','ELCBFG','ELCCOG','IISBFGB','IISBFGC','IISCOGB','IISCOGC','IISCOKB','IISCOKE','IISCOKS', >> VedaBatchUpload.sql
-echo 'INDBENZ','INDBFG','INDCOG','INDCOK','RESCOK') then 'ALL MANFUELS' >> VedaBatchUpload.sql
-echo when commodity in ('AGRHFO','AGRLFO','AGRLPG','ELCHFO','ELCLFO','ELCLPG','ELCMSC','IISHFOB','INDHFO','INDKER','INDLFO','INDLPG','INDNEULFO', >> VedaBatchUpload.sql
-echo 'INDNEULPG','INDNEUMSC','INDSYNOIL','OILCRD','OILCRDRAW','OILCRDRAW-E','OILDST','OILHFO','OILJET','OILKER','OILLFO','OILLPG','OILMSC', >> VedaBatchUpload.sql
-echo 'OILPET','PRCHFO','PRCOILCRD','RESKER','RESLFO','RESLPG','SERHFO','SERKER','SERLFO','SERLPG','SYNOIL','TRADST','TRADSTL','TRADSTS','TRAHFO', >> VedaBatchUpload.sql
-echo 'TRAHFODS','TRAHFODSL','TRAHFOIS','TRAHFOISL','TRAJETDA','TRAJETDAEL','TRAJETIA','TRAJETIAEL','TRAJETIANL','TRAJETL','TRALFO','TRALFODS', >> VedaBatchUpload.sql
-echo 'TRALFODSL','TRALFOL','TRALPG','TRALPGL','TRALPGS','TRAPET','TRAPETL','TRAPETS','UPSLFO') then 'ALL OIL PRODUCTS' >> VedaBatchUpload.sql
+echo when commodity in('AGRBIODST','AGRBIOLPG','AGRBOM','AGRGRASS','AGRMAINSBOM','AGRPOLWST','BGRASS','BIODST','BIODST-FT','BIOJET-FT','BIOKER-FT','BIOLFO' >> VedaBatchUpload.sql
+echo ,'BIOLPG','BIOOIL','BOG-AD','BOG-G','BOG-LF','BOM','BPELH','BPELL','BRSEED','BSEWSLG','BSLURRY','BSTARCH' >> VedaBatchUpload.sql
+echo ,'BSTWWST','BSUGAR','BTREATSTW','BTREATWOD','BVOIL','BWOD','BWODLOG','BWODWST','ELCBIOCOA','ELCBIOCOA2','ELCBIOLFO','ELCBIOOIL' >> VedaBatchUpload.sql
+echo ,'ELCBOG-AD','ELCBOG-LF','ELCBOG-SW','ELCBOM','ELCMAINSBOM','ELCMSWINO','ELCMSWORG','ELCPELH','ELCPELL','ELCPOLWST','ELCSTWWST','ELCTRANSBOM' >> VedaBatchUpload.sql
+echo ,'ETH','HYGBIOO','HYGBPEL','HYGMSWINO','HYGMSWORG','INDBIOLFO','INDBIOLPG','INDBIOOIL','INDBOG-AD','INDBOG-LF','INDBOM','INDGRASS' >> VedaBatchUpload.sql
+echo ,'INDMAINSBOM','INDMSWINO','INDMSWORG','INDPELH','INDPELL','INDPOLWST','INDWOD','INDWODWST','METH','MSWBIO','MSWINO','MSWORG' >> VedaBatchUpload.sql
+echo ,'PWASTEDUM','RESBIOLFO','RESBOM','RESHOUSEBOM','RESMAINSBOM','RESPELH','RESWOD','RESWODL','SERBIOLFO','SERBOG','SERBOM','SERBUILDBOM' >> VedaBatchUpload.sql
+echo ,'SERMAINSBOM','SERMSWBIO','SERMSWINO','SERMSWORG','SERPELH','SERWOD','TRABIODST','TRABIODST-FT','TRABIODST-FTL','TRABIODST-FTS','TRABIODSTL','TRABIODSTS' >> VedaBatchUpload.sql
+echo ,'TRABIOJET-FTDA','TRABIOJET-FTDAL','TRABIOJET-FTIA','TRABIOJET-FTIAL','TRABIOLFO','TRABIOLFODS','TRABIOLFODSL','TRABIOLFOL','TRABIOOILIS','TRABIOOILISL','TRABOM','TRAETH','TRAETHL','TRAETHS','TRAMAINSBOM','TRAMETH') then 'ALL BIO' >> VedaBatchUpload.sql
+echo when commodity in ('AGRCOA','COA','COA-E','COACOK','ELCCOA','HYGCOA','INDCOA','INDCOACOK','INDSYNCOA','PRCCOA','PRCCOACOK','RESCOA' >> VedaBatchUpload.sql
+echo ,'SERCOA','SYNCOA','TRACOA') then 'ALL COALS'  >> VedaBatchUpload.sql
+echo when commodity in('AGRHYG','ELCHYG','ELCHYGIGCC','HYGL','HYGL-IGCC','HYGLHPD','HYGLHPT','HYL','HYLTK','INDHYG','INDMAINSHYG','RESHOUSEHYG' >> VedaBatchUpload.sql
+echo ,'RESHYG','RESHYGREF-EA','RESHYGREF-NA','RESMAINSHYG','SERBUILDHYG','SERHYG','SERMAINSHYG','TRAHYG','TRAHYGDCN','TRAHYGL','TRAHYGS','TRAHYL' >> VedaBatchUpload.sql
+echo ,'UPSHYG','UPSMAINSHYG') then 'ALL HYDROGEN' >> VedaBatchUpload.sql
+echo when commodity in ('BENZ','BFG','COG','COK','ELCBFG','ELCCOG','IISBFGB','IISBFGC','IISCOGB','IISCOGC','IISCOKB','IISCOKE' >> VedaBatchUpload.sql
+echo ,'IISCOKS','INDBENZ','INDBFG','INDCOG','INDCOK','RESCOK') then 'ALL MANFUELS' >> VedaBatchUpload.sql
+echo when commodity in ('AGRHFO','AGRLFO','AGRLPG','ELCHFO','ELCLFO','ELCLPG','ELCMSC','IISHFOB','INDHFO','INDKER','INDLFO','INDLPG' >> VedaBatchUpload.sql
+echo ,'INDNEULFO','INDNEULPG','INDNEUMSC','INDSYNOIL','OILCRD','OILCRDRAW','OILCRDRAW-E','OILDST','OILHFO','OILJET','OILKER','OILLFO' >> VedaBatchUpload.sql
+echo ,'OILLPG','OILMSC','OILPET','PRCHFO','PRCOILCRD','RESKER','RESLFO','RESLPG','SERHFO','SERKER','SERLFO','SERLPG' >> VedaBatchUpload.sql
+echo ,'SYNOIL','TRADST','TRADSTL','TRADSTS','TRAHFO','TRAHFODS','TRAHFODSL','TRAHFOIS','TRAHFOISL','TRAJETDA','TRAJETDAEL','TRAJETIA' >> VedaBatchUpload.sql
+echo ,'TRAJETIAEL','TRAJETIANL','TRAJETL','TRALFO','TRALFODS','TRALFODSL','TRALFOL','TRALPG','TRALPGL','TRALPGS','TRAPET','TRAPETL' >> VedaBatchUpload.sql
+echo ,'TRAPETS','UPSLFO') then 'ALL OIL PRODUCTS' >> VedaBatchUpload.sql
 echo when commodity in('INDMAINSGAS','INDNGA') then 'IND GAS' >> VedaBatchUpload.sql
 echo when commodity in('ICHPRO') then 'IND PRO' >> VedaBatchUpload.sql
 echo when commodity in('PRCNGA') then 'PRC GAS' >> VedaBatchUpload.sql
@@ -1206,22 +1221,18 @@ echo when commodity in('UPSNGA') then 'UPS GAS' >> VedaBatchUpload.sql
 echo else null >> VedaBatchUpload.sql
 echo end as chp_fuel, >> VedaBatchUpload.sql
 echo case >> VedaBatchUpload.sql
-echo when process in('ICHCHPBIOG01','ICHCHPBIOS00','ICHCHPBIOS01','ICHCHPCCGT01','ICHCHPCCGTH01','ICHCHPCOA00','ICHCHPCOA01', >> VedaBatchUpload.sql
-echo 'ICHCHPFCH01','ICHCHPGT01','ICHCHPHFO00','ICHCHPLFO00','ICHCHPLPG00','ICHCHPLPG01','ICHCHPNGA00','ICHCHPPRO00', >> VedaBatchUpload.sql
-echo 'ICHCHPPRO01','IFDCHPBIOG01','IFDCHPBIOS00','IFDCHPBIOS01','IFDCHPCCGT01','IFDCHPCCGTH01','IFDCHPCOA00', >> VedaBatchUpload.sql
-echo 'IFDCHPCOA01','IFDCHPFCH01','IFDCHPGT01','IFDCHPHFO00','IFDCHPLFO00','IFDCHPNGA00','IISCHPBFG00','IISCHPBFG01', >> VedaBatchUpload.sql
-echo 'IISCHPBIOG01','IISCHPBIOS01','IISCHPCCGT01','IISCHPCCGTH01','IISCHPCOG00','IISCHPCOG01','IISCHPFCH01', >> VedaBatchUpload.sql
-echo 'IISCHPGT01','IISCHPHFO00','IISCHPNGA00','INMCHPBIOG01','INMCHPBIOS01','INMCHPCCGT01','INMCHPCCGTH01','INMCHPCOA01', >> VedaBatchUpload.sql
-echo 'INMCHPCOG00','INMCHPCOG01','INMCHPFCH01','INMCHPGT01','INMCHPNGA00','IOICHPBIOG01','IOICHPBIOS00','IOICHPBIOS01', >> VedaBatchUpload.sql
-echo 'IOICHPCCGT01','IOICHPCCGTH01','IOICHPCOA01','IOICHPFCH01','IOICHPGT01','IOICHPHFO00','IOICHPNGA00','IPPCHPBIOG01', >> VedaBatchUpload.sql
-echo 'IPPCHPBIOS00','IPPCHPBIOS01','IPPCHPCCGT01','IPPCHPCCGTH01','IPPCHPCOA00','IPPCHPCOA01','IPPCHPFCH01','IPPCHPGT01', >> VedaBatchUpload.sql
-echo 'IPPCHPNGA00','IPPCHPWST00','IPPCHPWST01') then 'CHP IND SECTOR' >> VedaBatchUpload.sql
+echo when process in('ICHCHPBIOG01','ICHCHPBIOS00','ICHCHPBIOS01','ICHCHPCCGT01','ICHCHPCCGTH01','ICHCHPCOA00','ICHCHPCOA01','ICHCHPFCH01','ICHCHPGT01','ICHCHPHFO00','ICHCHPLFO00','ICHCHPLPG00' >> VedaBatchUpload.sql
+echo ,'ICHCHPLPG01','ICHCHPNGA00','ICHCHPPRO00','ICHCHPPRO01','IFDCHPBIOG01','IFDCHPBIOS00','IFDCHPBIOS01','IFDCHPCCGT01','IFDCHPCCGTH01','IFDCHPCOA00','IFDCHPCOA01','IFDCHPFCH01' >> VedaBatchUpload.sql
+echo ,'IFDCHPGT01','IFDCHPHFO00','IFDCHPLFO00','IFDCHPNGA00','IISCHPBFG00','IISCHPBFG01','IISCHPBIOG01','IISCHPBIOS01','IISCHPCCGT01','IISCHPCCGTH01','IISCHPCOG00','IISCHPCOG01' >> VedaBatchUpload.sql
+echo ,'IISCHPFCH01','IISCHPGT01','IISCHPHFO00','IISCHPNGA00','INMCHPBIOG01','INMCHPBIOS01','INMCHPCCGT01','INMCHPCCGTH01','INMCHPCOA01','INMCHPCOG00','INMCHPCOG01','INMCHPFCH01' >> VedaBatchUpload.sql
+echo ,'INMCHPGT01','INMCHPNGA00','IOICHPBIOG01','IOICHPBIOS00','IOICHPBIOS01','IOICHPCCGT01','IOICHPCCGTH01','IOICHPCOA01','IOICHPFCH01','IOICHPGT01','IOICHPHFO00','IOICHPNGA00' >> VedaBatchUpload.sql
+echo ,'IPPCHPBIOG01','IPPCHPBIOS00','IPPCHPBIOS01','IPPCHPCCGT01','IPPCHPCCGTH01','IPPCHPCOA00','IPPCHPCOA01','IPPCHPFCH01','IPPCHPGT01','IPPCHPNGA00','IPPCHPWST00','IPPCHPWST01' >> VedaBatchUpload.sql
+echo ) then 'CHP IND SECTOR' >> VedaBatchUpload.sql
 echo when process in('PCHP-CCP00','PCHP-CCP01') then 'CHP PRC SECTOR' >> VedaBatchUpload.sql
-echo when process in('RCHPEA-CCG00','RCHPEA-CCG01','RCHPEA-CCH01','RCHPEA-FCH01','RCHPEA-STW01','RCHPNA-CCG01','RCHPNA-CCH01', >> VedaBatchUpload.sql
-echo 'RCHPNA-FCH01','RCHPNA-STW01','RHEACHPRG01','RHEACHPRH01','RHEACHPRW01','RHNACHPRG01','RHNACHPRH01', >> VedaBatchUpload.sql
-echo 'RHNACHPRW01') then 'CHP RES SECTOR' >> VedaBatchUpload.sql
-echo when process in('SCHP-ADM01','SCHP-CCG00','SCHP-CCG01','SCHP-CCH01','SCHP-FCH01','SCHP-GES00','SCHP-GES01', >> VedaBatchUpload.sql
-echo 'SCHP-STM01','SCHP-STW00','SCHP-STW01','SHHFCLRH01','SHLCHPRG01','SHLCHPRH01','SHLCHPRW01') then 'CHP SER SECTOR' >> VedaBatchUpload.sql
+echo when process in('RCHPEA-CCG00','RCHPEA-CCG01','RCHPEA-CCH01','RCHPEA-FCH01','RCHPEA-STW01','RCHPNA-CCG01','RCHPNA-CCH01','RCHPNA-FCH01','RCHPNA-STW01','RHEACHPRG01','RHEACHPRH01' >> VedaBatchUpload.sql
+echo ,'RHEACHPRW01','RHNACHPRG01','RHNACHPRH01','RHNACHPRW01') then 'CHP RES SECTOR' >> VedaBatchUpload.sql
+echo when process in('SCHP-ADM01','SCHP-CCG00','SCHP-CCG01','SCHP-CCH01','SCHP-FCH01','SCHP-GES00','SCHP-GES01','SCHP-STM01','SCHP-STW00','SCHP-STW01','SHHFCLRH01','SHLCHPRG01' >> VedaBatchUpload.sql
+echo ,'SHLCHPRH01','SHLCHPRW01') then 'CHP SER SECTOR' >> VedaBatchUpload.sql
 echo when process in('UCHP-CCG00','UCHP-CCG01') then 'CHP UPS SECTOR' >> VedaBatchUpload.sql
 echo else null >> VedaBatchUpload.sql
 echo end as chp_sec,* >> VedaBatchUpload.sql
@@ -1287,19 +1298,16 @@ echo select chp_sec, period,tablename,sum(pv) "pv" >> VedaBatchUpload.sql
 echo from ( >> VedaBatchUpload.sql
 echo select >> VedaBatchUpload.sql
 echo case  >> VedaBatchUpload.sql
-echo when process in('ICHCHPBIOG01','ICHCHPBIOS00','ICHCHPBIOS01','IFDCHPBIOG01','IFDCHPBIOS00','IFDCHPBIOS01','IISCHPBIOG01','IISCHPBIOS01', >> VedaBatchUpload.sql
-echo 'INMCHPBIOG01','INMCHPBIOS01','IOICHPBIOG01','IOICHPBIOS00','IOICHPBIOS01','IPPCHPBIOG01','IPPCHPBIOS00','IPPCHPBIOS01', >> VedaBatchUpload.sql
-echo 'IPPCHPWST00','IPPCHPWST01') then 'CHP IND BIO' >> VedaBatchUpload.sql
+echo when process in('ICHCHPBIOG01','ICHCHPBIOS00','ICHCHPBIOS01','IFDCHPBIOG01','IFDCHPBIOS00','IFDCHPBIOS01','IISCHPBIOG01','IISCHPBIOS01','INMCHPBIOG01','INMCHPBIOS01' >> VedaBatchUpload.sql
+echo ,'IOICHPBIOG01','IOICHPBIOS00','IOICHPBIOS01','IPPCHPBIOG01','IPPCHPBIOS00','IPPCHPBIOS01','IPPCHPWST00','IPPCHPWST01') then 'CHP IND BIO' >> VedaBatchUpload.sql
 echo when process in('ICHCHPPRO00','ICHCHPPRO01') then 'CHP IND BY PRODUCTS' >> VedaBatchUpload.sql
 echo when process in('ICHCHPCOA00','ICHCHPCOA01','IFDCHPCOA00','IFDCHPCOA01','INMCHPCOA01','IOICHPCOA01','IPPCHPCOA00','IPPCHPCOA01') then 'CHP IND COAL' >> VedaBatchUpload.sql
-echo when process in('ICHCHPCCGT01','ICHCHPGT01','ICHCHPNGA00','IFDCHPCCGT01','IFDCHPGT01','IFDCHPNGA00','IISCHPCCGT01', >> VedaBatchUpload.sql
-echo 'IISCHPGT01','IISCHPNGA00','INMCHPCCGT01','INMCHPGT01','INMCHPNGA00','IOICHPCCGT01','IOICHPGT01','IOICHPNGA00', >> VedaBatchUpload.sql
-echo 'IPPCHPCCGT01','IPPCHPGT01','IPPCHPNGA00') then 'CHP IND GAS' >> VedaBatchUpload.sql
-echo when process in('ICHCHPCCGTH01','ICHCHPFCH01','IFDCHPCCGTH01','IFDCHPFCH01','IISCHPCCGTH01','IISCHPFCH01','INMCHPCCGTH01', >> VedaBatchUpload.sql
-echo 'INMCHPFCH01','IOICHPCCGTH01','IOICHPFCH01','IPPCHPCCGTH01','IPPCHPFCH01') then 'CHP IND HYDROGEN' >> VedaBatchUpload.sql
+echo when process in('ICHCHPCCGT01','ICHCHPGT01','ICHCHPNGA00','IFDCHPCCGT01','IFDCHPGT01','IFDCHPNGA00','IISCHPCCGT01','IISCHPGT01','IISCHPNGA00','INMCHPCCGT01' >> VedaBatchUpload.sql
+echo ,'INMCHPGT01','INMCHPNGA00','IOICHPCCGT01','IOICHPGT01','IOICHPNGA00','IPPCHPCCGT01','IPPCHPGT01','IPPCHPNGA00') then 'CHP IND GAS' >> VedaBatchUpload.sql
+echo when process in('ICHCHPCCGTH01','ICHCHPFCH01','IFDCHPCCGTH01','IFDCHPFCH01','IISCHPCCGTH01','IISCHPFCH01','INMCHPCCGTH01','INMCHPFCH01','IOICHPCCGTH01' >> VedaBatchUpload.sql
+echo ,'IOICHPFCH01','IPPCHPCCGTH01','IPPCHPFCH01') then 'CHP IND HYDROGEN' >> VedaBatchUpload.sql
 echo when process in('IISCHPBFG00','IISCHPBFG01','IISCHPCOG00','IISCHPCOG01','INMCHPCOG00','INMCHPCOG01') then 'CHP IND MAN FUELS' >> VedaBatchUpload.sql
-echo when process in('ICHCHPHFO00','ICHCHPLFO00','ICHCHPLPG00','ICHCHPLPG01','IFDCHPHFO00','IFDCHPLFO00','IISCHPHFO00', >> VedaBatchUpload.sql
-echo 'IOICHPHFO00') then 'CHP IND OIL PRODUCTS' >> VedaBatchUpload.sql
+echo when process in('ICHCHPHFO00','ICHCHPLFO00','ICHCHPLPG00','ICHCHPLPG01','IFDCHPHFO00','IFDCHPLFO00','IISCHPHFO00','IOICHPHFO00') then 'CHP IND OIL PRODUCTS' >> VedaBatchUpload.sql
 echo when process in('PCHP-CCP00','PCHP-CCP01') then 'CHP PRC SECTOR' >> VedaBatchUpload.sql
 echo when process in('RCHPEA-STW01','RCHPNA-STW01','RHEACHPRW01','RHNACHPRW01') then 'CHP RES BIO' >> VedaBatchUpload.sql
 echo when process in('RCHPEA-CCG00','RCHPEA-CCG01','RCHPNA-CCG01','RHEACHPRG01','RHNACHPRG01') then 'CHP RES GAS' >> VedaBatchUpload.sql
@@ -1366,19 +1374,16 @@ echo select tablename, chp_sec, period, sum(pv) "pv" >> VedaBatchUpload.sql
 echo from ( >> VedaBatchUpload.sql
 echo select tablename, period, pv, >> VedaBatchUpload.sql
 echo case >> VedaBatchUpload.sql
-echo when process in('ICHCHPBIOG01','ICHCHPBIOS00','ICHCHPBIOS01','IFDCHPBIOG01','IFDCHPBIOS00','IFDCHPBIOS01','IISCHPBIOG01','IISCHPBIOS01', >> VedaBatchUpload.sql
-echo 'INMCHPBIOG01','INMCHPBIOS01','IOICHPBIOG01','IOICHPBIOS00','IOICHPBIOS01','IPPCHPBIOG01','IPPCHPBIOS00','IPPCHPBIOS01', >> VedaBatchUpload.sql
-echo 'IPPCHPWST00','IPPCHPWST01') then 'CHP IND BIO' >> VedaBatchUpload.sql
+echo when process in('ICHCHPBIOG01','ICHCHPBIOS00','ICHCHPBIOS01','IFDCHPBIOG01','IFDCHPBIOS00','IFDCHPBIOS01','IISCHPBIOG01','IISCHPBIOS01','INMCHPBIOG01','INMCHPBIOS01','IOICHPBIOG01' >> VedaBatchUpload.sql
+echo ,'IOICHPBIOS00','IOICHPBIOS01','IPPCHPBIOG01','IPPCHPBIOS00','IPPCHPBIOS01','IPPCHPWST00','IPPCHPWST01') then 'CHP IND BIO' >> VedaBatchUpload.sql
 echo when process in('ICHCHPPRO00','ICHCHPPRO01') then 'CHP IND BY PRODUCTS' >> VedaBatchUpload.sql
 echo when process in('ICHCHPCOA00','ICHCHPCOA01','IFDCHPCOA00','IFDCHPCOA01','INMCHPCOA01','IOICHPCOA01','IPPCHPCOA00','IPPCHPCOA01') then 'CHP IND COAL' >> VedaBatchUpload.sql
-echo when process in('ICHCHPCCGT01','ICHCHPGT01','ICHCHPNGA00','IFDCHPCCGT01','IFDCHPGT01','IFDCHPNGA00','IISCHPCCGT01', >> VedaBatchUpload.sql
-echo 'IISCHPGT01','IISCHPNGA00','INMCHPCCGT01','INMCHPGT01','INMCHPNGA00','IOICHPCCGT01','IOICHPGT01','IOICHPNGA00', >> VedaBatchUpload.sql
-echo 'IPPCHPCCGT01','IPPCHPGT01','IPPCHPNGA00') then 'CHP IND GAS' >> VedaBatchUpload.sql
-echo when process in('ICHCHPCCGTH01','ICHCHPFCH01','IFDCHPCCGTH01','IFDCHPFCH01','IISCHPCCGTH01','IISCHPFCH01','INMCHPCCGTH01', >> VedaBatchUpload.sql
-echo 'INMCHPFCH01','IOICHPCCGTH01','IOICHPFCH01','IPPCHPCCGTH01','IPPCHPFCH01') then 'CHP IND HYDROGEN' >> VedaBatchUpload.sql
+echo when process in('ICHCHPCCGT01','ICHCHPGT01','ICHCHPNGA00','IFDCHPCCGT01','IFDCHPGT01','IFDCHPNGA00','IISCHPCCGT01','IISCHPGT01','IISCHPNGA00','INMCHPCCGT01' >> VedaBatchUpload.sql
+echo ,'INMCHPGT01','INMCHPNGA00','IOICHPCCGT01','IOICHPGT01','IOICHPNGA00','IPPCHPCCGT01','IPPCHPGT01','IPPCHPNGA00') then 'CHP IND GAS' >> VedaBatchUpload.sql
+echo when process in('ICHCHPCCGTH01','ICHCHPFCH01','IFDCHPCCGTH01','IFDCHPFCH01','IISCHPCCGTH01','IISCHPFCH01','INMCHPCCGTH01','INMCHPFCH01','IOICHPCCGTH01','IOICHPFCH01' >> VedaBatchUpload.sql
+echo ,'IPPCHPCCGTH01','IPPCHPFCH01') then 'CHP IND HYDROGEN' >> VedaBatchUpload.sql
 echo when process in('IISCHPBFG00','IISCHPBFG01','IISCHPCOG00','IISCHPCOG01','INMCHPCOG00','INMCHPCOG01') then 'CHP IND MAN FUELS' >> VedaBatchUpload.sql
-echo when process in('ICHCHPHFO00','ICHCHPLFO00','ICHCHPLPG00','ICHCHPLPG01','IFDCHPHFO00','IFDCHPLFO00','IISCHPHFO00', >> VedaBatchUpload.sql
-echo 'IOICHPHFO00') then 'CHP IND OIL PRODUCTS' >> VedaBatchUpload.sql
+echo when process in('ICHCHPHFO00','ICHCHPLFO00','ICHCHPLPG00','ICHCHPLPG01','IFDCHPHFO00','IFDCHPLFO00','IISCHPHFO00','IOICHPHFO00') then 'CHP IND OIL PRODUCTS' >> VedaBatchUpload.sql
 echo when process in('PCHP-CCP00','PCHP-CCP01') then 'CHP PRC SECTOR' >> VedaBatchUpload.sql
 echo when process in('RCHPEA-STW01','RCHPNA-STW01','RHEACHPRW01','RHNACHPRW01') then 'CHP RES BIO' >> VedaBatchUpload.sql
 echo when process in('RCHPEA-CCG00','RCHPEA-CCG01','RCHPNA-CCG01','RHEACHPRG01','RHNACHPRG01') then 'CHP RES GAS' >> VedaBatchUpload.sql
@@ -1462,64 +1467,64 @@ echo select tablename, proc_set,comm_set,period,sum(pv) "pv" >> VedaBatchUpload.
 echo from ( >> VedaBatchUpload.sql
 echo select tablename, period, pv, >> VedaBatchUpload.sql
 echo case >> VedaBatchUpload.sql
-echo when process in('AGRLFO00','AGRBOM01','AGRLPG01','AGRPOLWST00','AGRLAND00','AGRBIODST01','AGRBIOLPG01','AGRNGA00','AGRLFO01','AGRHFO00','AGRLPG00','AGRELC00' >> VedaBatchUpload.sql
-echo ,'AGRPOLWST01','AGRGRASS00','AMAINPHYG01','AGRNGA01','AGRLAND01','AGRHFO01','AGRHYG01','AGRELC01','AGRCOA00','AMAINPGAS01','AGRGRASS01') then 'FUEL TECHS AGR' >> VedaBatchUpload.sql
-echo when process in('ELCSOL01','ELCMSWINO01','ELCMSC00','ELCPELL01','ELCHYGD01','ELCURN01','ELCMSWORG00','ELCBIOLFO01','ELCSTWWST00','ELCWAV01','ELCCOA01','ELCMSC01' >> VedaBatchUpload.sql
-echo ,'ELCTID01','ELCPOLWST00','ELCSOL00','ELCNGA01','ELCBOG-AD01','ELCBFG00','ELCCOG00','ELCLPG01','ELCBOG-LF00','ELCMSWORG01','ELCPELL00','ELCNGA00' >> VedaBatchUpload.sql
-echo ,'ELCBOM01','ELCBOG-LF01','ELCHYGI01','ELCGEO01','ELCWNDOFS00','ELCHYG01','ELCLFO00','ELCURN00','ELCWNDONS01','ELCBIOOIL01','ELCHFO01','ELCHFO00' >> VedaBatchUpload.sql
-echo ,'ELCBOG-SW00','ELCHYD00','ELCLFO01','ELCHYD01','ELCCOA00','ELCBOG-SW01','ELCWNDONS00','ELCLPG00','ELCBFG01','ELCCOG01','ELCPOLWST01','ELCSTWWST01' >> VedaBatchUpload.sql
-echo ,'ELCPELH01','ELCMSWINO00','ELCWNDOFS01') then 'FUEL TECHS ELC' >> VedaBatchUpload.sql
-echo when process in('INDSYGOIL01','INDKER00','INDELC00','INDBIOLFO01','INDBIOPOL01','INDWOD01','INDBOG-LF00','INDNGA01','INDCOK00','INDBFG01','INDBENZ00','INDLFO00' >> VedaBatchUpload.sql
-echo ,'INDBENZ01','INDBIOLPG01','INDHFO00','INDSYGCOA01','INDKER01','INDCOACOK01','INDLPG01','INDMSWINO01','INDCOG01','INDELC01','INDBFG00','INDPELL00' >> VedaBatchUpload.sql
-echo ,'INDCOA01','INDBOG-AD01','INDBOM01','INDPOLWST00','INDPELL01','INDOILLPG00','INDCOA00','INDNGA00','INDHFO01','INDWODWST00','INDCOACOK00','INDMSWORG00' >> VedaBatchUpload.sql
-echo ,'INDWHO01','INDLFO01','INDPELH01','INDHYG01','INDCOK01','INDCOG00','INDWODWST01','INDBIOOIL01','INDMSWINO00','INDBOG-LF01','INDMSWORG01') then 'FUEL TECHS INDUS' >> VedaBatchUpload.sql
-echo when process in('PHBIOOIL01','PHPELL01','PHPELH01','PHNGAL01','PHELC01','PHCOA01','PHELCSURP01','PHMSWINO01','PHMSWORG01') then 'FUEL TECHS HYG' >> VedaBatchUpload.sql
-echo when process in('PRCHFO01','PRCCOACOK01','PRCNGA00','PRCELC00','PRCOILCRD00','PRCCOA01','PRCCOA00','PRCHFO00','PRCOILCRD01','PRCELC01','PRCNGA01','PRCCOACOK00') >> VedaBatchUpload.sql
+echo when process in('AGRBIODST01','AGRBIOLPG01','AGRBOM01','AGRCOA00','AGRELC00','AGRELC01','AGRGRASS00','AGRGRASS01','AGRHFO00','AGRHFO01','AGRHYG01','AGRLAND00' >> VedaBatchUpload.sql
+echo ,'AGRLAND01','AGRLFO00','AGRLFO01','AGRLPG00','AGRLPG01','AGRNGA00','AGRNGA01','AGRPOLWST00','AGRPOLWST01','AMAINPGAS01','AMAINPHYG01') then 'FUEL TECHS AGR' >> VedaBatchUpload.sql
+echo when process in('ELCBFG00','ELCBFG01','ELCBIOLFO01','ELCBIOOIL01','ELCBOG-AD01','ELCBOG-LF00','ELCBOG-LF01','ELCBOG-SW00','ELCBOG-SW01','ELCBOM01','ELCCOA00','ELCCOA01' >> VedaBatchUpload.sql
+echo ,'ELCCOG00','ELCCOG01','ELCGEO01','ELCHFO00','ELCHFO01','ELCHYD00','ELCHYD01','ELCHYG01','ELCHYGD01','ELCHYGI01','ELCLFO00','ELCLFO01' >> VedaBatchUpload.sql
+echo ,'ELCLPG00','ELCLPG01','ELCMSC00','ELCMSC01','ELCMSWINO00','ELCMSWINO01','ELCMSWORG00','ELCMSWORG01','ELCNGA00','ELCNGA01','ELCPELH01','ELCPELL00' >> VedaBatchUpload.sql
+echo ,'ELCPELL01','ELCPOLWST00','ELCPOLWST01','ELCSOL00','ELCSOL01','ELCSTWWST00','ELCSTWWST01','ELCTID01','ELCURN00','ELCURN01','ELCWAV01','ELCWNDOFS00' >> VedaBatchUpload.sql
+echo ,'ELCWNDOFS01','ELCWNDONS00','ELCWNDONS01') then 'FUEL TECHS ELC' >> VedaBatchUpload.sql
+echo when process in('INDBENZ00','INDBENZ01','INDBFG00','INDBFG01','INDBIOLFO01','INDBIOLPG01','INDBIOOIL01','INDBIOPOL01','INDBOG-AD01','INDBOG-LF00','INDBOG-LF01','INDBOM01' >> VedaBatchUpload.sql
+echo ,'INDCOA00','INDCOA01','INDCOACOK00','INDCOACOK01','INDCOG00','INDCOG01','INDCOK00','INDCOK01','INDELC00','INDELC01','INDHFO00','INDHFO01' >> VedaBatchUpload.sql
+echo ,'INDHYG01','INDKER00','INDKER01','INDLFO00','INDLFO01','INDLPG01','INDMSWINO00','INDMSWINO01','INDMSWORG00','INDMSWORG01','INDNGA00','INDNGA01' >> VedaBatchUpload.sql
+echo ,'INDOILLPG00','INDPELH01','INDPELL00','INDPELL01','INDPOLWST00','INDSYGCOA01','INDSYGOIL01','INDWHO01','INDWOD01','INDWODWST00','INDWODWST01') then 'FUEL TECHS INDUS' >> VedaBatchUpload.sql
+echo when process in('PHBIOOIL01','PHCOA01','PHELC01','PHELCSURP01','PHMSWINO01','PHMSWORG01','PHNGAL01','PHPELH01','PHPELL01') then 'FUEL TECHS HYG' >> VedaBatchUpload.sql
+echo when process in('PRCCOA00','PRCCOA01','PRCCOACOK00','PRCCOACOK01','PRCELC00','PRCELC01','PRCHFO00','PRCHFO01','PRCNGA00','PRCNGA01','PRCOILCRD00','PRCOILCRD01') >> VedaBatchUpload.sql
 echo then 'FUEL TECHS PRC' >> VedaBatchUpload.sql
-echo when process in('RESBIOLFO01','RESNGAS01','RESLFO00','RESLPG00','RESBIOM01','RESLFO01','RESLPG01','RESCOK01','RESELC00','RESCOA01','RESCOA00','RESCOK00' >> VedaBatchUpload.sql
-echo ,'RESHYG01','RESSOL01','RESELC01','RESPELH01','RESKER01','RESWODL00','RESWODL01','RESNGAS00','RESWOD00','RESWOD01','RESSOL00','RESKER00') then 'FUEL TECHS RES' >> VedaBatchUpload.sql
-echo when process in('SERHYG01','SERBOG-SW01','SERKER01','SERCOA00','SERSOL01','SERBOG-SW00','SERBIOLFO01','SERBOM01','SERLFO01','SERLPG01','SERCOA01','SERGEO00' >> VedaBatchUpload.sql
-echo ,'SERMSWORG00','SERELC00','SERNGA00','SERMSWINO00','SERELC01','SERWOD01','SERNGA01','SERMSWORG01','SERMSWBIO01','SERGEO01','SERPELH01','SERMSWINO01' >> VedaBatchUpload.sql
-echo ,'SERHFO01','SERHFO00','SERLFO00') then 'FUEL TECHS SERV' >> VedaBatchUpload.sql
-echo when process in('TRABIODST-FT01','TRABIOOILIS01','TRAELC00','TRALFO01','TRAJETDA01','TRABOM01','TRALPG01','TRAJETIA01','TRAETH00','TRABIOJET-FTIA01','TRAJETIA00','TRABIODST01' >> VedaBatchUpload.sql
-echo ,'TRAHYGPIS01','TRADST01','TRAHFOIS00','TRADST00','TRALFODS01','TRAHYL01','TRALPG00','TRAHFOIS01','TRALFODS00','TRAHYLIA01','TRABIODST00','TRAHYGPDS01' >> VedaBatchUpload.sql
-echo ,'TRAHFODS00','TRANGA01','TRAPET01','TRABIOJET-FTDA01','TRAHYGP01','TRABIOLFO01','TRAETH01','TRAHYLDA01','TRAELC01','TRACOA00','TRAJETDA00','TRABIOLFODS01' >> VedaBatchUpload.sql
-echo ,'TRAHFODS01','TRAPET00','TRALFO00','TRALNGDS01','TRALNGIS01') then 'FUEL TECHS TRA' >> VedaBatchUpload.sql
-echo when process in('UPSELC00','UPSLFO00','UPSNGA01','UPSLFO01','UPSELC01','UPSNGA00','UPSHYG01') then 'FUEL TECHS UPSTREAM' >> VedaBatchUpload.sql
+echo when process in('RESBIOLFO01','RESBIOM01','RESCOA00','RESCOA01','RESCOK00','RESCOK01','RESELC00','RESELC01','RESHYG01','RESKER00','RESKER01','RESLFO00' >> VedaBatchUpload.sql
+echo ,'RESLFO01','RESLPG00','RESLPG01','RESNGAS00','RESNGAS01','RESPELH01','RESSOL00','RESSOL01','RESWOD00','RESWOD01','RESWODL00','RESWODL01') then 'FUEL TECHS RES' >> VedaBatchUpload.sql
+echo when process in('SERBIOLFO01','SERBOG-SW00','SERBOG-SW01','SERBOM01','SERCOA00','SERCOA01','SERELC00','SERELC01','SERGEO00','SERGEO01','SERHFO00','SERHFO01' >> VedaBatchUpload.sql
+echo ,'SERHYG01','SERKER01','SERLFO00','SERLFO01','SERLPG01','SERMSWBIO01','SERMSWINO00','SERMSWINO01','SERMSWORG00','SERMSWORG01','SERNGA00','SERNGA01' >> VedaBatchUpload.sql
+echo ,'SERPELH01','SERSOL01','SERWOD01') then 'FUEL TECHS SERV' >> VedaBatchUpload.sql
+echo when process in('TRABIODST-FT01','TRABIODST00','TRABIODST01','TRABIOJET-FTDA01','TRABIOJET-FTIA01','TRABIOLFO01','TRABIOLFODS01','TRABIOOILIS01','TRABOM01','TRACOA00','TRADST00','TRADST01' >> VedaBatchUpload.sql
+echo ,'TRAELC00','TRAELC01','TRAETH00','TRAETH01','TRAHFODS00','TRAHFODS01','TRAHFOIS00','TRAHFOIS01','TRAHYGP01','TRAHYGPDS01','TRAHYGPIS01','TRAHYL01' >> VedaBatchUpload.sql
+echo ,'TRAHYLDA01','TRAHYLIA01','TRAJETDA00','TRAJETDA01','TRAJETIA00','TRAJETIA01','TRALFO00','TRALFO01','TRALFODS00','TRALFODS01','TRALPG00','TRALPG01' >> VedaBatchUpload.sql
+echo ,'TRANGA01','TRAPET00','TRAPET01') then 'FUEL TECHS TRA' >> VedaBatchUpload.sql
+echo when process in('UPSELC00','UPSELC01','UPSHYG01','UPSLFO00','UPSLFO01','UPSNGA00','UPSNGA01') then 'FUEL TECHS UPSTREAM' >> VedaBatchUpload.sql
 echo end as proc_set, >> VedaBatchUpload.sql
 echo case >> VedaBatchUpload.sql
-echo when commodity in('COK','INDBFG','INDCOG','BFG','IISCOGB','INDCOK','IISCOKB','BENZ','IISCOGC','IISCOKS','ELCBFG','ELCCOG' >> VedaBatchUpload.sql
-echo ,'IISBFGC','IISCOKE','IISBFGB','RESCOK','COG','INDBENZ') then 'ALL MANFUELS' >> VedaBatchUpload.sql
-echo when commodity in('ELCNGA','AGRNGA','NGA-I-EU','NGA-E','PRCNGA','TRALNGISL','TRALNGIS','LNG','INDNEUNGA','NGA-E-IRE','IISNGAC','TRALNGDS' >> VedaBatchUpload.sql
-echo ,'UPSNGA','TRALNG','IISNGAE','RESNGA','TRANGA','TRACNGS','NGA-I-N','INDNGA','NGA-E-EU','NGA','NGAPTR','TRACNGL' >> VedaBatchUpload.sql
-echo ,'TRALNGDSL','HYGSNGA','SERNGA','IISNGAB','HYGLNGA') then 'ALL GAS' >> VedaBatchUpload.sql
-echo when commodity in('INDDISTELC','HYGLELC','RESELCSURPLUS','RESHOUSEELC','TRADISTELC','ELC','HYGSELC','HYGELCSURP','SERDISTELC','ELCSURPLUS','AGRDISTELC','SERELC' >> VedaBatchUpload.sql
-echo ,'AGRELC','TRACELC','INDELC','RESELC','SERBUILDELC','ELC-E-IRE','UPSELC','HYGELC','ELC-I-EU','ELCGEN','TRAELC','PRCELC' >> VedaBatchUpload.sql
-echo ,'ELC-E-EU','TRACPHB','RESDISTELC','ELC-I-IRE') then 'ALL ELECTRICITY' >> VedaBatchUpload.sql
-echo when commodity in('RHEATPIPE-NA','PCHPHEAT','INDSTM','RHEATPIPE-EA','IOISTM','RHCSV-RHEA','ICHSTM','IFDSTM','INMSTM','ICHOTH','UPSHEAT') then 'ALL HEAT' >> VedaBatchUpload.sql
-echo when commodity in('SOL','ELCWNDONS','RESSOL','WNDOFF','SERSOL','ELCTID','ELCGEO','SERGEO','HYDROR','WNDONS','WAV','TID' >> VedaBatchUpload.sql
-echo ,'ELCSOL','GEO','HYDDAM','ELCWAV','ELCHYDDAM','ELCWNDOFS') then 'ALL OTHER RNW' >> VedaBatchUpload.sql
-echo when commodity in('SYNCOA','ELCCOA','INDCOA','TRACOA','AGRCOA','COA','PRCCOA','HYGCOA','PRCCOACOK','INDSYNCOA','COACOK','RESCOA' >> VedaBatchUpload.sql
-echo ,'COA-E','SERCOA','INDCOACOK') then 'ALL COALS' >> VedaBatchUpload.sql
-echo when commodity in('TRABOM','SERWOD','RESWODL','BOG-LF','BIOLFO','INDBOG-LF','AGRGRASS','BVOIL','BIODST','ELCMSWORG','INDGRASS','AGRBIOLPG' >> VedaBatchUpload.sql
-echo ,'MSWORG','ELCSTWWST','HYGMSWINO','HYGBPEL','TRAETHS','BSUGAR','BIOKER-FT','ELCBIOCOA','TRABIOJET-FTIAL','ELCPELL','TRABIOJET-FTDAL','MSWBIO' >> VedaBatchUpload.sql
-echo ,'RESWOD','RESMAINSBOM','SERBOG','TRABIOLFOL','RESHOUSEBOM','TRABIODST-FTS','TRABIOLFODSL','AGRMAINSBOM','ELCBOM','HYGBIOO','INDMSWINO','SERBIOLFO' >> VedaBatchUpload.sql
-echo ,'TRAETH','ELCBOG-SW','ELCMAINSBOM','TRAETHL','BWODLOG','ELCBOG-AD','ELCBOG-LF','BSTARCH','BSTWWST','ELCTRANSBOM','ELCBIOOIL','TRABIOJET-FTIA' >> VedaBatchUpload.sql
-echo ,'INDPELH','INDPOLWST','INDWOD','TRABIODST-FT','SERMAINSBOM','TRAMETH','BPELL','ELCPOLWST','PWASTEDUM','RESBIOLFO','BPELH','BTREATWOD' >> VedaBatchUpload.sql
-echo ,'BSEWSLG','SERMSWORG','TRAMAINSBOM','BTREATSTW','BWODWST','TRABIODST-FTL','SERMSWINO','RESBOM','INDMAINSBOM','BWOD','TRABIODSTL','TRABIOJET-FTDA' >> VedaBatchUpload.sql
-echo ,'BSLURRY','TRABIOOILIS','BOG-G','TRABIODST','ELCBIOLFO','TRABIOOILISL','TRABIOLFODS','BIODST-FT','METH','MSWINO','AGRBOM','BIOLPG' >> VedaBatchUpload.sql
-echo ,'INDPELL','AGRBIODST','BIOJET-FT','BOG-AD','SERBOM','ELCPELH','RESPELH','INDBIOOIL','BOM','INDWODWST','SERMSWBIO','SERPELH' >> VedaBatchUpload.sql
-echo ,'BIOOIL','INDBOM','TRABIOLFO','BGRASS','SERBUILDBOM','INDBIOLFO','ELCBIOCOA2','INDBOG-AD','ETH','INDBIOLPG','ELCMSWINO','AGRPOLWST' >> VedaBatchUpload.sql
-echo ,'BRSEED','INDMSWORG','HYGMSWORG','TRABIODSTS') then 'ALL BIO' >> VedaBatchUpload.sql
-echo when commodity in('TRADST','TRAPETS','UPSLFO','OILJET','TRAJETDAEL','INDSYNOIL','TRAHFO','PRCHFO','SERLFO','TRAPETL','OILPET','TRAJETDA' >> VedaBatchUpload.sql
-echo ,'IISHFOB','OILMSC','RESKER','INDLPG','TRADSTL','INDNEULPG','INDHFO','OILHFO','ELCLPG','TRALPGL','TRALPG','AGRHFO' >> VedaBatchUpload.sql
-echo ,'TRAHFOISL','TRADSTS','OILLFO','TRAHFOIS','SERHFO','TRALFODSL','TRAPET','INDNEULFO','ELCHFO','INDKER','ELCLFO','INDNEUMSC' >> VedaBatchUpload.sql
-echo ,'RESLPG','TRAJETL','TRALPGS','AGRLFO','TRALFOL','TRAHFODS','TRAHFODSL','TRAJETIAEL','OILDST','OILLPG','OILCRDRAW-E','TRALFO' >> VedaBatchUpload.sql
-echo ,'OILKER','TRAJETIA','OILCRD','SERLPG','TRAJETIANL','PRCOILCRD','TRALFODS','SYNOIL','OILCRDRAW','ELCMSC','SERKER','INDLFO' >> VedaBatchUpload.sql
-echo ,'AGRLPG','RESLFO') then 'ALL OIL PRODUCTS' >> VedaBatchUpload.sql
-echo when commodity in('TRAHYL','RESMAINSHYG','INDMAINSHYG','TRAHYGL','RESHOUSEHYG','INDHYG','HYLTK','HYGL','ELCHYGIGCC','HYL','RESHYGREF-EA','ELCHYG' >> VedaBatchUpload.sql
-echo ,'TRAHYGS','HYGLHPD','SERHYG','HYGLHPT','UPSMAINSHYG','RESHYG','AGRHYG','TRAHYG','HYGL-IGCC','RESHYGREF-NA','UPSHYG','SERBUILDHYG' >> VedaBatchUpload.sql
-echo ,'TRAHYGDCN','SERMAINSHYG') then 'ALL HYDROGEN' >> VedaBatchUpload.sql
+echo when commodity in('BENZ','BFG','COG','COK','ELCBFG','ELCCOG','IISBFGB','IISBFGC','IISCOGB','IISCOGC','IISCOKB','IISCOKE' >> VedaBatchUpload.sql
+echo ,'IISCOKS','INDBENZ','INDBFG','INDCOG','INDCOK','RESCOK') then 'ALL MANFUELS' >> VedaBatchUpload.sql
+echo when commodity in('AGRNGA','ELCNGA','HYGLNGA','HYGSNGA','IISNGAB','IISNGAC','IISNGAE','INDNEUNGA','INDNGA','LNG','NGA','NGA-E' >> VedaBatchUpload.sql
+echo ,'NGA-E-EU','NGA-E-IRE','NGA-I-EU','NGA-I-N','NGAPTR','PRCNGA','RESNGA','SERNGA','TRACNGL','TRACNGS','TRALNG','TRALNGDS' >> VedaBatchUpload.sql
+echo ,'TRALNGDSL','TRALNGIS','TRALNGISL','TRANGA','UPSNGA') then 'ALL GAS' >> VedaBatchUpload.sql
+echo when commodity in('AGRDISTELC','AGRELC','ELC','ELC-E-EU','ELC-E-IRE','ELC-I-EU','ELC-I-IRE','ELCGEN','ELCSURPLUS','HYGELC','HYGELCSURP','HYGLELC' >> VedaBatchUpload.sql
+echo ,'HYGSELC','INDDISTELC','INDELC','PRCELC','RESDISTELC','RESELC','RESELCSURPLUS','RESHOUSEELC','SERBUILDELC','SERDISTELC','SERELC','TRACELC' >> VedaBatchUpload.sql
+echo ,'TRACPHB','TRADISTELC','TRAELC','UPSELC') then 'ALL ELECTRICITY' >> VedaBatchUpload.sql
+echo when commodity in('ICHOTH','ICHSTM','IFDSTM','INDSTM','INMSTM','IOISTM','PCHPHEAT','RHCSV-RHEA','RHEATPIPE-EA','RHEATPIPE-NA','UPSHEAT') then 'ALL HEAT' >> VedaBatchUpload.sql
+echo when commodity in('ELCGEO','ELCHYDDAM','ELCSOL','ELCTID','ELCWAV','ELCWNDOFS','ELCWNDONS','GEO','HYDDAM','HYDROR','RESSOL','SERGEO' >> VedaBatchUpload.sql
+echo ,'SERSOL','SOL','TID','WAV','WNDOFF','WNDONS') then 'ALL OTHER RNW' >> VedaBatchUpload.sql
+echo when commodity in('AGRCOA','COA','COA-E','COACOK','ELCCOA','HYGCOA','INDCOA','INDCOACOK','INDSYNCOA','PRCCOA','PRCCOACOK','RESCOA' >> VedaBatchUpload.sql
+echo ,'SERCOA','SYNCOA','TRACOA') then 'ALL COALS' >> VedaBatchUpload.sql
+echo when commodity in('AGRBIODST','AGRBIOLPG','AGRBOM','AGRGRASS','AGRMAINSBOM','AGRPOLWST','BGRASS','BIODST','BIODST-FT','BIOJET-FT','BIOKER-FT','BIOLFO' >> VedaBatchUpload.sql
+echo ,'BIOLPG','BIOOIL','BOG-AD','BOG-G','BOG-LF','BOM','BPELH','BPELL','BRSEED','BSEWSLG','BSLURRY','BSTARCH' >> VedaBatchUpload.sql
+echo ,'BSTWWST','BSUGAR','BTREATSTW','BTREATWOD','BVOIL','BWOD','BWODLOG','BWODWST','ELCBIOCOA','ELCBIOCOA2','ELCBIOLFO','ELCBIOOIL' >> VedaBatchUpload.sql
+echo ,'ELCBOG-AD','ELCBOG-LF','ELCBOG-SW','ELCBOM','ELCMAINSBOM','ELCMSWINO','ELCMSWORG','ELCPELH','ELCPELL','ELCPOLWST','ELCSTWWST','ELCTRANSBOM' >> VedaBatchUpload.sql
+echo ,'ETH','HYGBIOO','HYGBPEL','HYGMSWINO','HYGMSWORG','INDBIOLFO','INDBIOLPG','INDBIOOIL','INDBOG-AD','INDBOG-LF','INDBOM','INDGRASS' >> VedaBatchUpload.sql
+echo ,'INDMAINSBOM','INDMSWINO','INDMSWORG','INDPELH','INDPELL','INDPOLWST','INDWOD','INDWODWST','METH','MSWBIO','MSWINO','MSWORG' >> VedaBatchUpload.sql
+echo ,'PWASTEDUM','RESBIOLFO','RESBOM','RESHOUSEBOM','RESMAINSBOM','RESPELH','RESWOD','RESWODL','SERBIOLFO','SERBOG','SERBOM','SERBUILDBOM' >> VedaBatchUpload.sql
+echo ,'SERMAINSBOM','SERMSWBIO','SERMSWINO','SERMSWORG','SERPELH','SERWOD','TRABIODST','TRABIODST-FT','TRABIODST-FTL','TRABIODST-FTS','TRABIODSTL','TRABIODSTS' >> VedaBatchUpload.sql
+echo ,'TRABIOJET-FTDA','TRABIOJET-FTDAL','TRABIOJET-FTIA','TRABIOJET-FTIAL','TRABIOLFO','TRABIOLFODS','TRABIOLFODSL','TRABIOLFOL','TRABIOOILIS','TRABIOOILISL','TRABOM','TRAETH' >> VedaBatchUpload.sql
+echo ,'TRAETHL','TRAETHS','TRAMAINSBOM','TRAMETH') then 'ALL BIO' >> VedaBatchUpload.sql
+echo when commodity in('AGRHFO','AGRLFO','AGRLPG','ELCHFO','ELCLFO','ELCLPG','ELCMSC','IISHFOB','INDHFO','INDKER','INDLFO','INDLPG' >> VedaBatchUpload.sql
+echo ,'INDNEULFO','INDNEULPG','INDNEUMSC','INDSYNOIL','OILCRD','OILCRDRAW','OILCRDRAW-E','OILDST','OILHFO','OILJET','OILKER','OILLFO' >> VedaBatchUpload.sql
+echo ,'OILLPG','OILMSC','OILPET','PRCHFO','PRCOILCRD','RESKER','RESLFO','RESLPG','SERHFO','SERKER','SERLFO','SERLPG' >> VedaBatchUpload.sql
+echo ,'SYNOIL','TRADST','TRADSTL','TRADSTS','TRAHFO','TRAHFODS','TRAHFODSL','TRAHFOIS','TRAHFOISL','TRAJETDA','TRAJETDAEL','TRAJETIA' >> VedaBatchUpload.sql
+echo ,'TRAJETIAEL','TRAJETIANL','TRAJETL','TRALFO','TRALFODS','TRALFODSL','TRALFOL','TRALPG','TRALPGL','TRALPGS','TRAPET','TRAPETL' >> VedaBatchUpload.sql
+echo ,'TRAPETS','UPSLFO') then 'ALL OIL PRODUCTS' >> VedaBatchUpload.sql
+echo when commodity in('AGRHYG','ELCHYG','ELCHYGIGCC','HYGL','HYGL-IGCC','HYGLHPD','HYGLHPT','HYL','HYLTK','INDHYG','INDMAINSHYG','RESHOUSEHYG' >> VedaBatchUpload.sql
+echo ,'RESHYG','RESHYGREF-EA','RESHYGREF-NA','RESMAINSHYG','SERBUILDHYG','SERHYG','SERMAINSHYG','TRAHYG','TRAHYGDCN','TRAHYGL','TRAHYGS','TRAHYL' >> VedaBatchUpload.sql
+echo ,'UPSHYG','UPSMAINSHYG') then 'ALL HYDROGEN' >> VedaBatchUpload.sql
 echo end as comm_set >> VedaBatchUpload.sql
 echo from vedastore >> VedaBatchUpload.sql
 echo where attribute='VAR_FIn' >> VedaBatchUpload.sql
@@ -1552,31 +1557,32 @@ echo proc_set,tablename,period, sum(pv) "pv" >> VedaBatchUpload.sql
 echo from ( >> VedaBatchUpload.sql
 echo select tablename,period, pv, >> VedaBatchUpload.sql
 echo case >> VedaBatchUpload.sql
-echo when process in('EBIOS00','EBIOCON00','EBIO01','EBOG-LFE00','EBOG-SWE00','EMSW00','EPOLWST00','ESTWWST01','EBOG-ADE01','EBOG-SWE01','EMSW01','ESTWWST00','EBOG-LFE01') then 'ELC FROM BIO' >> VedaBatchUpload.sql
+echo when process in('EBIO01','EBIOCON00','EBIOS00','EBOG-ADE01','EBOG-LFE00','EBOG-LFE01','EBOG-SWE00','EBOG-SWE01','EMSW00','EMSW01','EPOLWST00','ESTWWST00' >> VedaBatchUpload.sql
+echo ,'ESTWWST01') then 'ELC FROM BIO' >> VedaBatchUpload.sql
 echo when process in('EBIOQ01') then 'ELC FROM BIO CCS' >> VedaBatchUpload.sql
-echo when process in('PCHP-CCP00','UCHP-CCG00','PCHP-CCP01','UCHP-CCG01') then 'ELC FROM CHP' >> VedaBatchUpload.sql
+echo when process in('PCHP-CCP00','PCHP-CCP01','UCHP-CCG00','UCHP-CCG01') then 'ELC FROM CHP' >> VedaBatchUpload.sql
 echo when process='ECOAQR01' then 'ELC FROM COAL CCSRET' >> VedaBatchUpload.sql
 echo when process in('ECOARR01') then 'ELC FROM COAL RR' >> VedaBatchUpload.sql
-echo when process in('ECOABIO00','ECOA00') then 'ELC FROM COAL-COF' >> VedaBatchUpload.sql
+echo when process in('ECOA00','ECOABIO00') then 'ELC FROM COAL-COF' >> VedaBatchUpload.sql
 echo when process in('ECOAQ01') then 'ELC FROM COALCOF CCS' >> VedaBatchUpload.sql
-echo when process in('ENGAOCT00','ENGAOCT01','ENGACCT00','ENGARCPE00','ENGARCPE01') then 'ELC FROM GAS' >> VedaBatchUpload.sql
+echo when process in('ENGACCT00','ENGAOCT00','ENGAOCT01','ENGARCPE00','ENGARCPE01') then 'ELC FROM GAS' >> VedaBatchUpload.sql
 echo when process in('ENGACCTQ01') then 'ELC FROM GAS CCS' >> VedaBatchUpload.sql
 echo when process='ENGAQR01' then 'ELC FROM GAS CCSRET' >> VedaBatchUpload.sql
 echo when process in('ENGACCTRR01') then 'ELC FROM GAS RR' >> VedaBatchUpload.sql
 echo when process in('EGEO01') then 'ELC FROM GEO' >> VedaBatchUpload.sql
-echo when process in('EHYD01','EHYD00') then 'ELC FROM HYDRO' >> VedaBatchUpload.sql
+echo when process in('EHYD00','EHYD01') then 'ELC FROM HYDRO' >> VedaBatchUpload.sql
 echo when process in('EHYGCCT01','EHYGOCT01') then 'ELC FROM HYDROGEN' >> VedaBatchUpload.sql
 echo when process in('ELCIE00','ELCIE01') then 'ELC FROM IMPORTS' >> VedaBatchUpload.sql
 echo when process in('EMANOCT00','EMANOCT01') then 'ELC FROM MANFUELS' >> VedaBatchUpload.sql
 echo when process in('ENUCPWR00','ENUCPWR101','ENUCPWR102') then 'ELC FROM NUCLEAR' >> VedaBatchUpload.sql
-echo when process in('EOILS00','EOILS01','EOILL00','EOILL01','EHFOIGCC01','EDSTRCPE00','EDSTRCPE01') then 'ELC FROM OIL' >> VedaBatchUpload.sql
+echo when process in('EDSTRCPE00','EDSTRCPE01','EHFOIGCC01','EOILL00','EOILL01','EOILS00','EOILS01') then 'ELC FROM OIL' >> VedaBatchUpload.sql
 echo when process in('EHFOIGCCQ01') then 'ELC FROM OIL CCS' >> VedaBatchUpload.sql
-echo when process in('ESOL01','ESOLPV00','ESOLPV01','ESOL00') then 'ELC FROM SOL-PV' >> VedaBatchUpload.sql
-echo when process in('ETIB101','ETIS101','ETIR101') then 'ELC FROM TIDAL' >> VedaBatchUpload.sql
+echo when process in('ESOL00','ESOL01','ESOLPV00','ESOLPV01') then 'ELC FROM SOL-PV' >> VedaBatchUpload.sql
+echo when process in('ETIB101','ETIR101','ETIS101') then 'ELC FROM TIDAL' >> VedaBatchUpload.sql
 echo when process in('EWAV101') then 'ELC FROM WAVE' >> VedaBatchUpload.sql
-echo when process in('EWNDOFF301','EWNDOFF00','EWNDOFF101','EWNDOFF201') then 'ELC FROM WIND-OFFSH' >> VedaBatchUpload.sql
-echo when process in('EWNDONS501','EWNDONS401','EWNDONS00','EWNDONS301','EWNDONS601','EWNDONS101','EWNDONS901','EWNDONS201','EWNDONS801','EWNDONS701') then 'ELC FROM WIND-ONSH' >> VedaBatchUpload.sql
-echo when process in('ELCEE00','ELCEI00','ELCEE01','ELCEI01') then 'ELC TO EXPORTS' >> VedaBatchUpload.sql
+echo when process in('EWNDOFF00','EWNDOFF101','EWNDOFF201','EWNDOFF301') then 'ELC FROM WIND-OFFSH' >> VedaBatchUpload.sql
+echo when process in('EWNDONS00','EWNDONS101','EWNDONS201','EWNDONS301','EWNDONS401','EWNDONS501','EWNDONS601','EWNDONS701','EWNDONS801','EWNDONS901') then 'ELC FROM WIND-ONSH' >> VedaBatchUpload.sql
+echo when process in('ELCEE00','ELCEE01','ELCEI00','ELCEI01') then 'ELC TO EXPORTS' >> VedaBatchUpload.sql
 echo end as proc_set >> VedaBatchUpload.sql
 echo from vedastore >> VedaBatchUpload.sql
 echo where attribute='VAR_FOut' and commodity in('ELCDUMMY','ELC','ELC-E-IRE','ELC-E-EU','ELCGEN') >> VedaBatchUpload.sql
@@ -1689,6 +1695,7 @@ echo from end_demand a >> VedaBatchUpload.sql
 echo group by tablename,sec_fuel >> VedaBatchUpload.sql
 echo order by tablename,analysis >> VedaBatchUpload.sql
 echo ) TO '%~dp0FinEnOut.csv' delimiter ',' CSV; >> VedaBatchUpload.sql
+echo rem /* *Primary energy demand and biomass, imports exports and domestic production* */
 echo /* *Primary energy demand and biomass, imports exports and domestic production* */ >> VedaBatchUpload.sql
 echo COPY (  >> VedaBatchUpload.sql
 echo with rsr_min as( >> VedaBatchUpload.sql
@@ -1710,9 +1717,9 @@ echo from ( >> VedaBatchUpload.sql
 echo select tablename,period, pv, >> VedaBatchUpload.sql
 echo case >> VedaBatchUpload.sql
 echo when  process in('IMPURN') then 'IMPORT URN' >> VedaBatchUpload.sql
-echo when  process in('MINBGRASS1','MINBGRASS2','MINBGRASS3','MINBIOOILCRP','MINBOG-LF','MINBRSEED','MINBSEWSLG', >> VedaBatchUpload.sql
-echo 'MINBSLURRY1','MINBSTWWST1','MINBSUGAR','MINBTALLOW','MINBVOFAT','MINBWHT1','MINBWHT2','MINBWHT3','MINBWOD1', >> VedaBatchUpload.sql
-echo 'MINBWOD2','MINBWOD3','MINBWOD4','MINBWODLOG','MINBWODWST','MINBWODWSTSAW','MINMSWBIO','MINMSWINO','MINMSWORG') then 'MINING BIOMASS' >> VedaBatchUpload.sql
+echo when  process in('MINBGRASS1','MINBGRASS2','MINBGRASS3','MINBIOOILCRP','MINBOG-LF','MINBRSEED','MINBSEWSLG','MINBSLURRY1','MINBSTWWST1','MINBSUGAR','MINBTALLOW','MINBVOFAT' >> VedaBatchUpload.sql
+echo ,'MINBWHT1','MINBWHT2','MINBWHT3','MINBWOD1','MINBWOD2','MINBWOD3','MINBWOD4','MINBWODLOG','MINBWODWST','MINBWODWSTSAW','MINMSWBIO','MINMSWINO' >> VedaBatchUpload.sql
+echo ,'MINMSWORG') then 'MINING BIOMASS' >> VedaBatchUpload.sql
 echo when  process in('MINCOA1','MINCOA2','MINCOA3','MINCOA4','MINCOA5','MINCOA6','MINCOACOK1','MINCOACOK2') then 'MINING COAL' >> VedaBatchUpload.sql
 echo when  process in('RNWGEO') then 'MINING GEOTHERMAL' >> VedaBatchUpload.sql
 echo when  process in('RNWHYDDAM','RNWHYDROR') then 'MINING HYDRO' >> VedaBatchUpload.sql
@@ -1721,8 +1728,8 @@ echo when  process in('MINNGASHL1','MINNGASHL2','MINNGASHL3') then 'MINING NGA-S
 echo when  process in('MINOILCRD1','MINOILCRD2','MINOILCRD3','MINOILCRD4','MINOILCRD5','MINOILCRD6','MINOILCRD7','MINOILCRD8','MINOILCRD9') then 'MINING OIL' >> VedaBatchUpload.sql
 echo when  process in('RNWSOL') then 'MINING SOLAR' >> VedaBatchUpload.sql
 echo when  process in('RNWTID') then 'MINING TIDAL' >> VedaBatchUpload.sql
-echo when  process in('RNWWAV') then 'MINING WIND' >> VedaBatchUpload.sql
-echo when  process in('RNWWNDOFF','RNWWNDONS') then 'MINING WAVE' >> VedaBatchUpload.sql
+echo when  process in('RNWWAV') then 'MINING WAVE' >> VedaBatchUpload.sql
+echo when  process in('RNWWNDOFF','RNWWNDONS') then 'MINING WIND' >> VedaBatchUpload.sql
 echo end as proc_set >> VedaBatchUpload.sql
 echo from vedastore >> VedaBatchUpload.sql
 echo where attribute='VAR_FOut' >> VedaBatchUpload.sql
@@ -1789,15 +1796,15 @@ echo when process in('IMPBIODST') then 'IMPORT BDL' >> VedaBatchUpload.sql
 echo when process in('IMPBIODST-FT') then 'IMPORT FTD' >> VedaBatchUpload.sql
 echo when process in('IMPBIOJET-FT') then 'IMPORT FTK-AVI' >> VedaBatchUpload.sql
 echo when process in('IMPBIOKET-FT') then 'IMPORT FTK-HEA' >> VedaBatchUpload.sql
-echo when process in('IMPBVOIL','IMPBVOFAT','IMPBIOOIL') then 'IMPORT BIOOIL' >> VedaBatchUpload.sql
-echo when process in('IMPBWODWST','IMPBGRASS','IMPBSTARCH','IMPAGWST','IMPBWOD') then 'IMPORT BIOMASS' >> VedaBatchUpload.sql
-echo when process in('IMPCOA-E','IMPCOA','IMPCOACOK') then 'IMPORT COAL' >> VedaBatchUpload.sql
+echo when process in('IMPBIOOIL','IMPBVOFAT','IMPBVOIL') then 'IMPORT BIOOIL' >> VedaBatchUpload.sql
+echo when process in('IMPAGWST','IMPBGRASS','IMPBSTARCH','IMPBWOD','IMPBWODWST') then 'IMPORT BIOMASS' >> VedaBatchUpload.sql
+echo when process in('IMPCOA','IMPCOA-E','IMPCOACOK') then 'IMPORT COAL' >> VedaBatchUpload.sql
 echo when process in('IMPCOK') then 'IMPORT COKE' >> VedaBatchUpload.sql
 echo when process in('IMPELC-EU','IMPELC-IRE') then 'IMPORT ELC' >> VedaBatchUpload.sql
 echo when process in('IMPETH') then 'IMPORT ETHANOL' >> VedaBatchUpload.sql
 echo when process in('IMPHYL') then 'IMPORT HYL' >> VedaBatchUpload.sql
-echo when process in('IMPNGA-LNG','IMPNGA-N','IMPNGA-E','IMPNGA-EU') then 'IMPORT NGA' >> VedaBatchUpload.sql
-echo when process in('IMPOILCRD2','IMPOILCRD1','IMPOILCRD1-E') then 'IMPORT OIL' >> VedaBatchUpload.sql
+echo when process in('IMPNGA-E','IMPNGA-EU','IMPNGA-LNG','IMPNGA-N') then 'IMPORT NGA' >> VedaBatchUpload.sql
+echo when process in('IMPOILCRD1','IMPOILCRD1-E','IMPOILCRD2') then 'IMPORT OIL' >> VedaBatchUpload.sql
 echo when process in('IMPOILDST') then 'IMPORT DST' >> VedaBatchUpload.sql
 echo when process in('IMPOILHFO') then 'IMPORT HFO' >> VedaBatchUpload.sql
 echo when process in('IMPOILJET') then 'IMPORT JET' >> VedaBatchUpload.sql
@@ -1865,10 +1872,10 @@ echo select tablename,period, pv, >> VedaBatchUpload.sql
 echo case    >> VedaBatchUpload.sql
 echo when process in('EXPCOA','EXPCOA-E') then 'EXPORT COAL' >> VedaBatchUpload.sql
 echo when process in('EXPCOK') then 'EXPORT COKE' >> VedaBatchUpload.sql
-echo when process in('EXPELC-IRE','EXPELC-EU') then 'EXPORT ELC' >> VedaBatchUpload.sql
+echo when process in('EXPELC-EU','EXPELC-IRE') then 'EXPORT ELC' >> VedaBatchUpload.sql
 echo when process in('EXPETH') then 'EXPORT ETH' >> VedaBatchUpload.sql
-echo when process in('EXPNGA-E','EXPNGA-IRE','EXPNGA-EU') then 'EXPORT NGA' >> VedaBatchUpload.sql
-echo when process in('EXPOILCRD1-E','EXPOILCRD1','EXPOILCRD2') then 'EXPORT OIL' >> VedaBatchUpload.sql
+echo when process in('EXPNGA-E','EXPNGA-EU','EXPNGA-IRE') then 'EXPORT NGA' >> VedaBatchUpload.sql
+echo when process in('EXPOILCRD1','EXPOILCRD1-E','EXPOILCRD2') then 'EXPORT OIL' >> VedaBatchUpload.sql
 echo when process in('EXPOILDST') then 'EXPORT DST' >> VedaBatchUpload.sql
 echo when process in('EXPOILHFO') then 'EXPORT HFO' >> VedaBatchUpload.sql
 echo when process in('EXPOILJET') then 'EXPORT JET' >> VedaBatchUpload.sql
