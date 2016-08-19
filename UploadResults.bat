@@ -342,7 +342,7 @@ echo ) a where comm_set is not null >> VedaBatchUpload.sql
 echo ) >> VedaBatchUpload.sql
 echo , "elc-emis" as( >> VedaBatchUpload.sql
 echo select  >> VedaBatchUpload.sql
-echo tablename,period,sum(pv)/1000 "elc-emis" --/1000 = Convert from kilo to Mega tonnes >> VedaBatchUpload.sql
+echo tablename,period,sum(pv)/1000 "elc-emis"  >> VedaBatchUpload.sql
 echo from ( >> VedaBatchUpload.sql
 echo select tablename,pv,period from "emis_co2_sector" where comm_set='EMIS CO2 ELC' >> VedaBatchUpload.sql
 echo union all >> VedaBatchUpload.sql
@@ -367,9 +367,9 @@ echo when process in('PCHP-CCP00','PCHP-CCP01','UCHP-CCG00','UCHP-CCG01') then '
 echo when process='ECOAQR01' then 'ELC FROM COAL CCSRET' >> VedaBatchUpload.sql
 echo when process in('ECOARR01') then 'ELC FROM COAL RR' >> VedaBatchUpload.sql
 echo when process in('ECOA00','ECOABIO00') then 'ELC FROM COAL-COF' >> VedaBatchUpload.sql
-echo when process in('ECOAQ01') then 'ELC FROM COALCOF CCS' >> VedaBatchUpload.sql
+echo when process in('ECOAQ01','ECOAQDEMO01') then 'ELC FROM COALCOF CCS' >> VedaBatchUpload.sql
 echo when process in('ENGACCT00','ENGAOCT00','ENGAOCT01','ENGARCPE00','ENGARCPE01') then 'ELC FROM GAS' >> VedaBatchUpload.sql
-echo when process in('ENGACCTQ01') then 'ELC FROM GAS CCS' >> VedaBatchUpload.sql
+echo when process in('ENGACCTQ01','ENGACCTQDEMO01') then 'ELC FROM GAS CCS' >> VedaBatchUpload.sql
 echo when process='ENGAQR01' then 'ELC FROM GAS CCSRET' >> VedaBatchUpload.sql
 echo when process in('ENGACCTRR01') then 'ELC FROM GAS RR' >> VedaBatchUpload.sql
 echo when process in('EGEO01') then 'ELC FROM GEO' >> VedaBatchUpload.sql
@@ -434,11 +434,11 @@ echo select tablename, fuel, period, sum(pv) "pv" >> VedaBatchUpload.sql
 echo from ( >> VedaBatchUpload.sql
 echo select tablename,commodity "fuel",period,pv >> VedaBatchUpload.sql
 echo from vedastore >> VedaBatchUpload.sql
-echo where process in('ECOA00','ECOABIO00','ECOAQ01','ECOARR01') and attribute='VAR_FIn' >> VedaBatchUpload.sql
+echo where process in('ECOA00','ECOABIO00','ECOAQ01','ECOARR01','ECOAQDEMO01') and attribute='VAR_FIn' >> VedaBatchUpload.sql
 echo union all >> VedaBatchUpload.sql
 echo select tablename,commodity "fuel",period,pv >> VedaBatchUpload.sql
 echo from vedastore >> VedaBatchUpload.sql
-echo where process in('EHFOIGCC01','EHFOIGCCQ01','EOILL00','EOILL01','EOILS00','EOILS01') and attribute='VAR_FIn' >> VedaBatchUpload.sql
+echo where commodity in ('ELCBIOLFO','ELCBIOOIL','ELCHFO','ELCLFO','ELCLPG') and attribute='VAR_FIn' >> VedaBatchUpload.sql
 echo union all >> VedaBatchUpload.sql
 echo select tablename,commodity "fuel",period,pv >> VedaBatchUpload.sql
 echo from vedastore >> VedaBatchUpload.sql
@@ -537,20 +537,20 @@ echo sum(a."gasccs_rr"*b."Natural Gas RR") "gasccs_rr" >> VedaBatchUpload.sql
 echo from ( >> VedaBatchUpload.sql
 echo select tablename, period, >> VedaBatchUpload.sql
 echo case >> VedaBatchUpload.sql
-echo when sum(case when proc_set='ELC FROM COAL RR' then pv else 0 end) ^> 0 and sum(case when proc_set='ELC FROM COAL RR' then pv else 0 end) ^> sum(case when proc_set='ELC FROM COAL CCSRET' then pv else 0 end) then  >> VedaBatchUpload.sql
-echo (sum(case when proc_set='ELC FROM COAL RR' then pv else 0 end)-sum(case when proc_set='ELC FROM COAL CCSRET' then pv else 0 end))/sum(case when proc_set='ELC FROM COAL RR' then pv else 0 end) >> VedaBatchUpload.sql
+echo when sum(case when proc_set in('ELC FROM COAL RR','ELC FROM COAL CCSRET') then pv else 0 end) ^> 0 then >> VedaBatchUpload.sql
+echo (sum(case when proc_set='ELC FROM COAL RR' then pv else 0 end)/sum(case when proc_set in('ELC FROM COAL RR','ELC FROM COAL CCSRET') then pv else 0 end)) >> VedaBatchUpload.sql
 echo else 0 end "coal_rr", >> VedaBatchUpload.sql
 echo case >> VedaBatchUpload.sql
-echo when sum(case when proc_set='ELC FROM GAS RR' then pv else 0 end) ^> 0 and sum(case when proc_set='ELC FROM GAS RR' then pv else 0 end) ^> sum(case when proc_set='ELC FROM GAS CCSRET' then pv else 0 end) then  >> VedaBatchUpload.sql
-echo (sum(case when proc_set='ELC FROM GAS RR' then pv else 0 end)-sum(case when proc_set='ELC FROM GAS CCSRET' then pv else 0 end))/sum(case when proc_set='ELC FROM GAS RR' then pv else 0 end) >> VedaBatchUpload.sql
+echo when sum(case when proc_set in('ELC FROM GAS RR','ELC FROM GAS CCSRET') then pv else 0 end) ^> 0 then  >> VedaBatchUpload.sql
+echo (sum(case when proc_set='ELC FROM GAS RR' then pv else 0 end)/sum(case when proc_set in('ELC FROM GAS RR','ELC FROM GAS CCSRET') then pv else 0 end)) >> VedaBatchUpload.sql
 echo else 0 end "gas_rr", >> VedaBatchUpload.sql
 echo case >> VedaBatchUpload.sql
-echo when sum(case when proc_set='ELC FROM COAL RR' then pv else 0 end) ^> 0 then  >> VedaBatchUpload.sql
-echo sum(case when proc_set='ELC FROM COAL CCSRET' then pv else 0 end)/sum(case when proc_set='ELC FROM COAL RR' then pv else 0 end) >> VedaBatchUpload.sql
+echo when sum(case when proc_set in('ELC FROM COAL RR','ELC FROM COAL CCSRET') then pv else 0 end) ^> 0 then >> VedaBatchUpload.sql
+echo (sum(case when proc_set='ELC FROM COAL CCSRET' then pv else 0 end)/sum(case when proc_set in('ELC FROM COAL RR','ELC FROM COAL CCSRET') then pv else 0 end)) >> VedaBatchUpload.sql
 echo else 0 end "coalccs_rr", >> VedaBatchUpload.sql
 echo case >> VedaBatchUpload.sql
-echo when sum(case when proc_set='ELC FROM GAS RR' then pv else 0 end) ^> 0 then >> VedaBatchUpload.sql
-echo sum(case when proc_set='ELC FROM GAS CCSRET' then pv else 0 end)/sum(case when proc_set='ELC FROM GAS RR' then pv else 0 end) >> VedaBatchUpload.sql
+echo when sum(case when proc_set in('ELC FROM GAS RR','ELC FROM GAS CCSRET') then pv else 0 end) ^> 0 then  >> VedaBatchUpload.sql
+echo (sum(case when proc_set='ELC FROM GAS CCSRET' then pv else 0 end)/sum(case when proc_set in('ELC FROM GAS RR','ELC FROM GAS CCSRET') then pv else 0 end)) >> VedaBatchUpload.sql
 echo else 0 end "gasccs_rr" >> VedaBatchUpload.sql
 echo from elc_prd_fuel >> VedaBatchUpload.sql
 echo group by tablename, period >> VedaBatchUpload.sql
@@ -690,9 +690,9 @@ echo sum(case when proc_set in ('ELC FROM NUCLEAR') then pv else 0 end) "elec-ge
 echo sum(case when proc_set in ('ELC FROM WIND-OFFSH') then pv else 0 end) "elec-gen_offw", >> VedaBatchUpload.sql
 echo sum(case when proc_set in ('ELC FROM WIND-ONSH') then pv else 0 end) "elec-gen_onw", >> VedaBatchUpload.sql
 echo sum(case when proc_set in ('elec-gen_chp') then pv else 0 end) "elec-gen_chp", >> VedaBatchUpload.sql
-echo sum(case when proc_set='ELC FROM COAL-COF' then pv else 0 end)+sum(case when proc_set='ELC FROM COAL RR' then pv else 0 end)-sum(case when proc_set='ELC FROM COAL CCSRET' then pv else 0 end) "coal-unad", >> VedaBatchUpload.sql
+echo sum(case when proc_set='ELC FROM COAL-COF' then pv else 0 end)+sum(case when proc_set='ELC FROM COAL RR' then pv else 0 end) "coal-unad", >> VedaBatchUpload.sql
 echo sum(case when proc_set='ELC FROM COALCOF CCS' then pv else 0 end)+sum(case when proc_set='ELC FROM COAL CCSRET' then pv else 0 end) "coalccs-unad", >> VedaBatchUpload.sql
-echo sum(case when proc_set='ELC FROM GAS' then pv else 0 end)+sum(case when proc_set='ELC FROM GAS RR' then pv else 0 end)-sum(case when proc_set='ELC FROM GAS CCSRET' then pv else 0 end) "gas-unad", >> VedaBatchUpload.sql
+echo sum(case when proc_set='ELC FROM GAS' then pv else 0 end)+sum(case when proc_set='ELC FROM GAS RR' then pv else 0 end) "gas-unad", >> VedaBatchUpload.sql
 echo sum(case when proc_set='ELC FROM GAS CCS' then pv else 0 end)+sum(case when proc_set='ELC FROM GAS CCSRET' then pv else 0 end) "gasccs-unad", >> VedaBatchUpload.sql
 echo sum(case when proc_set='ELC FROM OIL' then pv else 0 end) "ELC FROM OIL", >> VedaBatchUpload.sql
 echo sum(case when proc_set='ELC FROM OIL CCS' then pv else 0 end) "ELC FROM OIL CCS",  >> VedaBatchUpload.sql
@@ -783,7 +783,7 @@ echo 'elec-cap_offw'::varchar(50) >> VedaBatchUpload.sql
 echo when process in('EWNDONS00','EWNDONS101','EWNDONS201','EWNDONS301','EWNDONS401','EWNDONS501', >> VedaBatchUpload.sql
 echo 'EWNDONS601','EWNDONS701','EWNDONS801','EWNDONS901') then 'elec-cap_onw'::varchar(50) >> VedaBatchUpload.sql
 echo when process ='EHFOIGCCQ01' then 'elec-cap_other-ccs'::varchar(50) >> VedaBatchUpload.sql
-echo when process in('EOILL00','EOILL01','EMANOCT00','EMANOCT01','EOILS00','EOILS01','EHFOIGCC01',    'EDSTRCPE00','EDSTRCPE01') then  >> VedaBatchUpload.sql
+echo when process in('EOILL00','EOILL01','EMANOCT00','EMANOCT01','EOILS00','EOILS01','EHFOIGCC01','EDSTRCPE00','EDSTRCPE01') then  >> VedaBatchUpload.sql
 echo 'elec-cap_other-ff'::varchar(50) >> VedaBatchUpload.sql
 echo when process in('EHYD00','EHYD01','EGEO01','ETIR101','ETIB101','ETIS101','EWAV101') then  >> VedaBatchUpload.sql
 echo 'elec-cap_other-rens'::varchar(50) >> VedaBatchUpload.sql
@@ -1566,9 +1566,9 @@ echo when process in('PCHP-CCP00','PCHP-CCP01','UCHP-CCG00','UCHP-CCG01') then '
 echo when process='ECOAQR01' then 'ELC FROM COAL CCSRET' >> VedaBatchUpload.sql
 echo when process in('ECOARR01') then 'ELC FROM COAL RR' >> VedaBatchUpload.sql
 echo when process in('ECOA00','ECOABIO00') then 'ELC FROM COAL-COF' >> VedaBatchUpload.sql
-echo when process in('ECOAQ01') then 'ELC FROM COALCOF CCS' >> VedaBatchUpload.sql
+echo when process in('ECOAQ01','ECOAQDEMO01') then 'ELC FROM COALCOF CCS' >> VedaBatchUpload.sql
 echo when process in('ENGACCT00','ENGAOCT00','ENGAOCT01','ENGARCPE00','ENGARCPE01') then 'ELC FROM GAS' >> VedaBatchUpload.sql
-echo when process in('ENGACCTQ01') then 'ELC FROM GAS CCS' >> VedaBatchUpload.sql
+echo when process in('ENGACCTQ01','ENGACCTQDEMO01') then 'ELC FROM GAS CCS' >> VedaBatchUpload.sql
 echo when process='ENGAQR01' then 'ELC FROM GAS CCSRET' >> VedaBatchUpload.sql
 echo when process in('ENGACCTRR01') then 'ELC FROM GAS RR' >> VedaBatchUpload.sql
 echo when process in('EGEO01') then 'ELC FROM GEO' >> VedaBatchUpload.sql
