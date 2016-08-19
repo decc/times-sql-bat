@@ -11,14 +11,14 @@ Requires: postgres 9.4 or higher, DOS. Works on plain text "VD" file outputs fro
 
 NB  *   If a particular model run doesn't build it, then there will be no entry in the VD file for it and hence no line in the results output —
         with few exceptions lines which are completely zero are not reported
-    *   Queries are "wrapped" with a "copy" statement. Destinations of these files ") TO... " are in BAT syntax. In interactive mode (if running these queries in a postgres browser), 
-        you'll have to change these to a full path (e.g. C:\0\...csv) or else the q will  not run. By default, headings are not output for all except the first q. 
+    *   Queries are "wrapped" with a "copy" statement. Destinations of these files ") TO... " are in BAT syntax. In interactive mode (if running these queries in a postgres browser),
+        you'll have to change these to a full path (e.g. C:\0\...csv) or else the q will  not run. By default, headings are not output for all except the first q.
         Can add these by adding the "HEADER" keyword after the "CSV" statement but before the ';'. Instead, and if you don't want CSV output, you can copy the q without the surrounding
         "copy (... ) TO " statement. If taking this approach, may require a terminating ';' (When a q is wrapped with "copy", the last SQL statement _should_not_ be terminated
         with a ";".)
     *   Filters are as specific as possible with wildcards removed. This means that the qs will have to be carefully revised if the structure of the model changes.
 
-General comment: order of headings in output is: 
+General comment: order of headings in output is:
     id [= concatenation of all other fields]
     analysis
     tablename
@@ -26,7 +26,7 @@ General comment: order of headings in output is:
     commodity
     process
     ...followed by years to 2060
-    
+
 Fernley Symons, 2015 ff
 
 Original version:
@@ -72,7 +72,7 @@ Revisions section placed at end of file.
 
 select 'ag-lulucf-meas-ghg_'|| proc_set || '|' || tablename || '|' || attribute || '|' || 'various' || '|various'::varchar(300) "id",
     'ag-lulucf-meas-ghg_' || proc_set "analysis", tablename, attribute,
-    'various'::varchar(50) "commodity",'various'::varchar "process", 
+    'various'::varchar(50) "commodity",'various'::varchar "process",
     sum(pv) "all",
     sum(case when period='2010' then pv else 0 end)::numeric "2010",
     sum(case when period='2011' then pv else 0 end)::numeric "2011",
@@ -90,14 +90,14 @@ select 'ag-lulucf-meas-ghg_'|| proc_set || '|' || tablename || '|' || attribute 
     from (
         select tablename, attribute, period,pv,
         case
-            when process in ('ALUFOR01') then 'affor'
-            when process in ('AGCRP01','AGCRP02','AGCRP03','AGCRP04','AGCRP05','AGCRP06','AGCRP07','AGCRP08','AGCRP09') then 'crops'
-            when process in ('AHTBLRC00','AHTBLRG00','AHTBLRG01','AHTBLRO00','AHTBLRO01','ATRA00','ATRA01') then 'agr-en'
-            when process in ('ALU00','ALU01','MINBSLURRY1') then 'lulucf'
-            when process in ('AGLIV01','AGLIV02','AGLIV03','AGLIV04','AGLIV05','AGLIV06','AGLIV07','AGLIV08','AGLIV09','AGLIV10') then 'livestock'
+            when process in ('ALUFOR01') then 'affor'  --*Filter 210*
+            when process in ('AGCRP01','AGCRP02','AGCRP03','AGCRP04','AGCRP05','AGCRP06','AGCRP07','AGCRP08','AGCRP09') then 'crops' --*Filter 211*
+            when process in ('AHTBLRC00','AHTBLRG00','AHTBLRG01','AHTBLRO00','AHTBLRO01','ATRA00','ATRA01') then 'agr-en' --*Filter 212*
+            when process in ('ALU00','ALU01','MINBSLURRY1') then 'lulucf' --*Filter 213*
+            when process in ('AGLIV01','AGLIV02','AGLIV03','AGLIV04','AGLIV05','AGLIV06','AGLIV07','AGLIV08','AGLIV09','AGLIV10') then 'livestock' --*Filter 214*
         end as proc_set
         from vedastore
-        where attribute='VAR_FOut' and commodity in ('GHG-LULUCF','GHG-AGR-NO-LULUCF')
+        where attribute='VAR_FOut' and commodity in ('GHG-LULUCF','GHG-AGR-NO-LULUCF') --*Filter 1*
        ) a
 where proc_set is not null
 group by tablename, attribute, proc_set;
@@ -105,9 +105,9 @@ group by tablename, attribute, proc_set;
 /* *Afforestation rate* */
 -- This is the amount of afforestation over the BAU level (in current model formulation)
 select 'ag-lulucf-meas_aff_level' || '|' || tablename || '|' || attribute || '|' || commodity || '|' || process::varchar(300) "id",
-    'ag-lulucf-meas_aff_level'::varchar(50) "analysis", 
+    'ag-lulucf-meas_aff_level'::varchar(50) "analysis",
     tablename, attribute,
-    commodity,process, 
+    commodity,process,
     sum(pv) "all",
     sum(case when period='2010' then pv else 0 end)::numeric "2010",
     sum(case when period='2011' then pv else 0 end)::numeric "2011",
@@ -123,7 +123,7 @@ select 'ag-lulucf-meas_aff_level' || '|' || tablename || '|' || attribute || '|'
     sum(case when period='2055' then pv else 0 end)::numeric "2055",
     sum(case when period='2060' then pv else 0 end)::numeric "2060"
 from vedastore
-where attribute='VAR_FOut' and commodity='ALAND' and process='ALUFOR01'
+where attribute='VAR_FOut' and commodity='ALAND' and process='ALUFOR01' --*Filter 2*
 group by tablename, attribute,commodity,process
 
 /* **For transport batch file: ** */
@@ -132,20 +132,34 @@ group by tablename, attribute,commodity,process
 /* *Whole stock vehicle kms, emissions and emission intensity for 29 vehicle types* */
 -- Includes estimates of CNG-in by vehicle types and associated emissions- This requires apportioning
 -- emissions from the process converting mains gas to CNG (=different process for lgv/hgv/car vs bus) according to CNG input
--- In the model there seem to be cases where there is no CNG used by any of the vehicles (lgv,hgv,car or bus) and no CNG is created 
+-- In the model there seem to be cases where there is no CNG used by any of the vehicles (lgv,hgv,car or bus) and no CNG is created
 -- but there are still emissions from the process which turns mains gas into CNG-
 
 -- NB following codes for 'cars_h2+hybrid' doesn't seem to exist in the online acronym list:
     -- TCHBHYL01
 -- This code exists in the acronym list but not in the test dataset:
     -- TCHBE8501    New hybrid flexible-fuel car (for E85) (seems not to be read in according to the XL model def sheet)
--- Uses the postgres 9-4+ "specific filter(where---" construction so won't work with other DBs    
+-- Uses the postgres 9-4+ "specific filter(where---" construction so won't work with other DBs
 
 copy(
 with base_cng_emissions as(
-    select tablename, period,'cars-emis_lpg-and-cng-fueled'::varchar "analysis", 'VAR_FOut'::varchar "atttribute", 'GHG-TRA-NON-ETS-NO-IAS'::varchar "commodity",0::numeric "pv" from vedastore group by tablename, period union
-    select tablename, period,'hgv-emis_lpg-and-cng-fueled'::varchar "analysis", 'VAR_FOut'::varchar "atttribute", 'GHG-TRA-NON-ETS-NO-IAS'::varchar "commodity",0::numeric "pv" from vedastore group by tablename, period union
-    select tablename, period,'lgv-emis_lpg-and-cng-fueled'::varchar "analysis", 'VAR_FOut'::varchar "atttribute", 'GHG-TRA-NON-ETS-NO-IAS'::varchar "commodity",0::numeric "pv" from vedastore group by tablename, period 
+    select tablename, period,'cars-emis_lpg-and-cng-fueled'::varchar "analysis",
+        'VAR_FOut'::varchar "atttribute",
+        'GHG-TRA-NON-ETS-NO-IAS'::varchar "commodity",
+        0::numeric "pv"
+    from vedastore group by tablename, period
+    union
+    select tablename, period,'hgv-emis_lpg-and-cng-fueled'::varchar "analysis",
+        'VAR_FOut'::varchar "atttribute",
+        'GHG-TRA-NON-ETS-NO-IAS'::varchar "commodity",
+        0::numeric "pv"
+    from vedastore group by tablename, period
+    union
+    select tablename, period,'lgv-emis_lpg-and-cng-fueled'::varchar "analysis",
+        'VAR_FOut'::varchar "atttribute",
+        'GHG-TRA-NON-ETS-NO-IAS'::varchar "commodity",
+        0::numeric "pv"
+    from vedastore group by tablename, period
 )
 , cng_emis_shares as(
     select tablename,period,
@@ -155,10 +169,10 @@ with base_cng_emissions as(
         sum(case when proc_set in('cars-cng-in','lgv-cng-in','hgv-cng-in') then pv else 0 end) "total_cng_in",
         sum(case when proc_set='cng-conv-emis' then pv else 0 end) "cng-conv-emis"
     from (
-        select 
+        select
             tablename,process,period,pv,
-        case 
-            when process = 'TFSSCNG01' and attribute ='VAR_FOut' and 
+        case
+            when process = 'TFSSCNG01' and attribute ='VAR_FOut' and
                 commodity in('GHG-AGR-NO-LULUCF',
                 'GHG-ELC','GHG-ELC-CAPTURED','GHG-ETS-NET',
                 'GHG-ETS-NO-IAS-NET','GHG-ETS-NO-IAS-TER','GHG-ETS-TER','GHG-ETS-YES-IAS-NET',
@@ -171,12 +185,12 @@ with base_cng_emissions as(
                 'GHG-OTHER-ETS-CAPTURED','GHG-OTHER-NON-ETS','GHG-RES-ETS','GHG-RES-NON-ETS',
                 'GHG-SER-ETS','GHG-SER-NON-ETS','GHG-TRA-ETS-NO-IAS','GHG-TRA-NON-ETS-NO-IAS',
                 'GHG-YES-IAS-NO-LULUCF-NET','GHG-YES-IAS-NO-LULUCF-TER',
-                'GHG-YES-IAS-YES-LULUCF-NET','GHG-YES-IAS-YES-LULUCF-TER') then 'cng-conv-emis'
+                'GHG-YES-IAS-YES-LULUCF-NET','GHG-YES-IAS-YES-LULUCF-TER') then 'cng-conv-emis' --*Filter 3*
             when attribute = 'VAR_FIn' and commodity in('TRACNGS','TRACNGL') then
-                case 
-                    when process like 'TC%' then 'cars-cng-in'
-                    when process like 'TL%' then 'lgv-cng-in'
-                    when process like 'TH%' then 'hgv-cng-in'
+                case
+                    when process like 'TC%' then 'cars-cng-in' --*Filter 4*
+                    when process like 'TL%' then 'lgv-cng-in' --*Filter 5*
+                    when process like 'TH%' then 'hgv-cng-in' --*Filter 6*
                 end
         end as "proc_set"
         from vedastore
@@ -192,8 +206,8 @@ with base_cng_emissions as(
             'GHG-OTHER-ETS-CAPTURED','GHG-OTHER-NON-ETS','GHG-RES-ETS','GHG-RES-NON-ETS',
             'GHG-SER-ETS','GHG-SER-NON-ETS','GHG-TRA-ETS-NO-IAS','GHG-TRA-NON-ETS-NO-IAS',
             'GHG-YES-IAS-NO-LULUCF-NET','GHG-YES-IAS-NO-LULUCF-TER',
-            'GHG-YES-IAS-YES-LULUCF-NET','GHG-YES-IAS-YES-LULUCF-TER') and 
-            (process = 'TFSSCNG01' or process like any(array['TC%','TL%','TH%','TB%']))
+            'GHG-YES-IAS-YES-LULUCF-NET','GHG-YES-IAS-YES-LULUCF-TER') and
+            (process = 'TFSSCNG01' or process like any(array['TC%','TL%','TH%','TB%'])) --*Filter 7*
             order by process
     ) a
     where proc_set <>''
@@ -203,7 +217,7 @@ with base_cng_emissions as(
     select analysis, tablename,attribute,commodity,period,sum(pv) "pv"
     from (
         select a.tablename, a.analysis, a.period,a.attribute,a.commodity,
-        case 
+        case
             when analysis='cars-emis_lpg-and-cng-fueled' then
                 case when "total_cng_in" > 0 then "cars-cng-in"/"total_cng_in"*"cng-conv-emis" + pv else pv end
             when analysis='lgv-emis_lpg-and-cng-fueled' then
@@ -216,35 +230,35 @@ with base_cng_emissions as(
             select tablename, period, analysis, attribute, commodity,sum(pv) "pv"
             from (
                     select tablename, process, period,pv,attribute,commodity,
-                    case 
+                    case
                         when process like 'TC%' then 'cars-'
                         when process like 'TL%' then 'lgv-'
                         when process like 'TH%' then 'hgv-'
                         when process like 'TB%' or process='TFSLCNG01' then 'bus-'
-                        when process like 'TW%' then 'bike-'            
-                    end || 
+                        when process like 'TW%' then 'bike-'
+                    end ||
                     case
                     when commodity in('TC','TL','TH','TB','TW') then 'km_'
                     when commodity in('GHG-TRA-NON-ETS-NO-IAS') then 'emis_'
                     end ||
-                    case 
-                        when process in('TBDST00','TBDST01','TCDST00','TCDST01','THDST00','THDST01','TLDST00','TLDST01') then 'diesel'::varchar(50)
-                        when process in('TCE8501','TLE8501') then 'E85'::varchar(50)
-                        when process in('TBELC01','TCELC01','TLELC01','TWELC01') then 'electric'::varchar(50)
-                        when process in('TBFCHBHYG01','TCFCHBHYG01','TCFCHYG01','TCHBE8501','TCHBHYL01','THFCHBHYG01','TLFCHBHYG01','TLFCHYG01','TLHBHYL01','TWFCHYG01') then 'h2+hybrid'::varchar(50)
-                        when process in('TCFCPHBHYG01') then 'h2-plug-in-hybrid'::varchar(50)
-                        when process in('TBHBDST01','TCHBDST01','TCHBPET00','TCHBPET01','THHBDST01','TLHBDST01','TLHBPET01') then 'hybrid'::varchar(50)
-                        when process in('TBCNG01','TCCNG01','TCLPG00','TCLPG01','THCNG01','TLCNG01','TLLPG01','TFSLCNG01') then 'lpg-and-cng-fueled'::varchar(50)
+                    case
+                        when process in('TBDST00','TBDST01','TCDST00','TCDST01','THDST00','THDST01','TLDST00','TLDST01') then 'diesel'::varchar(50) --*Filter 8*
+                        when process in('TCE8501','TLE8501') then 'E85'::varchar(50) --*Filter 9*
+                        when process in('TBELC01','TCELC01','TLELC01','TWELC01') then 'electric'::varchar(50) --*Filter 10*
+                        when process in('TBFCHBHYG01','TCFCHBHYG01','TCFCHYG01','TCHBE8501','TCHBHYL01','THFCHBHYG01','TLFCHBHYG01','TLFCHYG01','TLHBHYL01','TWFCHYG01') then 'h2+hybrid'::varchar(50) --*Filter 11*
+                        when process in('TCFCPHBHYG01') then 'h2-plug-in-hybrid'::varchar(50) --*Filter 12*
+                        when process in('TBHBDST01','TCHBDST01','TCHBPET00','TCHBPET01','THHBDST01','TLHBDST01','TLHBPET01') then 'hybrid'::varchar(50) --*Filter 13*
+                        when process in('TBCNG01','TCCNG01','TCLPG00','TCLPG01','THCNG01','TLCNG01','TLLPG01','TFSLCNG01') then 'lpg-and-cng-fueled'::varchar(50) --*Filter 14*
                         -- NB Includes the bus mains gas => CNG conversion process 'TFSLCNG01'
-                        when process in('TCPET00','TCPET01','TLPET00','TLPET01','TWPET00','TWPET01') then 'petrol'::varchar(50)
-                        when process in('TCPHBDST01','TCPHBPET01','TLPHBDST01','TLPHBPET01') then 'plug-in-hybrid'::varchar(50)
+                        when process in('TCPET00','TCPET01','TLPET00','TLPET01','TWPET00','TWPET01') then 'petrol'::varchar(50) --*Filter 15*
+                        when process in('TCPHBDST01','TCPHBPET01','TLPHBDST01','TLPHBPET01') then 'plug-in-hybrid'::varchar(50) --*Filter 16*
                     end as "analysis"
                     from vedastore
                     where attribute = 'VAR_FOut' and commodity in('GHG-TRA-NON-ETS-NO-IAS','TB','TC','TH','TL','TW')
-                        and (process like any(array['TC%','TL%','TB%','TW%']) or process ~'^TH[^Y]' or process='TFSLCNG01')
+                        and (process like any(array['TC%','TL%','TB%','TW%']) or process ~'^TH[^Y]' or process='TFSLCNG01')  --*Filter 17*
                     ) a
             where analysis <>''
-            group by tablename, period, analysis, attribute, commodity 
+            group by tablename, period, analysis, attribute, commodity
             union
             select * from base_cng_emissions
            ) a
@@ -273,14 +287,14 @@ select analysis || '|' || tablename || '|' || attribute || '|' || commodity || '
     sum(case when period='2060' then pv else 0 end)::numeric "2060"
 from (
 -- NB This following uses a postgres 9-4 specific syntax ( filter(where--- ) and won't work with earlier vers
-    select a.* from main_crosstab a 
+    select a.* from main_crosstab a
     where period!='-'
     union
     select left(analysis, position('_' in analysis)) ||'all' "analysis", tablename, 'VAR_FOut' "attribute", commodity, period,sum(pv) "pv" from main_crosstab
     where period!='-'
     group by left(analysis, position('_' in analysis)), tablename,commodity,period
     union
-    select left(analysis, position('-' in analysis))||'emis-inten_all' "analysis", tablename, 'VAR_FOut' "attribute", '-' "commodity", period, 
+    select left(analysis, position('-' in analysis))||'emis-inten_all' "analysis", tablename, 'VAR_FOut' "attribute", '-' "commodity", period,
         sum(pv) filter(where analysis like '%-emis%')/sum(pv) filter(where analysis like '%-km%') "pv"
     from main_crosstab
     where period!='-' and period!='2200'
@@ -295,12 +309,27 @@ order by tablename, analysis
 -- This script only includes new vehicles in the year of introduction- Apportions emissions from conversion of mains gas to CNG according to CNG-in for each vehicle type
 -- Uses the postgres 9-4+ "specific filter(where---" construction so won't work with other DBs
 
-COPY ( 
+COPY (
 with base_cng_emissions as(
-    select tablename, period,'cars-new-emis_lpg-and-cng-fueled'::varchar "analysis", 'VAR_FOut'::varchar "atttribute", 'GHG-TRA-NON-ETS-NO-IAS'::varchar "commodity",0::numeric "pv" from vedastore group by tablename, period union
-    select tablename, period,'hgv-new-emis_lpg-and-cng-fueled'::varchar "analysis", 'VAR_FOut'::varchar "atttribute", 'GHG-TRA-NON-ETS-NO-IAS'::varchar "commodity",0::numeric "pv" from vedastore group by tablename, period union
-    select tablename, period,'lgv-new-emis_lpg-and-cng-fueled'::varchar "analysis", 'VAR_FOut'::varchar "atttribute", 'GHG-TRA-NON-ETS-NO-IAS'::varchar "commodity",0::numeric "pv" from vedastore group by tablename, period union
-    select tablename, period,'bus-new-emis_lpg-and-cng-fueled'::varchar "analysis", 'VAR_FOut'::varchar "atttribute", 'GHG-TRA-NON-ETS-NO-IAS'::varchar "commodity",0::numeric "pv" from vedastore group by tablename, period
+    select tablename, period,'cars-new-emis_lpg-and-cng-fueled'::varchar "analysis",
+        'VAR_FOut'::varchar "atttribute", 'GHG-TRA-NON-ETS-NO-IAS'::varchar "commodity",
+        0::numeric "pv"
+    from vedastore group by tablename, period
+    union
+    select tablename, period,'hgv-new-emis_lpg-and-cng-fueled'::varchar "analysis",
+        'VAR_FOut'::varchar "atttribute", 'GHG-TRA-NON-ETS-NO-IAS'::varchar "commodity",
+        0::numeric "pv"
+    from vedastore group by tablename, period
+    union
+    select tablename, period,'lgv-new-emis_lpg-and-cng-fueled'::varchar "analysis",
+        'VAR_FOut'::varchar "atttribute", 'GHG-TRA-NON-ETS-NO-IAS'::varchar "commodity",
+        0::numeric "pv"
+    from vedastore group by tablename, period
+    union
+    select tablename, period,'bus-new-emis_lpg-and-cng-fueled'::varchar "analysis",
+        'VAR_FOut'::varchar "atttribute", 'GHG-TRA-NON-ETS-NO-IAS'::varchar "commodity",
+        0::numeric "pv"
+   from vedastore group by tablename, period
 )
 , cng_emis_shares as(
     select tablename,period,
@@ -314,19 +343,19 @@ with base_cng_emissions as(
         sum(case when proc_set='bus-cng-conv-emis' then pv else 0 end) "bus-cng-conv-emis"
     from (
         select tablename,process,period,pv,
-        case 
-            when process = 'TFSSCNG01' and attribute ='VAR_FOut' and 
-                commodity in('GHG-TRA-NON-ETS-NO-IAS') then 'cng-conv-emis'
-            when process = 'TFSLCNG01' and attribute ='VAR_FOut' and commodity='GHG-TRA-NON-ETS-NO-IAS' then 'bus-cng-conv-emis'  
+        case
+            when process = 'TFSSCNG01' and attribute ='VAR_FOut' and
+                commodity in('GHG-TRA-NON-ETS-NO-IAS') then 'cng-conv-emis' --*Filter 18*
+            when process = 'TFSLCNG01' and attribute ='VAR_FOut' and commodity='GHG-TRA-NON-ETS-NO-IAS' then 'bus-cng-conv-emis' --*Filter 19*
             when attribute = 'VAR_FIn' and commodity in('TRACNGS','TRACNGL') then
-                case 
-                    when process like 'TC%' and vintage=period then 'cars-new-cng-in'
-                    when process like 'TL%' and vintage=period then 'lgv-new-cng-in'
-                    when process like 'TH%' and vintage=period then 'hgv-new-cng-in'
-                    when process like any(array['TC%','TL%','TH%']) and vintage!=period then 'older-veh-cng-in'
-                    when process like 'TB%' and vintage=period then 'bus-new-cng-in'
-                    when process like 'TB%' and vintage!=period then 'older-bus-cng-in'
-                end 
+                case
+                    when process like 'TC%' and vintage=period then 'cars-new-cng-in' --*Filter 20*
+                    when process like 'TL%' and vintage=period then 'lgv-new-cng-in' --*Filter 21*
+                    when process like 'TH%' and vintage=period then 'hgv-new-cng-in' --*Filter 22*
+                    when process like any(array['TC%','TL%','TH%']) and vintage!=period then 'older-veh-cng-in' --*Filter 23*
+                    when process like 'TB%' and vintage=period then 'bus-new-cng-in' --*Filter 24*
+                    when process like 'TB%' and vintage!=period then 'older-bus-cng-in' --*Filter 25*
+                end
         end as "proc_set"
         from vedastore
         order by process
@@ -337,7 +366,7 @@ with base_cng_emissions as(
 , main_crosstab as(
     select analysis, tablename,attribute,commodity,period,sum(pv) "pv" from (
        select a.tablename, a.analysis, a.period,a.attribute,a.commodity,
-        case 
+        case
             when analysis='cars-new-emis_lpg-and-cng-fueled' then
                 case when "total_cng_in" > 0 then "cars-new-cng-in"/"total_cng_in"*"cng-conv-emis" + pv else pv end
             when analysis='lgv-new-emis_lpg-and-cng-fueled' then
@@ -345,41 +374,42 @@ with base_cng_emissions as(
             when analysis='hgv-new-emis_lpg-and-cng-fueled' then
                 case when "total_cng_in" > 0 then "hgv-new-cng-in"/"total_cng_in"*"cng-conv-emis" + pv else pv end
             when analysis='bus-new-emis_lpg-and-cng-fueled' then
-                case when "total_bus_cng_in" > 0 then "bus-new-cng-in"/"total_bus_cng_in"*"bus-cng-conv-emis" + pv else pv end                
+                case when "total_bus_cng_in" > 0 then "bus-new-cng-in"/"total_bus_cng_in"*"bus-cng-conv-emis" + pv else pv end
             else pv
          end "pv"
         from (
             select tablename, period, analysis, attribute, commodity,sum(pv) "pv"
             from (
                     select tablename, process, period,pv,attribute,commodity,
-                    case 
+                    case
                         when process like 'TC%' then 'cars-new-'
                         when process like 'TL%' then 'lgv-new-'
                         when process like 'TH%' then 'hgv-new-'
                         when process like 'TB%' then 'bus-new-'
-                        when process like 'TW%' then 'bike-new-'                
-                    end || 
+                        when process like 'TW%' then 'bike-new-'
+                    end ||
                     case
                         when commodity in('TC','TL','TH','TB','TW') then 'km_'
                         when commodity in('GHG-TRA-NON-ETS-NO-IAS') then 'emis_'
                     end ||
-                    case 
-                        when process in('TBDST00','TBDST01','TCDST00','TCDST01','THDST00','THDST01','TLDST00','TLDST01') then 'diesel'::varchar(50)
-                        when process in('TCE8501','TLE8501') then 'E85'::varchar(50)
-                        when process in('TBELC01','TCELC01','TLELC01','TWELC01') then 'electric'::varchar(50)
-                        when process in('TBFCHBHYG01','TCFCHBHYG01','TCFCHYG01','TCHBE8501','TCHBHYL01','THFCHBHYG01','TLFCHBHYG01','TLFCHYG01','TLHBHYL01','TWFCHYG01') then 'h2+hybrid'::varchar(50)
-                        when process in('TCFCPHBHYG01') then 'h2-plug-in-hybrid'::varchar(50)
-                        when process in('TBHBDST01','TCHBDST01','TCHBPET00','TCHBPET01','THHBDST01','TLHBDST01','TLHBPET01') then 'hybrid'::varchar(50)
-                        when process in('TBCNG01','TCCNG01','TCLPG00','TCLPG01','THCNG01','TLCNG01','TLLPG01') then 'lpg-and-cng-fueled'::varchar(50)
-                        when process in('TCPET00','TCPET01','TLPET00','TLPET01','TWPET00','TWPET01','TWPET01') then 'petrol'::varchar(50)
-                        when process in('TCPHBDST01','TCPHBPET01','TLPHBDST01','TLPHBPET01') then 'plug-in-hybrid'::varchar(50)
+                    case
+                        when process in('TBDST00','TBDST01','TCDST00','TCDST01','THDST00','THDST01','TLDST00','TLDST01') then 'diesel'::varchar(50) --*Filter 8*
+                        when process in('TCE8501','TLE8501') then 'E85'::varchar(50) --*Filter 9*
+                        when process in('TBELC01','TCELC01','TLELC01','TWELC01') then 'electric'::varchar(50) --*Filter 28*
+                        when process in('TBFCHBHYG01','TCFCHBHYG01','TCFCHYG01','TCHBE8501','TCHBHYL01','THFCHBHYG01','TLFCHBHYG01','TLFCHYG01'
+                            ,'TLHBHYL01','TWFCHYG01') then 'h2+hybrid'::varchar(50) --*Filter 11*
+                        when process in('TCFCPHBHYG01') then 'h2-plug-in-hybrid'::varchar(50) --*Filter 12*
+                        when process in('TBHBDST01','TCHBDST01','TCHBPET00','TCHBPET01','THHBDST01','TLHBDST01','TLHBPET01') then 'hybrid'::varchar(50) --*Filter 13*
+                        when process in('TBCNG01','TCCNG01','TCLPG00','TCLPG01','THCNG01','TLCNG01','TLLPG01') then 'lpg-and-cng-fueled'::varchar(50) --*Filter 32*
+                        when process in('TCPET00','TCPET01','TLPET00','TLPET01','TWPET00','TWPET01','TWPET01') then 'petrol'::varchar(50) --*Filter 33*
+                        when process in('TCPHBDST01','TCPHBPET01','TLPHBDST01','TLPHBPET01') then 'plug-in-hybrid'::varchar(50) --*Filter 16*
                     end as "analysis"
                     from vedastore
                     where attribute = 'VAR_FOut' and commodity in('TC','TL','TH','TW','TB','GHG-TRA-NON-ETS-NO-IAS')
-                        and (process like any(array['TC%','TL%','TB%','TW%']) or process ~'^TH[^Y]') and vintage=period and process like '%01'
+                        and (process like any(array['TC%','TL%','TB%','TW%']) or process ~'^TH[^Y]') and vintage=period and process like '%01' --*Filter 35*
                     ) a
                 where analysis <>''
-                group by tablename, period, analysis, attribute, commodity 
+                group by tablename, period, analysis, attribute, commodity
                 union
                 select * from base_cng_emissions
            ) a
@@ -407,15 +437,15 @@ select analysis || '|' || tablename || '|' || attribute || '|' || commodity || '
     sum(case when period='2055' then pv else 0 end)::numeric "2055",
     sum(case when period='2060' then pv else 0 end)::numeric "2060"
 from (
--- NB This following uses a postgres 9-4 specific syntax ( filter(where--- ) and won't work with earlier vers
-    select a.* from main_crosstab a 
+-- NB This following uses a postgres 9-4 specific syntax ( filter(where... ) and won't work with earlier vers
+    select a.* from main_crosstab a
     where period!='-'
     union
     select left(analysis, position('_' in analysis)) ||'all' "analysis", tablename, 'VAR_FOut' "attribute", commodity, period,sum(pv) "pv" from main_crosstab
     where period!='-'
     group by left(analysis, position('_' in analysis)), tablename,commodity,period
     union
-    select left(analysis, position('-' in analysis))||'new-emis-inten_all' "analysis", tablename, 'VAR_FOut' "attribute", '-' "commodity", period, 
+    select left(analysis, position('-' in analysis))||'new-emis-inten_all' "analysis", tablename, 'VAR_FOut' "attribute", '-' "commodity", period,
         sum(pv) filter(where analysis like '%-emis%')/sum(pv) filter(where analysis like '%-km%') "pv"
     from main_crosstab
     where period!='-' and period!='2200'
@@ -428,7 +458,7 @@ order by tablename, analysis
 
 /* *Whole stock capacity for vehicles for 29 vehicle types* */
 
-COPY ( 
+COPY (
 select analysis || '|' || tablename || '|' || attribute || '|' || commodity || '|various'::varchar(300) "id", analysis, tablename,attribute,
     commodity,
     'various'::varchar(50) "process",
@@ -448,27 +478,27 @@ select analysis || '|' || tablename || '|' || attribute || '|' || commodity || '
     sum(case when period='2060' then pv else 0 end)::numeric "2060"
 from (
     select process,period,pv,
-    case 
+    case
         when process like 'TC%' then 'cars-cap_'
         when process like 'TL%' then 'lgv-cap_'
         when process like 'TH%' then 'hgv-cap_'
         when process like 'TB%' then 'bus-cap_'
-        when process like 'TW%' then 'bike-cap_'    
+        when process like 'TW%' then 'bike-cap_'
     end ||
-    case 
-        when process in('TBDST00','TBDST01','TCDST00','TCDST01','THDST00','THDST01','TLDST00','TLDST01') then 'diesel'::varchar(50)
-        when process in('TCE8501','TLE8501') then 'E85'::varchar(50)
-        when process in('TBELC01','TCELC01','TLELC01','TWELC01') then 'electric'::varchar(50)
-        when process in('TBFCHBHYG01','TCFCHBHYG01','TCFCHYG01','TCHBE8501','TCHBHYL01','THFCHBHYG01','TLFCHBHYG01','TLFCHYG01','TLHBHYL01','TWFCHYG01') then 'h2+hybrid'::varchar(50)
-        when process in('TCFCPHBHYG01') then 'h2-plug-in-hybrid'::varchar(50)
-        when process in('TBHBDST01','TCHBDST01','TCHBPET00','TCHBPET01','THHBDST01','TLHBDST01','TLHBPET01') then 'hybrid'::varchar(50)
-        when process in('TBCNG01','TCCNG01','TCLPG00','TCLPG01','THCNG01','TLCNG01','TLLPG01') then 'lpg-and-cng-fueled'::varchar(50)
-        when process in('TCPET00','TCPET01','TLPET00','TLPET01','TWPET00','TWPET01') then 'petrol'::varchar(50)
-        when process in('TCPHBDST01','TCPHBPET01','TLPHBDST01','TLPHBPET01') then 'plug-in-hybrid'::varchar(50)
+    case
+        when process in('TBDST00','TBDST01','TCDST00','TCDST01','THDST00','THDST01','TLDST00','TLDST01') then 'diesel'::varchar(50) --*Filter 8*
+        when process in('TCE8501','TLE8501') then 'E85'::varchar(50) --*Filter 9*
+        when process in('TBELC01','TCELC01','TLELC01','TWELC01') then 'electric'::varchar(50) --*Filter 10*
+        when process in('TBFCHBHYG01','TCFCHBHYG01','TCFCHYG01','TCHBE8501','TCHBHYL01','THFCHBHYG01','TLFCHBHYG01','TLFCHYG01','TLHBHYL01','TWFCHYG01') then 'h2+hybrid'::varchar(50) --*Filter 11*
+        when process in('TCFCPHBHYG01') then 'h2-plug-in-hybrid'::varchar(50) --*Filter 12*
+        when process in('TBHBDST01','TCHBDST01','TCHBPET00','TCHBPET01','THHBDST01','TLHBDST01','TLHBPET01') then 'hybrid'::varchar(50) --*Filter 13*
+        when process in('TBCNG01','TCCNG01','TCLPG00','TCLPG01','THCNG01','TLCNG01','TLLPG01') then 'lpg-and-cng-fueled'::varchar(50) --*Filter 32*
+        when process in('TCPET00','TCPET01','TLPET00','TLPET01','TWPET00','TWPET01') then 'petrol'::varchar(50) --*Filter 15*
+        when process in('TCPHBDST01','TCPHBPET01','TLPHBDST01','TLPHBPET01') then 'plug-in-hybrid'::varchar(50) --*Filter 16*
     end as "analysis",
     tablename, attribute,commodity
     from vedastore
-    where attribute = 'VAR_Cap' and process like any(array['TC%','TL%','TH%','TB%','TW%'])
+    where attribute = 'VAR_Cap' and process like any(array['TC%','TL%','TH%','TB%','TW%']) --*Filter 45*
 ) a
 where analysis <>''
 group by id, analysis,tablename, attribute, commodity
@@ -476,9 +506,9 @@ order by tablename,  analysis, attribute, commodity
  ) TO '%~dp0VehCapOut.csv' delimiter ',' CSV;
 
 /* *New build capacity for vehicles for 29 vehicle types* */
--- NB are no commodities associated with new build, only processes - commodity='-' 
+-- NB are no commodities associated with new build, only processes - commodity='-'
 
-COPY ( 
+COPY (
 select analysis || '|' || tablename || '|' || attribute || '|' || commodity || '|various'::varchar(300) "id", analysis, tablename,attribute,
     commodity,
     'various'::varchar(50) "process",
@@ -498,27 +528,27 @@ select analysis || '|' || tablename || '|' || attribute || '|' || commodity || '
     sum(case when period='2060' then pv else 0 end)::numeric "2060"
 from (
     select process,period,pv,
-    case 
+    case
         when process like 'TC%' then 'cars-new-cap_'
         when process like 'TL%' then 'lgv-new-cap_'
         when process like 'TH%' then 'hgv-new-cap_'
         when process like 'TB%' then 'bus-new-cap_'
-        when process like 'TW%' then 'bike-new-cap_'    
+        when process like 'TW%' then 'bike-new-cap_'
     end ||
-    case 
-        when process in('TBDST00','TBDST01','TCDST00','TCDST01','THDST00','THDST01','TLDST00','TLDST01') then 'diesel'::varchar(50)
-        when process in('TCE8501','TLE8501') then 'E85'::varchar(50)
-        when process in('TBELC01','TCELC01','TLELC01','TWELC01') then 'electric'::varchar(50)
-        when process in('TBFCHBHYG01','TCFCHBHYG01','TCFCHYG01','TCHBE8501','TCHBHYL01','THFCHBHYG01','TLFCHBHYG01','TLFCHYG01','TLHBHYL01','TWFCHYG01') then 'h2+hybrid'::varchar(50)
-        when process in('TCFCPHBHYG01') then 'h2-plug-in-hybrid'::varchar(50)
-        when process in('TBHBDST01','TCHBDST01','TCHBPET00','TCHBPET01','THHBDST01','TLHBDST01','TLHBPET01') then 'hybrid'::varchar(50)
-        when process in('TBCNG01','TCCNG01','TCLPG00','TCLPG01','THCNG01','TLCNG01','TLLPG01') then 'lpg-and-cng-fueled'::varchar(50)
-        when process in('TCPET00','TCPET01','TLPET00','TLPET01','TWPET00','TWPET01') then 'petrol'::varchar(50)
-        when process in('TCPHBDST01','TCPHBPET01','TLPHBDST01','TLPHBPET01') then 'plug-in-hybrid'::varchar(50)
+    case
+        when process in('TBDST00','TBDST01','TCDST00','TCDST01','THDST00','THDST01','TLDST00','TLDST01') then 'diesel'::varchar(50) --*Filter 8*
+        when process in('TCE8501','TLE8501') then 'E85'::varchar(50) --*Filter 9*
+        when process in('TBELC01','TCELC01','TLELC01','TWELC01') then 'electric'::varchar(50) --*Filter 10*
+        when process in('TBFCHBHYG01','TCFCHBHYG01','TCFCHYG01','TCHBE8501','TCHBHYL01','THFCHBHYG01','TLFCHBHYG01','TLFCHYG01','TLHBHYL01','TWFCHYG01') then 'h2+hybrid'::varchar(50) --*Filter 11*
+        when process in('TCFCPHBHYG01') then 'h2-plug-in-hybrid'::varchar(50) --*Filter 12*
+        when process in('TBHBDST01','TCHBDST01','TCHBPET00','TCHBPET01','THHBDST01','TLHBDST01','TLHBPET01') then 'hybrid'::varchar(50) --*Filter 13*
+        when process in('TBCNG01','TCCNG01','TCLPG00','TCLPG01','THCNG01','TLCNG01','TLLPG01') then 'lpg-and-cng-fueled'::varchar(50) --*Filter 32*
+        when process in('TCPET00','TCPET01','TLPET00','TLPET01','TWPET00','TWPET01') then 'petrol'::varchar(50) --*Filter 15*
+        when process in('TCPHBDST01','TCPHBPET01','TLPHBDST01','TLPHBPET01') then 'plug-in-hybrid'::varchar(50) --*Filter 16*
     end as "analysis",
     tablename, attribute,commodity
     from vedastore
-    where attribute = 'VAR_Ncap' and process like any(array['TC%','TL%','TH%','TB%','TW%'])
+    where attribute = 'VAR_Ncap' and process like any(array['TC%','TL%','TH%','TB%','TW%']) --*Filter 55*
 ) a
 where analysis <>''
 group by id, analysis,tablename, attribute, commodity
@@ -528,12 +558,12 @@ order by tablename,  analysis, attribute, commodity
 /* **Main "key outputs" crosstabs** */
 /* -------------------------------*/
 /* *Dummy imports by table* */
--- NB this only sums Cost_Act to see impact on the objective function- Filter was previously: 
+-- NB this only sums Cost_Act to see impact on the objective function- Filter was previously:
 -- "where process like 'IMP%Z'" [not clear how these processes are created
 -- as are not defined explicitly as part of the model topology]
 
-COPY ( 
-select 'dummies' || '|' || tablename || '|' || 'Cost_Act' || '|' || 'various' || '|various'::varchar(300) "id", 
+COPY (
+select 'dummies' || '|' || tablename || '|' || 'Cost_Act' || '|' || 'various' || '|various'::varchar(300) "id",
     'dummies'::varchar(300) "analysis", tablename, 'Cost_Act'::varchar(50) "attribute",
     'various'::varchar(50) "commodity",
     'various'::varchar(50) "process",
@@ -552,14 +582,14 @@ select 'dummies' || '|' || tablename || '|' || 'Cost_Act' || '|' || 'various' ||
     sum(case when period='2055' then pv else 0 end)::numeric "2055",
     sum(case when period='2060' then pv else 0 end)::numeric "2060"
 from vedastore
-where process in('IMPDEMZ','IMPMATZ','IMPNRGZ') and attribute = 'Cost_Act'
+where process in('IMPDEMZ','IMPMATZ','IMPNRGZ') and attribute = 'Cost_Act' --*Filter 56*
 group by tablename
 order by tablename, analysis
  ) TO '%~dp0dummiesout.csv' delimiter ',' CSV HEADER;
 
 /* *All GHG emissions* */
 -- Was ghg; now ghg_all- These are DECC categories
-COPY ( 
+COPY (
 select 'ghg_all|' || tablename || '|Var_FOut|' || commodity || '|all'::varchar(300) "id",
         'ghg_all'::varchar(50) "analysis",
         tablename,
@@ -583,7 +613,7 @@ select 'ghg_all|' || tablename || '|Var_FOut|' || commodity || '|all'::varchar(3
 from vedastore
 where attribute='VAR_FOut' and commodity in('GHG-ETS-NO-IAS-NET','GHG-ETS-NO-IAS-TER','GHG-ETS-YES-IAS-NET','GHG-ETS-YES-IAS-TER',
     'GHG-NO-IAS-YES-LULUCF-NET','GHG-NO-IAS-YES-LULUCF-TER','GHG-NON-ETS-YES-LULUCF-NET','GHG-NON-ETS-YES-LULUCF-TER',
-    'GHG-YES-IAS-YES-LULUCF-NET','GHG-YES-IAS-YES-LULUCF-TER')
+    'GHG-YES-IAS-YES-LULUCF-NET','GHG-YES-IAS-YES-LULUCF-TER') --*Filter 57*
 group by tablename, commodity
 order by tablename, commodity
  ) TO '%~dp0GHGOut.csv' delimiter ',' CSV;
@@ -598,30 +628,30 @@ order by tablename, commodity
 
 -- 2:17 PM 09 June, 2016: Now just reports the net (VAR_FOut - VAR_FIn) emissions from the ETS- These are DECC categories
 
-COPY ( 
+COPY (
 select analysis || '|' || tablename || '|' || attribute || '|' || commodity || '|' || process::varchar(300) "id", analysis, tablename,attribute,
     commodity, process,
-    sum(pv)::numeric "all", 
-    sum(case when period='2010' then pv else 0 end)::numeric "2010", 
-    sum(case when period='2011' then pv else 0 end)::numeric "2011", 
-    sum(case when period='2012' then pv else 0 end)::numeric "2012", 
-    sum(case when period='2015' then pv else 0 end)::numeric "2015", 
-    sum(case when period='2020' then pv else 0 end)::numeric "2020", 
-    sum(case when period='2025' then pv else 0 end)::numeric "2025", 
-    sum(case when period='2030' then pv else 0 end)::numeric "2030", 
+    sum(pv)::numeric "all",
+    sum(case when period='2010' then pv else 0 end)::numeric "2010",
+    sum(case when period='2011' then pv else 0 end)::numeric "2011",
+    sum(case when period='2012' then pv else 0 end)::numeric "2012",
+    sum(case when period='2015' then pv else 0 end)::numeric "2015",
+    sum(case when period='2020' then pv else 0 end)::numeric "2020",
+    sum(case when period='2025' then pv else 0 end)::numeric "2025",
+    sum(case when period='2030' then pv else 0 end)::numeric "2030",
     sum(case when period='2035' then pv else 0 end)::numeric "2035",
-    sum(case when period='2040' then pv else 0 end)::numeric "2040", 
+    sum(case when period='2040' then pv else 0 end)::numeric "2040",
     sum(case when period='2045' then pv else 0 end)::numeric "2045",
-    sum(case when period='2050' then pv else 0 end)::numeric "2050", 
-    sum(case when period='2055' then pv else 0 end)::numeric "2055", 
+    sum(case when period='2050' then pv else 0 end)::numeric "2050",
+    sum(case when period='2055' then pv else 0 end)::numeric "2055",
     sum(case when period='2060' then pv else 0 end)::numeric "2060"
 from (
-    select 'all'::varchar(50) "process", period, 
+    select 'all'::varchar(50) "process", period,
         case
             when attribute='VAR_FIn' and commodity='Traded-Emission-ETS' then -pv
             else pv
         end as pv,
-        tablename, 
+        tablename,
         case
             when commodity='Traded-Emission-ETS' then 'various'
             else attribute
@@ -631,13 +661,13 @@ from (
             else commodity
         end as "commodity",
         case
-            when commodity='Traded-Emission-ETS' then 'ghg_sec-traded-emis-ets'
+            when commodity='Traded-Emission-ETS' then 'ghg_sec-traded-emis-ets' --*Filter 58*
             when commodity in('GHG-ELC','GHG-IND-ETS','GHG-RES-ETS','GHG-SER-ETS','GHG-OTHER-ETS','GHG-TRA-ETS-NO-IAS','GHG-IAS-ETS',
                 'GHG-IAS-NON-ETS','GHG-IND-NON-ETS','GHG-RES-NON-ETS','GHG-SER-NON-ETS','GHG-TRA-NON-ETS-NO-IAS',
                 'GHG-AGR-NO-LULUCF','GHG-OTHER-NON-ETS','GHG-LULUCF','Traded-Emission-Non-ETS','GHG-ELC-CAPTURED','GHG-IND-ETS-CAPTURED',
-                'GHG-IND-NON-ETS-CAPTURED','GHG-OTHER-ETS-CAPTURED') then 'ghg_sec-main-secs'
-            when commodity in('PRCCO2P', 'PRCCH4N', 'PRCCH4P', 'PRCN2ON', 'PRCN2OP')  then 'ghg_sec-prc-non-ets'
-            when commodity ='PRCCO2N' then 'ghg_sec-prc-ets'
+                'GHG-IND-NON-ETS-CAPTURED','GHG-OTHER-ETS-CAPTURED') then 'ghg_sec-main-secs' --*Filter 59*
+            when commodity in('PRCCO2P', 'PRCCH4N', 'PRCCH4P', 'PRCN2ON', 'PRCN2OP')  then 'ghg_sec-prc-non-ets' --*Filter 60*
+            when commodity ='PRCCO2N' then 'ghg_sec-prc-ets'  --*Filter 61*
         end as "analysis"
     from vedastore
     where (attribute='VAR_FOut' and commodity in('GHG-ELC','GHG-IND-ETS','GHG-RES-ETS','GHG-SER-ETS','GHG-OTHER-ETS',
@@ -645,7 +675,7 @@ from (
         'GHG-SER-NON-ETS','GHG-TRA-NON-ETS-NO-IAS','GHG-AGR-NO-LULUCF','GHG-OTHER-NON-ETS','GHG-LULUCF',
         'Traded-Emission-Non-ETS','GHG-ELC-CAPTURED','GHG-IND-ETS-CAPTURED','GHG-IND-NON-ETS-CAPTURED',
         'GHG-OTHER-ETS-CAPTURED','PRCCO2P','PRCCH4N','PRCCH4P','PRCN2ON','PRCN2OP',
-        'PRCCO2N')) or (attribute='VAR_FIn' and commodity='Traded-Emission-ETS')
+        'PRCCO2N')) or (attribute='VAR_FIn' and commodity='Traded-Emission-ETS')  --*Filter 62*
     order by period
 ) a
 where analysis <>''
@@ -655,8 +685,8 @@ order by tablename,  analysis, attribute, commodity
 
 /* *GHG and sequestered emissions by industry sub-sector* */
 -- Includes non-energy use of CO2 (industrial is only non-energy use commodity there is)
-COPY ( 
-    select 'ghg_ind-subsec-'||sector || '|' || tablename || '|' || 'VAR_FOut' || '|' || 'various' || '|various'::varchar(300) "id", 
+COPY (
+    select 'ghg_ind-subsec-'||sector || '|' || tablename || '|' || 'VAR_FOut' || '|' || 'various' || '|various'::varchar(300) "id",
         'ghg_ind-subsec-'||sector::varchar(300) "analysis", tablename, 'VAR_Fout'::varchar(50) "attribute",
         'various'::varchar(50) "commodity",
         'various'::varchar(50) "process",
@@ -676,26 +706,26 @@ COPY (
         sum(case when period='2060' then pv else 0 end)::numeric "2060"
     from(
         select tablename,
-            case 
-                when left(process,3)='ICH' then 'ich'
-                when left(process,3)='ICM' then 'icm'
-                when left(process,3)='IFD' then 'ifd'
-                when left(process,3)='IIS' then 'iis'
-                when left(process,3)='INF' then 'inf'
-                when left(process,3)='INM' then 'inm'
-                when left(process,3)='IOI' or process like 'INDHFCOTH0%' then 'ioi'
-                when left(process,3)='IPP' then 'ipp'
+            case
+                when left(process,3)='ICH' then 'ich' --*Filter 63*
+                when left(process,3)='ICM' then 'icm' --*Filter 64*
+                when left(process,3)='IFD' then 'ifd' --*Filter 65*
+                when left(process,3)='IIS' then 'iis' --*Filter 66*
+                when left(process,3)='INF' then 'inf' --*Filter 67*
+                when left(process,3)='INM' then 'inm' --*Filter 68*
+                when left(process,3)='IOI' or process like 'INDHFCOTH0%' then 'ioi'  --*Filter 69*
+                when left(process,3)='IPP' then 'ipp'  --*Filter 70*
                 when process='-' then 'other'
                 else null
-            end "sector", 
+            end "sector",
             period, sum(case when commodity in('SKNINDCO2N','SKNINDCO2P') then -pv else pv end) "pv"
-    -- These are sequestered emissions (emissions to CCS) so given negative emissions (-ve pv)        
+    -- These are sequestered emissions (emissions to CCS) so given negative emissions (-ve pv)
         from vedastore
-        where commodity in ('SKNINDCO2N','SKNINDCO2P','INDCO2N','INDCO2P','INDNEUCO2N','INDCH4N','INDN2ON','INDHFCP') and attribute='VAR_FOut'
+        where commodity in ('SKNINDCO2N','SKNINDCO2P','INDCO2N','INDCO2P','INDNEUCO2N','INDCH4N','INDN2ON','INDHFCP') and attribute='VAR_FOut' --*Filter 71*
     -- NB In the Veda BE table the emissions for 'INDCH4N','INDN2ON','INDHFCP','INDNEUCO2N' are based on attribute in('EQ_Combal','VAR_Comnet')- This is nec- because
     -- some sectors (e.g. agr) or balance commodities (e.g. 'Traded-Emission-ETS') require the balance of VAR_FIn & VAR_FOut- This doesn't seem to be
     -- the case for industry where sum of VAR_FOut = balance- But might not always be the case---
-    -- ---Specific case where you need a balance is where you have a BAU process which produces emissions and then a mitigation process which 
+    -- ---Specific case where you need a balance is where you have a BAU process which produces emissions and then a mitigation process which
     -- takes as input the same emissions and produces an output of reduced emissions- Here you need to subtract VAR_FIn from VAR_FOut
     -- Non-e- emissions are reported separately in UCL template
         group by tablename, sector,period
@@ -704,7 +734,7 @@ COPY (
     group by tablename, sector
 union all
 -- This bit is just the CCS part (sequestered emissions) by sub-sector
-    select 'ghgseq_ind-subsec-'||sector || '|' || tablename || '|' || 'VAR_FOut' || '|' || 'various' || '|various'::varchar(300) "id", 
+    select 'ghgseq_ind-subsec-'||sector || '|' || tablename || '|' || 'VAR_FOut' || '|' || 'various' || '|various'::varchar(300) "id",
         'ghgseq_ind-subsec-'||sector::varchar(300) "analysis", tablename, 'VAR_Fout'::varchar(50) "attribute",
         'various'::varchar(50) "commodity",
         'various'::varchar(50) "process",
@@ -724,22 +754,22 @@ union all
         sum(case when period='2060' then pv else 0 end)::numeric "2060"
     from(
         select tablename,
-            case 
-                when left(process,3)='ICH' then 'ich'
-                when left(process,3)='ICM' then 'icm'
-                when left(process,3)='IFD' then 'ifd'
-                when left(process,3)='IIS' then 'iis'
-                when left(process,3)='INF' then 'inf'
-                when left(process,3)='INM' then 'inm'
-                when left(process,3)='IOI' or process like 'INDHFCOTH0%' then 'ioi'
-                when left(process,3)='IPP' then 'ipp'
+            case
+                when left(process,3)='ICH' then 'ich' --*Filter 63*
+                when left(process,3)='ICM' then 'icm' --*Filter 64*
+                when left(process,3)='IFD' then 'ifd' --*Filter 65*
+                when left(process,3)='IIS' then 'iis' --*Filter 66*
+                when left(process,3)='INF' then 'inf' --*Filter 67*
+                when left(process,3)='INM' then 'inm' --*Filter 68*
+                when left(process,3)='IOI' or process like 'INDHFCOTH0%' then 'ioi'  --*Filter 69*
+                when left(process,3)='IPP' then 'ipp' --*Filter 70*
                 when process='-' then 'other'
                 else null
-            end "sector", 
+            end "sector",
             period, sum(case when commodity in('SKNINDCO2N','SKNINDCO2P') then -pv else pv end) "pv"
-    -- These are sequestered emissions (emissions to CCS) so given negative emissions (-ve pv)        
+    -- These are sequestered emissions (emissions to CCS) so given negative emissions (-ve pv)
         from vedastore
-        where commodity in ('SKNINDCO2N','SKNINDCO2P') and attribute='VAR_FOut'
+        where commodity in ('SKNINDCO2N','SKNINDCO2P') and attribute='VAR_FOut' --*Filter 72*
     -- See above
         group by tablename, sector,period
     ) a
@@ -764,21 +794,21 @@ union all
 -- elec-gen_waste-heat-penalty   = see "Electricity Penalty Allocation" table total at c2090
 -- elec-gen_inten                = "GHG intensity of electricity generation (gCO2eq/kWh)" at cell b174
 -- In this version, net imports are -ve (interconnectors line), net exports +ve
--- NB The interconnectors bit is confusing; to get exported elec, have to look at VAR_FIn because commodity is then transformed to an export 
+-- NB The interconnectors bit is confusing; to get exported elec, have to look at VAR_FIn because commodity is then transformed to an export
 -- commodity (different name) by the interconnector- Vice versa for imports-
 
 -- For electricity exports, VAR_FIn is summed as ELCGEN is the input to the process removing it from the system-
 
--- For the offtake penalty, note that ELCGEN input (VAR_FIn ) TO waste heat collection process needs to be subtracted from electricity generation as it 
+-- For the offtake penalty, note that ELCGEN input (VAR_FIn ) TO waste heat collection process needs to be subtracted from electricity generation as it
 -- represents a reduction in efficiency of the plant the waste heat is collected from (i.e. cf CHP)-
 -- 12:59 PM 09 June, 2016: Removed the imports and exports, changed name of interconnectors (to elec-gen_intercon from elec-gen_inter)
--- 12:25 PM 17 June, 2016: Revised q to better reflect the UCL template, inc- apportioning of cofiring to the different input fuels, and 
+-- 12:25 PM 17 June, 2016: Revised q to better reflect the UCL template, inc- apportioning of cofiring to the different input fuels, and
                         -- refactoring to better match UCL veda tables
 -- NB total line for this query is net of heat offtake penalty; it does not include interconnectors (or storage; = separate q below)- Grid intensity
 -- calc is _not_ net of offtake penalty
 -- This q uses postgres-specific arrays - would have to be re-written for another DB
 
-COPY ( 
+COPY (
 with emissions_chp as (
 -- See veda table with same name
 -- NB there are duplications in this table - a process can belong to more than one process set / row- the overlaps are represented by the 2 parts of the union q-
@@ -816,7 +846,7 @@ with emissions_chp as (
         end proc_set
         from vedastore
         where attribute='VAR_FOut' and commodity in('RESCH4N','SERN2ON','INDCO2N','SERCH4N','INDCH4N','INDN2ON','UPSN2ON','UPSCO2N','UPSCH4N','PRCCH4N','PRCCO2N','PRCN2ON'
-            ,'SERCO2N','RESCO2N','RESN2ON')    
+            ,'SERCO2N','RESCO2N','RESN2ON')  --*Filter 73*
     ) a
     where proc_set is not null
     group by tablename, proc_set, commodity,period
@@ -826,7 +856,7 @@ with emissions_chp as (
     select tablename, comm_set,
     commodity,period, pv
     from (
-        select case         
+        select case
             when commodity in('AGRCO2N','AGRCO2P') then 'EMIS CO2 AGR'
             when commodity in('ELCCO2N') then 'EMIS CO2 ELC'
             when commodity in('HYGCO2N') then 'EMIS CO2 HYG'
@@ -847,7 +877,7 @@ with emissions_chp as (
     select tablename, comm_set,
     commodity,period,pv
     from (
-        select case         
+        select case
             when commodity in ('AGRCH4N','AGRCH4P','AGRCO2N','AGRCO2P','AGRHFCN','AGRHFCP','AGRN2ON','AGRN2OP','AGRNH3','AGRNOX','AGRPM10','AGRPM25','AGRSO2','AGRVOC') then 'EMIS GHG AGR'
             when commodity in ('ELCCH4N','ELCCH4P','ELCCO2N','ELCCO2P','ELCHFCN','ELCHFCP','ELCN2ON','ELCN2OP','ELCNH3','ELCNOX','ELCPM10','ELCPM25','ELCSO2','ELCVOC') then 'EMIS GHG ELC'
             when commodity in ('HYGCH4N','HYGCH4P','HYGCO2N','HYGCO2P','HYGHFCN','HYGHFCP','HYGN2ON','HYGN2OP','HYGNH3','HYGNOX','HYGPM10','HYGPM25','HYGSO2','HYGVOC') then 'EMIS GHG HYG'
@@ -862,26 +892,26 @@ with emissions_chp as (
             when commodity in ('UPSCH4N','UPSCH4P','UPSCO2N','UPSCO2P','UPSHFCN','UPSHFCP','UPSN2ON','UPSN2OP') then 'EMIS GHG UPS'
         end as comm_set,commodity,pv,period, tablename
         from vedastore
-        where attribute in('EQ_Combal','VAR_Comnet')
+        where attribute in('EQ_Combal','VAR_Comnet') --*Filter 74*
     ) a where comm_set is not null
 )
 , "elc-emis" as(
-    select 
+    select
         tablename,period,sum(pv)/1000 "elc-emis" --/1000 = Convert from kilo to Mega tonnes
     from (
-        select tablename,pv,period from "emis_co2_sector" where comm_set='EMIS CO2 ELC'
+        select tablename,pv,period from "emis_co2_sector" where comm_set='EMIS CO2 ELC'  --*Filter 75*
         union all
-        select tablename,pv,period from "emis_ghg_dif" where commodity in('ELCCH4N','ELCN2ON')
+        select tablename,pv,period from "emis_ghg_dif" where commodity in('ELCCH4N','ELCN2ON')  --*Filter 76*
         union all
-        select tablename,sum(pv) "pv", period from "emissions_chp" where proc_set in('CHP IND SECTOR','CHP PRC SECTOR','CHP RES SECTOR','CHP SER SECTOR','CHP UPS SECTOR') and 
-            commodity in('INDCO2N','INDCH4N','INDN2ON','PRCCO2N','PRCCH4N','PRCN2ON','RESCO2N','RESCH4N','RESN2ON','SERCO2N','SERCH4N','SERN2ON','UPSCO2N','UPSCH4N','UPSN2ON')
+        select tablename,sum(pv) "pv", period from "emissions_chp" where proc_set in('CHP IND SECTOR','CHP PRC SECTOR','CHP RES SECTOR','CHP SER SECTOR','CHP UPS SECTOR') and
+            commodity in('INDCO2N','INDCH4N','INDN2ON','PRCCO2N','PRCCH4N','PRCN2ON','RESCO2N','RESCH4N','RESN2ON','SERCO2N','SERCH4N','SERN2ON','UPSCO2N','UPSCH4N','UPSN2ON') --*Filter 77*
         group by tablename, period
     ) a group by tablename,period
 )
 , elc_prd_fuel as (
 -- This is the same as the Veda BE table (same name) with the addition of more years & the addition of CHP & the heat offtake generation penalty
 -- NB CCSRET lines currently missing from veda (sets not defined since are part of PRE set not ELE which is in the filter definition)
-    select 
+    select
         proc_set,tablename,period, sum(pv) "pv"
     from (
         select
@@ -894,9 +924,9 @@ with emissions_chp as (
             when process='ECOAQR01' then 'ELC FROM COAL CCSRET'
             when process in('ECOARR01') then 'ELC FROM COAL RR'
             when process in('ECOA00','ECOABIO00') then 'ELC FROM COAL-COF'
-            when process in('ECOAQ01') then 'ELC FROM COALCOF CCS'
+            when process in('ECOAQ01','ECOAQDEMO01') then 'ELC FROM COALCOF CCS'
             when process in('ENGACCT00','ENGAOCT00','ENGAOCT01','ENGARCPE00','ENGARCPE01') then 'ELC FROM GAS'
-            when process in('ENGACCTQ01') then 'ELC FROM GAS CCS'
+            when process in('ENGACCTQ01','ENGACCTQDEMO01') then 'ELC FROM GAS CCS'
             when process='ENGAQR01' then 'ELC FROM GAS CCSRET'
             when process in('ENGACCTRR01') then 'ELC FROM GAS RR'
             when process in('EGEO01') then 'ELC FROM GEO'
@@ -915,9 +945,9 @@ with emissions_chp as (
             when process in('ELCEE00','ELCEE01','ELCEI00','ELCEI01') then 'ELC TO EXPORTS'
          end as proc_set
         from vedastore
-        where attribute='VAR_FOut' and commodity in('ELCDUMMY','ELC','ELC-E-IRE','ELC-E-EU','ELCGEN')
+        where attribute='VAR_FOut' and commodity in('ELCDUMMY','ELC','ELC-E-IRE','ELC-E-EU','ELCGEN')  --*Filter 78*
     ) a
-    where proc_set is not null 
+    where proc_set is not null
     group by tablename, period,proc_set
     union all
     select proc_set,tablename,period, sum(pv) "pv"
@@ -936,46 +966,47 @@ with emissions_chp as (
                 'PCHP-CCP00','PCHP-CCP01','RCHPEA-CCG00','RCHPEA-CCG01','RCHPEA-CCH01','RCHPEA-FCH01','RCHPEA-STW01','RCHPNA-CCG01',
                 'RCHPNA-CCH01','RCHPNA-FCH01','RCHPNA-STW01','RHEACHPRG01','RHEACHPRH01','RHEACHPRW01','RHNACHPRG01','RHNACHPRH01',
                 'RHNACHPRW01','SCHP-ADM01','SCHP-CCG00','SCHP-CCG01','SCHP-CCH01','SCHP-FCH01','SCHP-GES00','SCHP-GES01','SCHP-STM01',
-                'SCHP-STW00','SCHP-STW01','SHLCHPRG01','SHLCHPRH01','SHLCHPRW01','UCHP-CCG00','UCHP-CCG01') then 'elec-gen_chp' else null
+                'SCHP-STW00','SCHP-STW01','SHLCHPRG01','SHLCHPRH01','SHLCHPRW01','UCHP-CCG00','UCHP-CCG01') then 'elec-gen_chp' else null --*Filter 79*
     -- NB This is different from the Veda BE chp gen q as that only looks at centralised chp generation - not all chp generation which is what we report in the overall q here
             end proc_set
             from vedastore
-            where period in('2010','2011','2012','2015','2020','2025','2030','2035','2040','2045','2050','2055','2060') and attribute='VAR_FOut' 
-                and commodity in('ELCGEN','INDELC','RESELC','RESHOUSEELC','SERBUILDELC','SERDISTELC','SERELC')
+            where period in('2010','2011','2012','2015','2020','2025','2030','2035','2040','2045','2050','2055','2060') and attribute='VAR_FOut'
+                and commodity in('ELCGEN','INDELC','RESELC','RESHOUSEELC','SERBUILDELC','SERDISTELC','SERELC') --*Filter 80*
         ) a
-    where proc_set is not null        
+    where proc_set is not null
     group by tablename, period,proc_set
     union all
     select proc_set,tablename,period, sum(pv) "pv"
     from (
         select tablename,period, pv,
-        case when process='EWSTHEAT-OFF-01' then 'elec-gen_waste-heat-penalty'::varchar(50) else null
+        case when process='EWSTHEAT-OFF-01' then 'elec-gen_waste-heat-penalty'::varchar(50) else null --*Filter 81*
 -- heat penalty - stuff which is recorded as electricity but is actually electricity which is sacrificed to produce heat (in e.g. CHP)
         end proc_set
         from vedastore
         where period in('2010','2011','2012','2015','2020','2025','2030','2035','2040','2045','2050','2055','2060') and commodity = 'ELCGEN' and attribute = 'VAR_FIn'
     ) a
-    where proc_set is not null        
+    where proc_set is not null
     group by tablename, period,proc_set
 )
 , cofiring_fuel as(
 -- Replicates the calcs in c 571
+-- Just gives the input fuel used for key co-firing elec gen processes
     select tablename, fuel, period, sum(pv) "pv"
         from (
             select tablename,commodity "fuel",period,pv
             from vedastore
-            where process in('ECOA00','ECOABIO00','ECOAQ01','ECOARR01') and attribute='VAR_FIn'
-        -- co-firing coal    
+            where process in('ECOA00','ECOABIO00','ECOAQ01','ECOARR01','ECOAQDEMO01') and attribute='VAR_FIn' --*Filter 82*
+-- co-firing coal
             union all
             select tablename,commodity "fuel",period,pv
             from vedastore
-            where process in('EHFOIGCC01','EHFOIGCCQ01','EOILL00','EOILL01','EOILS00','EOILS01') and attribute='VAR_FIn'
-        -- co-firing oil    
+            where commodity in ('ELCBIOLFO','ELCBIOOIL','ELCHFO','ELCLFO','ELCLPG') and attribute='VAR_FIn' --*Filter 83*
+-- co-firing oil
             union all
             select tablename,commodity "fuel",period,pv
             from vedastore
-            where commodity in('ELCMAINSBOM','ELCMAINSGAS','ELCTRANSBOM','ELCTRANSGAS') and attribute='VAR_FIn'
-        -- co-firing gas    
+            where commodity in('ELCMAINSBOM','ELCMAINSGAS','ELCTRANSBOM','ELCTRANSGAS') and attribute='VAR_FIn' --*Filter 84*
+-- co-firing gas
         ) a
     group by tablename, fuel,period
     order by fuel, period
@@ -983,27 +1014,28 @@ with emissions_chp as (
 , cofiring_fuel_percents as(
     select tablename, period,
 -- Replicates the calcs in c 595 ff
+-- Produces the percentage of each fuel type used for inputs to key elec gen processes
 -- NB have to include the sum>0 test (wrapper part of each of below) because otherwise generates div zero errors
-    case when sum(case when fuel in('ELCCOA','ELCBIOCOA','ELCBIOCOA2','ELCPELL','ELCMSC') then pv else 0 end ) > 0 then 
-        sum(case when fuel='ELCCOA' then pv else 0 end) / sum(case when fuel in('ELCCOA','ELCBIOCOA','ELCBIOCOA2','ELCPELL','ELCMSC') then pv else 0 end ) 
+    case when sum(case when fuel in('ELCCOA','ELCBIOCOA','ELCBIOCOA2','ELCPELL','ELCMSC') then pv else 0 end ) > 0 then
+        sum(case when fuel='ELCCOA' then pv else 0 end) / sum(case when fuel in('ELCCOA','ELCBIOCOA','ELCBIOCOA2','ELCPELL','ELCMSC') then pv else 0 end )
     else 0 end "coal",
     case when sum(case when fuel in('ELCCOA','ELCBIOCOA','ELCBIOCOA2','ELCPELL','ELCMSC') then pv else 0 end ) > 0 then
         sum(case when fuel in('ELCBIOCOA','ELCBIOCOA2','ELCPELL') then pv else 0 end) / sum(case when fuel in('ELCCOA','ELCBIOCOA','ELCBIOCOA2','ELCPELL','ELCMSC') then pv else 0 end )
     else 0 end "biocoal",
     case when sum(case when fuel in('ELCCOA','ELCBIOCOA','ELCBIOCOA2','ELCPELL','ELCMSC') then pv else 0 end ) > 0 then
-        sum(case when fuel in('ELCMSC') then pv else 0 end) / sum(case when fuel in('ELCCOA','ELCBIOCOA','ELCBIOCOA2','ELCPELL','ELCMSC') then pv else 0 end ) 
+        sum(case when fuel in('ELCMSC') then pv else 0 end) / sum(case when fuel in('ELCCOA','ELCBIOCOA','ELCBIOCOA2','ELCPELL','ELCMSC') then pv else 0 end )
     else 0 end "oilcoal",
-    case when sum(case when fuel in('ELCHFO','ELCLFO','ELCLPG','ELCBIOOIL','ELCBIOLFO') then pv else 0 end ) > 0 then 
-        sum(case when fuel in('ELCHFO','ELCLFO','ELCLPG') then pv else 0 end) / sum(case when fuel in('ELCHFO','ELCLFO','ELCLPG','ELCBIOOIL','ELCBIOLFO') then pv else 0 end ) 
+    case when sum(case when fuel in('ELCHFO','ELCLFO','ELCLPG','ELCBIOOIL','ELCBIOLFO') then pv else 0 end ) > 0 then
+        sum(case when fuel in('ELCHFO','ELCLFO','ELCLPG') then pv else 0 end) / sum(case when fuel in('ELCHFO','ELCLFO','ELCLPG','ELCBIOOIL','ELCBIOLFO') then pv else 0 end )
     else 0 end "oil",
-    case when sum(case when fuel in('ELCHFO','ELCLFO','ELCLPG','ELCBIOOIL','ELCBIOLFO') then pv else 0 end ) > 0 then 
-        sum(case when fuel in('ELCBIOOIL','ELCBIOLFO') then pv else 0 end) / sum(case when fuel in('ELCHFO','ELCLFO','ELCLPG','ELCBIOOIL','ELCBIOLFO') then pv else 0 end ) 
+    case when sum(case when fuel in('ELCHFO','ELCLFO','ELCLPG','ELCBIOOIL','ELCBIOLFO') then pv else 0 end ) > 0 then
+        sum(case when fuel in('ELCBIOOIL','ELCBIOLFO') then pv else 0 end) / sum(case when fuel in('ELCHFO','ELCLFO','ELCLPG','ELCBIOOIL','ELCBIOLFO') then pv else 0 end )
     else 0 end "biooil",
-    case when sum(case when fuel in('ELCMAINSGAS','ELCTRANSGAS','ELCMAINSBOM','ELCTRANSBOM') then pv else 0 end ) > 0 then 
-        sum(case when fuel in('ELCMAINSGAS','ELCTRANSGAS') then pv else 0 end) / sum(case when fuel in('ELCMAINSGAS','ELCTRANSGAS','ELCMAINSBOM','ELCTRANSBOM') then pv else 0 end ) 
+    case when sum(case when fuel in('ELCMAINSGAS','ELCTRANSGAS','ELCMAINSBOM','ELCTRANSBOM') then pv else 0 end ) > 0 then
+        sum(case when fuel in('ELCMAINSGAS','ELCTRANSGAS') then pv else 0 end) / sum(case when fuel in('ELCMAINSGAS','ELCTRANSGAS','ELCMAINSBOM','ELCTRANSBOM') then pv else 0 end )
     else 0 end "gas",
-    case when sum(case when fuel in('ELCMAINSGAS','ELCTRANSGAS','ELCMAINSBOM','ELCTRANSBOM') then pv else 0 end ) > 0 then 
-        sum(case when fuel in('ELCMAINSBOM','ELCTRANSBOM') then pv else 0 end) / sum(case when fuel in('ELCMAINSGAS','ELCTRANSGAS','ELCMAINSBOM','ELCTRANSBOM') then pv else 0 end ) 
+    case when sum(case when fuel in('ELCMAINSGAS','ELCTRANSGAS','ELCMAINSBOM','ELCTRANSBOM') then pv else 0 end ) > 0 then
+        sum(case when fuel in('ELCMAINSBOM','ELCTRANSBOM') then pv else 0 end) / sum(case when fuel in('ELCMAINSGAS','ELCTRANSGAS','ELCMAINSBOM','ELCTRANSBOM') then pv else 0 end )
     else 0 end "biogas"
     from cofiring_fuel
     group by tablename, period
@@ -1012,18 +1044,19 @@ with emissions_chp as (
 --This is the total waste heat to be divvidied up between candidate gen processes
     select tablename, process,userconstraint,attribute,commodity,period,sum(pv) "pv"
     from vedastore
-    where process='EWSTHEAT-OFF-01'
+    where process='EWSTHEAT-OFF-01' --*Filter 85*
     group by tablename, process,userconstraint,attribute,commodity, period
     order by tablename, process,userconstraint,attribute,commodity, period
 )
 , elc_waste_heat_available as (
     select tablename,attribute,commodity,process,period, sum(pv) "pv"
     from vedastore
-    where commodity='ELCWSTHEAT' and attribute in ('VAR_FIn','VAR_FOut')
+    where commodity='ELCWSTHEAT' and attribute in ('VAR_FIn','VAR_FOut') --*Filter 86*
     group by tablename,attribute,commodity,process,period
     order by tablename,attribute,commodity,process,period
 )
 , waste_heat_type as(
+-- NB need to remember to update this to reflect any technology changes
     select tablename, period,
     sum(case when "waste_heat"='Biomass' then pv else 0 end) "Biomass",
     sum(case when "waste_heat"='Biomass CCS' then pv else 0 end) "Biomass CCS",
@@ -1041,25 +1074,25 @@ with emissions_chp as (
     -- These are the first category of waste heat by process - in formula c2061ff
         select tablename,attribute,period,pv,
         case
-            when process in('ESTWWST00','EPOLWST00','EBIOS00','EBOG-LFE00','EBOG-SWE00','EMSW00','EBIOCON00','ESTWWST01','EBIO01','EBOG-ADE01','EBOG-LFE01','EBOG-SWE01','EMSW01') then 'Biomass'
-            when process in('EBIOQ01') then 'Biomass CCS'
-            when process in('EHYGCCT01') then 'Hydrogen'
-            when process in('ENUCPWR00','ENUCPWR101','ENUCPWR102') then 'Nuclear'
+            when process in('ESTWWST00','EPOLWST00','EBIOS00','EBOG-LFE00','EBOG-SWE00','EMSW00','EBIOCON00','ESTWWST01','EBIO01','EBOG-ADE01','EBOG-LFE01','EBOG-SWE01','EMSW01') then 'Biomass' --*Filter 87*
+            when process in('EBIOQ01') then 'Biomass CCS' --*Filter 88*
+            when process in('EHYGCCT01') then 'Hydrogen' --*Filter 89*
+            when process in('ENUCPWR00','ENUCPWR101','ENUCPWR102') then 'Nuclear' --*Filter 90*
             end "waste_heat"
         from elc_waste_heat_available
         union all
         select tablename,attribute,period,pv,
-    -- These are the "second" set of waste heat candidates - see cell c2043ff- These form part of the formula which goes into the second part of cells c2061ff- This is added to 
+    -- These are the "second" set of waste heat candidates - see cell c2043ff- These form part of the formula which goes into the second part of cells c2061ff- This is added to
     -- "Seperation of retrofit ready and retrofited plants" and multiplied by the proportion of biomass/non- for coal etc
         case
-            when process in('ECOA00','ECOABIO00') then 'Coal'
-            when process in('ECOAQ01','ECOAQDEMO01') then 'Coal CCS'
-            when process in('ECOARR01') then 'Coal RR'
-            when process in('ENGACCT00','ENGAOCT00','ENGAOCT01','ENGARCPE00','ENGARCPE01') then 'Natural Gas'
-            when process in('ENGACCTQ01','ENGACCTQDEMO01') then 'Natural Gas CCS'
-            when process in('ENGACCTRR01') then 'Natural Gas RR'
-            when process in('EDSTRCPE00','EDSTRCPE01','EOILL00','EOILS00','EOILS01','EOILL01','EHFOIGCC01') then 'Oil'
-            when process in('EHFOIGCCQ01') then 'OIL CCS'
+            when process in('ECOA00','ECOABIO00') then 'Coal' --*Filter 91*
+            when process in('ECOAQ01','ECOAQDEMO01') then 'Coal CCS' --*Filter 92*
+            when process in('ECOARR01') then 'Coal RR' --*Filter 93*
+            when process in('ENGACCT00','ENGAOCT00','ENGAOCT01','ENGARCPE00','ENGARCPE01') then 'Natural Gas' --*Filter 94*
+            when process in('ENGACCTQ01','ENGACCTQDEMO01') then 'Natural Gas CCS' --*Filter 95*
+            when process in('ENGACCTRR01') then 'Natural Gas RR' --*Filter 96*
+            when process in('EDSTRCPE00','EDSTRCPE01','EOILL00','EOILS00','EOILS01','EOILL01','EHFOIGCC01') then 'Oil' --*Filter 96*
+            when process in('EHFOIGCCQ01') then 'OIL CCS' --*Filter 97*
             end "waste_heat"
         from elc_waste_heat_available
     ) a
@@ -1070,7 +1103,7 @@ with emissions_chp as (
 , retrofit_plants as(
 -- This replicates the block c2034ff
 -- NB have to have the q in 2 parts like this, with the sum() wrapping the multiplication or else it demands you group by the constituents of the *
--- Doesn't seem to be any constraint preventing retrofit plant capacity from being greater than capacity of plant ready to be retrofit
+-- previously, CCS plant was a subset of retrofit ready. Now they are independent (thanks to dummy parameter)
     select a.tablename, a.period,
     sum(a."coal_rr"*b."Coal RR") "coal_rr",
     sum(a."gas_rr"*b."Natural Gas RR") "gas_rr",
@@ -1078,22 +1111,22 @@ with emissions_chp as (
     sum(a."gasccs_rr"*b."Natural Gas RR") "gasccs_rr"
     from (
         select tablename, period,
-    -- Following includes a check for div zero errors:    
+-- Following includes a check for div zero errors:
         case
-            when sum(case when proc_set='ELC FROM COAL RR' then pv else 0 end) > 0 and sum(case when proc_set='ELC FROM COAL RR' then pv else 0 end) > sum(case when proc_set='ELC FROM COAL CCSRET' then pv else 0 end) then 
-            (sum(case when proc_set='ELC FROM COAL RR' then pv else 0 end)-sum(case when proc_set='ELC FROM COAL CCSRET' then pv else 0 end))/sum(case when proc_set='ELC FROM COAL RR' then pv else 0 end)
+            when sum(case when proc_set in('ELC FROM COAL RR','ELC FROM COAL CCSRET') then pv else 0 end) > 0 then
+            (sum(case when proc_set='ELC FROM COAL RR' then pv else 0 end)/sum(case when proc_set in('ELC FROM COAL RR','ELC FROM COAL CCSRET') then pv else 0 end))
             else 0 end "coal_rr",
         case
-            when sum(case when proc_set='ELC FROM GAS RR' then pv else 0 end) > 0 and sum(case when proc_set='ELC FROM GAS RR' then pv else 0 end) > sum(case when proc_set='ELC FROM GAS CCSRET' then pv else 0 end) then 
-            (sum(case when proc_set='ELC FROM GAS RR' then pv else 0 end)-sum(case when proc_set='ELC FROM GAS CCSRET' then pv else 0 end))/sum(case when proc_set='ELC FROM GAS RR' then pv else 0 end)
+            when sum(case when proc_set in('ELC FROM GAS RR','ELC FROM GAS CCSRET') then pv else 0 end) > 0 then
+            (sum(case when proc_set='ELC FROM GAS RR' then pv else 0 end)/sum(case when proc_set in('ELC FROM GAS RR','ELC FROM GAS CCSRET') then pv else 0 end))
             else 0 end "gas_rr",
         case
-            when sum(case when proc_set='ELC FROM COAL RR' then pv else 0 end) > 0 then 
-            sum(case when proc_set='ELC FROM COAL CCSRET' then pv else 0 end)/sum(case when proc_set='ELC FROM COAL RR' then pv else 0 end)
+            when sum(case when proc_set in('ELC FROM COAL RR','ELC FROM COAL CCSRET') then pv else 0 end) > 0 then
+            (sum(case when proc_set='ELC FROM COAL CCSRET' then pv else 0 end)/sum(case when proc_set in('ELC FROM COAL RR','ELC FROM COAL CCSRET') then pv else 0 end))
             else 0 end "coalccs_rr",
         case
-            when sum(case when proc_set='ELC FROM GAS RR' then pv else 0 end) > 0 then
-            sum(case when proc_set='ELC FROM GAS CCSRET' then pv else 0 end)/sum(case when proc_set='ELC FROM GAS RR' then pv else 0 end)
+            when sum(case when proc_set in('ELC FROM GAS RR','ELC FROM GAS CCSRET') then pv else 0 end) > 0 then
+            (sum(case when proc_set='ELC FROM GAS CCSRET' then pv else 0 end)/sum(case when proc_set in('ELC FROM GAS RR','ELC FROM GAS CCSRET') then pv else 0 end))
             else 0 end "gasccs_rr"
         from elc_prd_fuel
         group by tablename, period
@@ -1118,7 +1151,7 @@ with emissions_chp as (
 -- i.e. take the below as a proportion of the total
     from (
         select a.tablename, a.period,
-            (sum(c."Coal")+sum("coal_rr"))*sum(a.coal) "coal_grp", 
+            (sum(c."Coal")+sum("coal_rr"))*sum(a.coal) "coal_grp",
 --row 2061 = row2043
             (sum(c."Coal CCS")+sum("coalccs_rr"))*sum(a.coal) "coalccs_grp",
 --row 2062 = row2046
@@ -1135,7 +1168,7 @@ with emissions_chp as (
 -- This is sum of biomass pure (from "waste_heat"), bio in coal fired, bio in oil fired and bio in gas fired generation (rows 2044+2050+2054)
             sum(c."Biomass CCS") + (sum(c."Coal CCS")+sum("coalccs_rr"))*sum(a.biocoal) +
                 (sum(c."Natural Gas CCS")+sum("gasccs_rr"))*sum(a.biogas) + sum(c."OIL CCS")*sum(a.biooil) "bioccs_grp",
--- This is sum of biomass CCS pure (from "waste_heat"), bio in coal fired, bio in oil fired and bio in gas fired generation (rows 2044+2050+2054)        
+-- This is sum of biomass CCS pure (from "waste_heat"), bio in coal fired, bio in oil fired and bio in gas fired generation (rows 2044+2050+2054)
             sum(c."Nuclear") "nuclear_grp",
             sum(c."Hydrogen") "h2_grp"
         from cofiring_fuel_percents a full outer join retrofit_plants b
@@ -1147,7 +1180,7 @@ with emissions_chp as (
      ) a
 )
 , elec_penalty as (
-    select a.tablename, a.period, 
+    select a.tablename, a.period,
     -- Replicates block starting row 2095, "Electricity Penalty Allocation"
     -- Have to have the case--- statement to catch any nulls or else that line will evaluate to null in the final q
         case when coal_grp*b."ELCGEN" is null then 0 else coal_grp*b."ELCGEN" end "coal",
@@ -1162,7 +1195,7 @@ with emissions_chp as (
         case when h2_grp*b."ELCGEN" is null then 0 else h2_grp*b."ELCGEN" end "h2"
     from fuel_shares_to_groups a
     left join (
-            select tablename, period, 
+            select tablename, period,
             sum(case when commodity='ELCGEN' then pv else 0 end) "ELCGEN"
             from elc_waste_heat_process
             group by tablename, period
@@ -1170,24 +1203,25 @@ with emissions_chp as (
     on a.tablename=b.tablename and a.period=b.period
     order by period
 )
-select cols || '|' || tablename || '|' || 
-    case 
-        when cols='elec-gen_intercon' then 'various'::varchar 
-        when cols='elec-gen_waste-heat-penalty' then 'VAR_FIn'::varchar 
+-- Final query bringing it all together
+select cols || '|' || tablename || '|' ||
+    case
+        when cols='elec-gen_intercon' then 'various'::varchar
+        when cols='elec-gen_waste-heat-penalty' then 'VAR_FIn'::varchar
         else 'VAR_FOut'::varchar
     end || '|various|various'::varchar "id",
     cols::varchar "analysis",
     tablename,
-    case 
-        when cols='elec-gen_intercon' then 'various'::varchar 
-        when cols='elec-gen_waste-heat-penalty' then 'VAR_FIn'::varchar 
+    case
+        when cols='elec-gen_intercon' then 'various'::varchar
+        when cols='elec-gen_waste-heat-penalty' then 'VAR_FIn'::varchar
         else 'VAR_FOut'::varchar
     end "attribute",
     'various'::varchar "commodity",
     'various'::varchar "process",
     case
         when cols='elec-gen_inten' then avg(vals)
-        else sum(vals) 
+        else sum(vals)
     end "all",
     sum(case when d.period='2010' then vals else 0 end) as "2010" ,
     sum(case when d.period='2011' then vals else 0 end) as "2011",
@@ -1201,20 +1235,23 @@ select cols || '|' || tablename || '|' ||
     sum(case when d.period='2045' then vals else 0 end) as "2045",
     sum(case when d.period='2050' then vals else 0 end) as "2050",
     sum(case when d.period='2055' then vals else 0 end) as "2055",
-    sum(case when d.period='2060' then vals else 0 end) as "2060"    
+    sum(case when d.period='2060' then vals else 0 end) as "2060"
     from(
-        SELECT unnest(array['elec-gen_coal','elec-gen_coal-ccs','elec-gen_nga','elec-gen_nga-ccs','elec-gen_other-ff','elec-gen_bio','elec-gen_bio-ccs',
-           'elec-gen_other-rens','elec-gen_solar','elec-gen_nuclear','elec-gen_offw','elec-gen_onw','elec-gen_chp','elec-gen_total-cen','elec-gen_intercon','elec-gen_waste-heat-penalty','elec-gen_inten']) AS "cols",
+        SELECT unnest(array['elec-gen_coal','elec-gen_coal-ccs','elec-gen_nga','elec-gen_nga-ccs','elec-gen_other-ff','elec-gen_bio'
+           ,'elec-gen_bio-ccs','elec-gen_other-rens','elec-gen_solar','elec-gen_nuclear','elec-gen_offw','elec-gen_onw','elec-gen_chp','elec-gen_total-cen'
+           ,'elec-gen_intercon','elec-gen_waste-heat-penalty','elec-gen_inten']) AS "cols",
            tablename,period,
-           unnest(array["elec-gen_coal","elec-gen_coal-ccs","elec-gen_nga","elec-gen_nga-ccs","elec-gen_other-ff","elec-gen_bio","elec-gen_bio-ccs","elec-gen_other-rens",
-           "elec-gen_solar","elec-gen_nuclear","elec-gen_offw","elec-gen_onw","elec-gen_chp","elec-gen_total-cen","elec-gen_intercon","elec-gen_waste-heat-penalty","elec-gen_inten"]) AS "vals"
+           unnest(array["elec-gen_coal","elec-gen_coal-ccs","elec-gen_nga","elec-gen_nga-ccs","elec-gen_other-ff","elec-gen_bio","elec-gen_bio-ccs"
+           ,"elec-gen_other-rens","elec-gen_solar","elec-gen_nuclear","elec-gen_offw","elec-gen_onw","elec-gen_chp","elec-gen_total-cen","elec-gen_intercon",
+           "elec-gen_waste-heat-penalty","elec-gen_inten"]) AS "vals"
         FROM (
             select a.tablename,a.period, "coal-unad"*b.coal-d.coal "elec-gen_coal",
+-- =unadjusted coal * co-firing percents for coal - elec penalty for coal. Similar calcs for others below
             "coalccs-unad"*b.coal-d.coalccs "elec-gen_coal-ccs",
             "gas-unad"*b.gas-d.gas "elec-gen_nga",
-            "gasccs-unad"*b.gas-d.gasccs "elec-gen_nga-ccs",    
+            "gasccs-unad"*b.gas-d.gasccs "elec-gen_nga-ccs",
             ("ELC FROM OIL"*b.oil+"coal-unad"*b.oilcoal)-d.oil
-            --ie oil
+            --ie oil [not ccs]
             +("ELC FROM OIL CCS"*b.oil+"coalccs-unad"*b.oilcoal)-d.oilccs
             -- oil ccs
             +"ELC FROM MANFUELS"
@@ -1252,19 +1289,21 @@ select cols || '|' || tablename || '|' ||
                 sum(case when proc_set in ('ELC FROM WIND-OFFSH') then pv else 0 end) "elec-gen_offw",
                 sum(case when proc_set in ('ELC FROM WIND-ONSH') then pv else 0 end) "elec-gen_onw",
                 sum(case when proc_set in ('elec-gen_chp') then pv else 0 end) "elec-gen_chp",
-                sum(case when proc_set='ELC FROM COAL-COF' then pv else 0 end)+sum(case when proc_set='ELC FROM COAL RR' then pv else 0 end)-sum(case when proc_set='ELC FROM COAL CCSRET' then pv else 0 end) "coal-unad",
+                sum(case when proc_set='ELC FROM COAL-COF' then pv else 0 end)+sum(case when proc_set='ELC FROM COAL RR' then pv else 0 end) "coal-unad",
+-- Above was minus CCSRET but now this is not a subset of RR
                 sum(case when proc_set='ELC FROM COALCOF CCS' then pv else 0 end)+sum(case when proc_set='ELC FROM COAL CCSRET' then pv else 0 end) "coalccs-unad",
-                sum(case when proc_set='ELC FROM GAS' then pv else 0 end)+sum(case when proc_set='ELC FROM GAS RR' then pv else 0 end)-sum(case when proc_set='ELC FROM GAS CCSRET' then pv else 0 end) "gas-unad",
+                sum(case when proc_set='ELC FROM GAS' then pv else 0 end)+sum(case when proc_set='ELC FROM GAS RR' then pv else 0 end) "gas-unad",
+-- Above was minus CCSRET but now this is not a subset of RR
                 sum(case when proc_set='ELC FROM GAS CCS' then pv else 0 end)+sum(case when proc_set='ELC FROM GAS CCSRET' then pv else 0 end) "gasccs-unad",
                 sum(case when proc_set='ELC FROM OIL' then pv else 0 end) "ELC FROM OIL",
-                sum(case when proc_set='ELC FROM OIL CCS' then pv else 0 end) "ELC FROM OIL CCS", 
-                sum(case when proc_set='ELC FROM MANFUELS' then pv else 0 end) "ELC FROM MANFUELS", 
+                sum(case when proc_set='ELC FROM OIL CCS' then pv else 0 end) "ELC FROM OIL CCS",
+                sum(case when proc_set='ELC FROM MANFUELS' then pv else 0 end) "ELC FROM MANFUELS",
                 sum(case when proc_set='ELC FROM BIO' then pv else 0 end) "ELC FROM BIO",
                 sum(case when proc_set='ELC FROM BIO CCS' then pv else 0 end) "ELC FROM BIO CCS",
                 sum(case when proc_set='elec-gen_waste-heat-penalty' then pv else 0 end) "elec-gen_waste-heat-penalty"
                 from elc_prd_fuel a
                 group by a.tablename, a.period
-            ) a 
+            ) a
             left join cofiring_fuel_percents b
             on a.tablename=b.tablename and a.period=b.period
             left join "elc-emis" c
@@ -1303,13 +1342,13 @@ select 'elec-stor|' || tablename || '|Var_FOut|ELC|various'::varchar(300) "id",
         sum(case when period='2060' then pv else 0 end)::numeric "2060"
 from vedastore
 where attribute = 'VAR_FOut' and commodity = 'ELC'
-        and process in('EHYDPMP00','EHYDPMP01','ECAESCON01','ESTGCAES01','ECAESTUR01','ESTGAACAES01','ESTGBNAS01','ESTGBALA01','ESTGBRF01')
+    and process in('EHYDPMP00','EHYDPMP01','ECAESCON01','ESTGCAES01','ECAESTUR01','ESTGAACAES01','ESTGBNAS01','ESTGBALA01','ESTGBRF01') --*Filter 99*
 group by tablename
 ) to '%~dp0ElecStor.csv' delimiter ',' CSV;
 
 /* *Electricity capacity by process* */
 -- These figures should match those in the relevant UCL template tables (i.e. code replicates the XL formulae)
-COPY ( 
+COPY (
 select analysis || '|' || tablename || '|' || attribute || '|' || '-|various'::varchar(300) "id", analysis, tablename,attribute,
          '-'::varchar(50) "commodity",
         'various'::varchar(50) "process",
@@ -1333,26 +1372,26 @@ from (
         case
             when process in('ESTWWST00','EPOLWST00', 'EBIOS00','EBOG-LFE00','EBOG-SWE00',
                 'EMSW00','EBIOCON00','ESTWWST01','EBIO01','EBOG-ADE01',
-                'EBOG-LFE01','EBOG-SWE01','EMSW01') then 'elec-cap_bio'::varchar(50)
-            when process = 'EBIOQ01' then 'elec-cap_bio-ccs'::varchar(50)
-            when process in('ECOA00','ECOABIO00', 'ECOARR01') then 'elec-cap_coal'::varchar(50)
-            when process in('ECOAQ01' ,'ECOAQDEMO01') then 'elec-cap_coal-ccs'::varchar(50)
-            when process in('EHYGCCT01' ,'EHYGOCT01') then 'elec-cap_h2'::varchar(50)
-            when process in('ENGACCT00','ENGACCTRR01','ENGAOCT00','ENGAOCT01','ENGARCPE00','ENGARCPE01') then 
-                'elec-cap_nga'::varchar(50)
-            when process in('ENGACCTQ01' ,'ENGACCTQDEMO01') then 'elec-cap_nga-ccs'::varchar(50)
+                'EBOG-LFE01','EBOG-SWE01','EMSW01') then 'elec-cap_bio'::varchar(50) --*Filter 100*
+            when process = 'EBIOQ01' then 'elec-cap_bio-ccs'::varchar(50) --*Filter 101*
+            when process in('ECOA00','ECOABIO00', 'ECOARR01') then 'elec-cap_coal'::varchar(50) --*Filter 102*
+            when process in('ECOAQ01' ,'ECOAQDEMO01') then 'elec-cap_coal-ccs'::varchar(50) --*Filter 103*
+            when process in('EHYGCCT01' ,'EHYGOCT01') then 'elec-cap_h2'::varchar(50) --*Filter 104*
+            when process in('ENGACCT00','ENGACCTRR01','ENGAOCT00','ENGAOCT01','ENGARCPE00','ENGARCPE01') then
+                'elec-cap_nga'::varchar(50) --*Filter 105*
+            when process in('ENGACCTQ01' ,'ENGACCTQDEMO01') then 'elec-cap_nga-ccs'::varchar(50) --*Filter 106*
             when process in('ENUCPWR00','ENUCPWR101','ENUCPWR102') then
-                'elec-cap_nuclear'::varchar(50)
-            when process in('EWNDOFF00' ,'EWNDOFF101' ,'EWNDOFF201' ,'EWNDOFF301') then 
-                'elec-cap_offw'::varchar(50)
+                'elec-cap_nuclear'::varchar(50)  --*Filter 107*
+            when process in('EWNDOFF00' ,'EWNDOFF101' ,'EWNDOFF201' ,'EWNDOFF301') then
+                'elec-cap_offw'::varchar(50) --*Filter 108*
             when process in('EWNDONS00','EWNDONS101','EWNDONS201','EWNDONS301','EWNDONS401','EWNDONS501',
-                'EWNDONS601','EWNDONS701','EWNDONS801','EWNDONS901') then 'elec-cap_onw'::varchar(50)
-            when process ='EHFOIGCCQ01' then 'elec-cap_other-ccs'::varchar(50)
-            when process in('EOILL00','EOILL01','EMANOCT00','EMANOCT01','EOILS00','EOILS01','EHFOIGCC01',    'EDSTRCPE00','EDSTRCPE01') then 
-                'elec-cap_other-ff'::varchar(50)
-            when process in('EHYD00','EHYD01','EGEO01','ETIR101','ETIB101','ETIS101','EWAV101') then 
-                'elec-cap_other-rens'::varchar(50)
-            when process in('ESOL00','ESOLPV00','ESOL01','ESOLPV01') then 'elec-cap_solar'::varchar(50)
+                'EWNDONS601','EWNDONS701','EWNDONS801','EWNDONS901') then 'elec-cap_onw'::varchar(50) --*Filter 109*
+            when process ='EHFOIGCCQ01' then 'elec-cap_other-ccs'::varchar(50) --*Filter 110*
+            when process in('EOILL00','EOILL01','EMANOCT00','EMANOCT01','EOILS00','EOILS01','EHFOIGCC01','EDSTRCPE00','EDSTRCPE01') then
+                'elec-cap_other-ff'::varchar(50) --*Filter 111*
+            when process in('EHYD00','EHYD01','EGEO01','ETIR101','ETIB101','ETIS101','EWAV101') then
+                'elec-cap_other-rens'::varchar(50) --*Filter 112*
+            when process in('ESOL00','ESOLPV00','ESOL01','ESOLPV01') then 'elec-cap_solar'::varchar(50) --*Filter 113*
             when process in('ICHCHPBIOG01','ICHCHPBIOS00','ICHCHPBIOS01','ICHCHPCCGT01','ICHCHPCCGTH01',
                 'ICHCHPCOA00','ICHCHPCOA01','ICHCHPFCH01','ICHCHPGT01','ICHCHPHFO00',
                 'ICHCHPLFO00','ICHCHPLPG00','ICHCHPLPG01','ICHCHPNGA00','ICHCHPPRO00',
@@ -1373,11 +1412,11 @@ from (
                 'RHEACHPRW01','RHNACHPRG01','RHNACHPRH01','RHNACHPRW01','SCHP-ADM01',
                 'SCHP-CCG00','SCHP-CCG01','SCHP-CCH01','SCHP-FCH01','SCHP-GES00','SCHP-GES01',
                 'SCHP-STM01','SCHP-STW00','SCHP-STW01','SHLCHPRG01','SHLCHPRH01','SHLCHPRW01',
-                'UCHP-CCG00','UCHP-CCG01') then 'elec-cap_chp'::varchar(50)
-            when process in('ELCIE00','ELCII00','ELCIE01','ELCII01') then 'elec-cap_intercon'::varchar(50)
+                'UCHP-CCG00','UCHP-CCG01') then 'elec-cap_chp'::varchar(50) --*Filter 114*
+            when process in('ELCIE00','ELCII00','ELCIE01','ELCII01') then 'elec-cap_intercon'::varchar(50) --*Filter 115*
         end as "analysis",
     tablename, attribute
-    from vedastore 
+    from vedastore
     where attribute = 'VAR_Cap' and commodity = '-'
 ) a
 where analysis is not null
@@ -1387,11 +1426,11 @@ order by tablename,  analysis, attribute, commodity
 
 /* *costs by sector and type* */
 -- NB Have left as wildcard filters because a) are start of process, no matches to middle (i.e. main sectors in UKTM-
--- Also, would be a huge no of processes if made explicit- Checked whether there's any speed increase from using 
+-- Also, would be a huge no of processes if made explicit- Checked whether there's any speed increase from using
 -- substring functions like "left()" cf "like" and wildcards- Identical results for one letter, left is slower for
 -- multiple letters like left(process,3)='IMP'
 
-COPY ( 
+COPY (
 select analysis || '|' || tablename ||'|'|| attribute || '|various' || '|various'::varchar(300) "id", analysis, tablename,attribute,
     'various'::varchar(50) "commodity",
     'various'::varchar(50) "process",
@@ -1412,18 +1451,18 @@ select analysis || '|' || tablename ||'|'|| attribute || '|various' || '|various
 from (
     select process,
         period,pv,
-        case 
-            when process like 'T%' then 'costs_tra'::varchar(50)
-            when process like 'A%' then 'costs_agr'::varchar(50)
-            when process like 'E%' AND process not like 'EXP%' then 'costs_elc'::varchar(50)
-            when process like 'I%' AND process not like 'IMP%' then 'costs_ind'::varchar(50)
-            when process like 'P%' or process like 'C%' then 'costs_prc'::varchar(50)
-            when process like 'R%' then 'costs_res'::varchar(50)
-            when process like any(array['M%','U%','IMP%','EXP%']) then 'costs_rsr'::varchar(50)
-            when process like 'S%' then 'costs_ser'::varchar(50)
+        case
+            when process like 'T%' then 'costs_tra'::varchar(50) --*Filter 116*
+            when process like 'A%' then 'costs_agr'::varchar(50) --*Filter 117*
+            when process like 'E%' AND process not like 'EXP%' then 'costs_elc'::varchar(50) --*Filter 118*
+            when process like 'I%' AND process not like 'IMP%' then 'costs_ind'::varchar(50) --*Filter 119*
+            when process like 'P%' or process like 'C%' then 'costs_prc'::varchar(50) --*Filter 120*
+            when process like 'R%' then 'costs_res'::varchar(50) --*Filter 121*
+            when process like any(array['M%','U%','IMP%','EXP%']) then 'costs_rsr'::varchar(50) --*Filter 122*
+            when process like 'S%' then 'costs_ser'::varchar(50) --*Filter 123*
             else 'costs_other'::varchar(50)
         end as "analysis",tablename, attribute
-    from vedastore 
+    from vedastore
     where attribute in('Cost_Act', 'Cost_Flo', 'Cost_Fom', 'Cost_Inv', 'Cost_Salv')
     union all
     select 'various'::varchar(50) "process",
@@ -1432,7 +1471,7 @@ from (
         tablename,
         attribute
     from vedastore
-    where attribute in('Cost_Act','Cost_Flo','Cost_Fom','Cost_Inv','Cost_Salv','ObjZ')
+    where attribute in('Cost_Act','Cost_Flo','Cost_Fom','Cost_Inv','Cost_Salv','ObjZ') --*Filter 124*
 ) a
 group by id, analysis, tablename, attribute
 order by tablename,  analysis, attribute
@@ -1440,7 +1479,7 @@ order by tablename,  analysis, attribute
 
 /* *Marginal prices for emissions* */
 -- Note that the "all" column is left blank since it doesn't make sense to sum the marginal prices- Could substitute an average or similar if required
-COPY ( 
+COPY (
 select 'marg-price|' || tablename || '|EQ_CombalM|' || commodity || '|-'::varchar(300) "id",
         'marg-price'::varchar(50) "analysis",
         tablename,
@@ -1463,14 +1502,14 @@ select 'marg-price|' || tablename || '|EQ_CombalM|' || commodity || '|-'::varcha
         sum(case when period='2060' then pv else 0 end)::numeric "2060"
 from vedastore
 where attribute='EQ_CombalM' and commodity in('GHG-NO-IAS-YES-LULUCF-NET','GHG-ETS-NO-IAS-NET',
-    'GHG-YES-IAS-YES-LULUCF-NET','GHG-ETS-YES-IAS-NET')
+    'GHG-YES-IAS-YES-LULUCF-NET','GHG-ETS-YES-IAS-NET') --*Filter 125*
 group by tablename, commodity
 order by tablename, commodity
  ) TO '%~dp0MarginalPricesOut.csv' delimiter ',' CSV;
 
 /* *Whole stock heat output by process for residential* */
 
-COPY ( 
+COPY (
 select analysis || '|' || tablename || '|' || attribute || '|' || 'various|various'::varchar(300) "id", analysis, tablename,attribute,
     'various'::varchar(50) "commodity",
     'various'::varchar(50) "process",
@@ -1494,47 +1533,47 @@ from (
         case
             when process in ('RHEABLCRP01','RHEABLRRW00',
                 'RHEABLRRW01','RHEABLSRP01','RHEABLSRW01','RHNABLCRP01','RHNABLRRW01',
-                'RHNABLSRP01','RHNABLSRW01') then 'heat-res_boiler-bio'::varchar(50)
+                'RHNABLSRP01','RHNABLSRW01') then 'heat-res_boiler-bio'::varchar(50) --*Filter 126*
             when process in('RHEABLCRH01','RHEABLSRH01',
-                'RHNABLCRH01','RHNABLSRH01') then 'heat-res_boiler-h2'::varchar(50)
+                'RHNABLCRH01','RHNABLSRH01') then 'heat-res_boiler-h2'::varchar(50) --*Filter 127*
             when process in('RHEABLCRO00','RHEABLCRO01',
-                'RHEABLRRC00','RHEABLRRO00','RHEABLSRO01','RHNABLCRO01','RHNABLSRO01') then 
-                    'heat-res_boiler-otherFF'::varchar(50)
+                'RHEABLRRC00','RHEABLRRO00','RHEABLSRO01','RHNABLCRO01','RHNABLSRO01') then
+                    'heat-res_boiler-otherFF'::varchar(50) --*Filter 128*
             when process in('RHEABLRRE00','RHEABLRRE01',
                 'RHEABLSRE01','RHEAGHPUE01','RHEASHTRE00','RHEASHTRE01','RHNABLRRE01',
-                'RHNABLSRE01','RHNAGHPUE01','RHNASHTRE01','RWEAWHTRE00','RWEAWHTRE01','RWNAWHTRE01') then 
-                    'heat-res_boiler/heater-elec'::varchar(50)
+                'RHNABLSRE01','RHNAGHPUE01','RHNASHTRE01','RWEAWHTRE00','RWEAWHTRE01','RWNAWHTRE01') then
+                    'heat-res_boiler/heater-elec'::varchar(50) --*Filter 129*
             when process in('RHEABLCRG00','RHEABLCRG01',
                 'RHEABLRRG00','RHEABLSRG01','RHEASHTRG00','RHEASHTRG01','RHNABLCRG01',
                 'RHNABLSRG01','RHNASHTRG01','RWEAWHTRG00','RWEAWHTRG01','RWNAWHTRG01') then
-                    'heat-res_boiler/heater-nga'::varchar(50)
+                    'heat-res_boiler/heater-nga'::varchar(50) --*Filter 130*
             when process in('RHEACSV01','RHEACSVCAV01',
-                'RHEACSVCAV02','RHEACSVFLR01','RHEACSVLOF02','RHEACSVSOL01','RHEACSVSOL02','RHEACSVSOL03') then 
-                    'heat-res_conserv'::varchar(50)
+                'RHEACSVCAV02','RHEACSVFLR01','RHEACSVLOF02','RHEACSVSOL01','RHEACSVSOL02','RHEACSVSOL03') then
+                    'heat-res_conserv'::varchar(50) --*Filter 131*
             when process in('RHEADHP100','RHEADHP101','RHEADHP201','RHEADHP301','RHEADHP401',
-                'RHNADHP101','RHNADHP201','RHNADHP301','RHNADHP401') then 'heat-res_dh'::varchar(50)
+                'RHNADHP101','RHNADHP201','RHNADHP301','RHNADHP401') then 'heat-res_dh'::varchar(50) --*Filter 132*
             when process in('RHEAAHPRE00','RHEAAHPRE01',
                 'RHEAAHPUE01','RHEAAHSRE01', 'RHEAAHSUE01','RHEAGHPRE01','RHEAGHSRE01',
                 'RHEAGHSUE01','RHNAAHPRE01','RHNAAHPUE01','RHNAAHSRE01','RHNAAHSUE01',
-                'RHNAGHPRE01','RHNAGHSRE01','RHNAGHSUE01') then 'heat-res_heatpump-elec'::varchar(50)
+                'RHNAGHPRE01','RHNAGHSRE01','RHNAGHSUE01') then 'heat-res_heatpump-elec'::varchar(50) --*Filter 133*
             when process in('RHEAAHHRE01','RHEAAHHUE01',
-                'RHEAGHHRE01','RHEAGHHUE01','RHNAAHHRE01','RHNAAHHUE01','RHNAGHHRE01','RHNAGHHUE01') then 
-                    'heat-res_hyb-boil+hp-h2'::varchar(50)
+                'RHEAGHHRE01','RHEAGHHUE01','RHNAAHHRE01','RHNAAHHUE01','RHNAGHHRE01','RHNAGHHUE01') then
+                    'heat-res_hyb-boil+hp-h2'::varchar(50) --*Filter 134*
             when process in('RHEAAHBRE01','RHEAAHBUE01',
-                'RHEAGHBRE01','RHEAGHBUE01','RHNAAHBRE01','RHNAAHBUE01','RHNAGHBRE01','RHNAGHBUE01') then 
-                'heat-res_hyb-boil+hp-nga'::varchar(50)
-            when process in('RHEACHPRW01','RHNACHPRW01') then 'heat-res_microchp-bio'::varchar(50)
+                'RHEAGHBRE01','RHEAGHBUE01','RHNAAHBRE01','RHNAAHBUE01','RHNAGHBRE01','RHNAGHBUE01') then
+                'heat-res_hyb-boil+hp-nga'::varchar(50)  --*Filter 135*
+            when process in('RHEACHPRW01','RHNACHPRW01') then 'heat-res_microchp-bio'::varchar(50) --*Filter 136*
             when process in('RHEACHBRH01','RHEACHPRH01',
-                'RHNACHBRH01','RHNACHPRH01') then 'heat-res_microchp-h2'::varchar(50)
-            when process in('RHEACHPRG01','RHNACHPRG01') then 'heat-res_microchp-nga'::varchar(50)
+                'RHNACHBRH01','RHNACHPRH01') then 'heat-res_microchp-h2'::varchar(50)  --*Filter 137*
+            when process in('RHEACHPRG01','RHNACHPRG01') then 'heat-res_microchp-nga'::varchar(50)  --*Filter 138*
             when process in('RHEANSTRE00','RHEANSTRE01','RHEASTGNT00','RHEASTGNT01',
-                'RHNANSTRE01','RHNASTGNT01') then 'heat-res_storheater-elec'::varchar(50)
+                'RHNANSTRE01','RHNASTGNT01') then 'heat-res_storheater-elec'::varchar(50) --*Filter 139*
             else 'heat-res_other'
         end as "analysis",
     tablename, attribute
-    from vedastore 
+    from vedastore
     where attribute = 'VAR_FOut' AND commodity in('RHCSV-RHEA','RHEATPIPE-EA','RHEATPIPE-NA','RHSTAND-EA',
-        'RHSTAND-NA','RHUFLOOR-EA','RHUFLOOR-NA','RWCSV-RWEA','RWSTAND-EA','RWSTAND-NA')
+        'RHSTAND-NA','RHUFLOOR-EA','RHUFLOOR-NA','RWCSV-RWEA','RWSTAND-EA','RWSTAND-NA') --*Filter 140*
     group by period,process, pv,tablename, id, analysis, attribute order by tablename, attribute
 ) a
 group by id, analysis,tablename, attribute
@@ -1565,37 +1604,37 @@ from (
         period,pv,
         case
             when process in('RHEABLCRP01','RHEABLRRW00','RHEABLRRW01','RHEABLSRP01',
-                'RHEABLSRW01','RHNABLCRP01','RHNABLRRW01','RHNABLSRP01','RHNABLSRW01') then 'new-heat-res_boiler-bio'::varchar(50)
-            when process in('RHEABLCRH01','RHEABLSRH01','RHNABLCRH01','RHNABLSRH01') then 'new-heat-res_boiler-h2'::varchar(50)
+                'RHEABLSRW01','RHNABLCRP01','RHNABLRRW01','RHNABLSRP01','RHNABLSRW01') then 'new-heat-res_boiler-bio'::varchar(50)  --*Filter 141*
+            when process in('RHEABLCRH01','RHEABLSRH01','RHNABLCRH01','RHNABLSRH01') then 'new-heat-res_boiler-h2'::varchar(50)  --*Filter 142*
             when process in('RHEABLCRO00','RHEABLCRO01','RHEABLRRC00','RHEABLRRO00',
-                'RHEABLSRO01','RHNABLCRO01','RHNABLSRO01') then 'new-heat-res_boiler-otherFF'::varchar(50)
+                'RHEABLSRO01','RHNABLCRO01','RHNABLSRO01') then 'new-heat-res_boiler-otherFF'::varchar(50)  --*Filter 143*
             when process in('RHEABLRRE00','RHEABLRRE01','RHEABLSRE01','RHEAGHPUE01',
                 'RHEASHTRE00','RHEASHTRE01','RHNABLRRE01','RHNABLSRE01','RHNAGHPUE01',
-                'RHNASHTRE01','RWEAWHTRE00','RWEAWHTRE01','RWNAWHTRE01') then 'new-heat-res_boiler/heater-elec'::varchar(50)
+                'RHNASHTRE01','RWEAWHTRE00','RWEAWHTRE01','RWNAWHTRE01') then 'new-heat-res_boiler/heater-elec'::varchar(50)  --*Filter 144*
             when process in('RHEABLCRG00','RHEABLCRG01','RHEABLRRG00','RHEABLSRG01',
                 'RHEASHTRG00','RHEASHTRG01','RHNABLCRG01','RHNABLSRG01','RHNASHTRG01',
-                'RWEAWHTRG00','RWEAWHTRG01','RWNAWHTRG01') then 'new-heat-res_boiler/heater-nga'::varchar(50)
+                'RWEAWHTRG00','RWEAWHTRG01','RWNAWHTRG01') then 'new-heat-res_boiler/heater-nga'::varchar(50)  --*Filter 145*
             when process in('RHEACSV01','RHEACSVCAV01','RHEACSVCAV02','RHEACSVFLR01',
-                'RHEACSVLOF02','RHEACSVSOL01','RHEACSVSOL02','RHEACSVSOL03') then 'new-heat-res_conserv'::varchar(50)
+                'RHEACSVLOF02','RHEACSVSOL01','RHEACSVSOL02','RHEACSVSOL03') then 'new-heat-res_conserv'::varchar(50)  --*Filter 146*
             when process in('RHEADHP100','RHEADHP101','RHEADHP201','RHEADHP301','RHEADHP401',
-                'RHNADHP101','RHNADHP201','RHNADHP301','RHNADHP401') then 'new-heat-res_dh'::varchar(50)
+                'RHNADHP101','RHNADHP201','RHNADHP301','RHNADHP401') then 'new-heat-res_dh'::varchar(50)  --*Filter 147*
             when process in('RHEAAHPRE00','RHEAAHPRE01','RHEAAHPUE01','RHEAAHSRE01',
                 'RHEAAHSUE01','RHEAGHPRE01','RHEAGHSRE01','RHEAGHSUE01','RHNAAHPRE01',
-                'RHNAAHPUE01','RHNAAHSRE01','RHNAAHSUE01','RHNAGHPRE01','RHNAGHSRE01','RHNAGHSUE01') then 'new-heat-res_heatpump-elec'::varchar(50)
+                'RHNAAHPUE01','RHNAAHSRE01','RHNAAHSUE01','RHNAGHPRE01','RHNAGHSRE01','RHNAGHSUE01') then 'new-heat-res_heatpump-elec'::varchar(50) --*Filter 148*
             when process in('RHEAAHHRE01','RHEAAHHUE01','RHEAGHHRE01','RHEAGHHUE01',
-                'RHNAAHHRE01','RHNAAHHUE01','RHNAGHHRE01','RHNAGHHUE01') then 'new-heat-res_hyb-boil+hp-h2'::varchar(50)
+                'RHNAAHHRE01','RHNAAHHUE01','RHNAGHHRE01','RHNAGHHUE01') then 'new-heat-res_hyb-boil+hp-h2'::varchar(50) --*Filter 149*
             when process in('RHEAAHBRE01','RHEAAHBUE01','RHEAGHBRE01','RHEAGHBUE01',
-                'RHNAAHBRE01','RHNAAHBUE01','RHNAGHBRE01','RHNAGHBUE01') then 'new-heat-res_hyb-boil+hp-nga'::varchar(50)
+                'RHNAAHBRE01','RHNAAHBUE01','RHNAGHBRE01','RHNAGHBUE01') then 'new-heat-res_hyb-boil+hp-nga'::varchar(50) --*Filter 150*
             when process in('RHEACHPRW01','RHNACHPRW01') then 'new-heat-res_microchp-bio'::varchar(50)
-            when process in('RHEACHBRH01','RHEACHPRH01','RHNACHBRH01','RHNACHPRH01') then 'new-heat-res_microchp-h2'::varchar(50)
-            when process in('RHEACHPRG01','RHNACHPRG01') then 'new-heat-res_microchp-nga'::varchar(50)
+            when process in('RHEACHBRH01','RHEACHPRH01','RHNACHBRH01','RHNACHPRH01') then 'new-heat-res_microchp-h2'::varchar(50)  --*Filter 151*
+            when process in('RHEACHPRG01','RHNACHPRG01') then 'new-heat-res_microchp-nga'::varchar(50) --*Filter 152*
             when process in('RHEANSTRE00','RHEANSTRE01','RHEASTGNT00','RHEASTGNT01',
-                'RHNANSTRE01','RHNASTGNT01') then 'new-heat-res_storheater-elec'::varchar(50)
+                'RHNANSTRE01','RHNASTGNT01') then 'new-heat-res_storheater-elec'::varchar(50) --*Filter 153*
         end as "analysis",
     tablename, attribute
-    from vedastore 
+    from vedastore
     where attribute = 'VAR_FOut' AND commodity in('RHCSV-RHEA','RHEATPIPE-EA','RHEATPIPE-NA','RHSTAND-EA','RHSTAND-NA',
-        'RHUFLOOR-EA','RHUFLOOR-NA','RWCSV-RWEA','RWSTAND-EA','RWSTAND-NA') and vintage=period
+        'RHUFLOOR-EA','RHUFLOOR-NA','RWCSV-RWEA','RWSTAND-EA','RWSTAND-NA') and vintage=period  --*Filter 154*
     group by period,commodity,process, pv,tablename, id, analysis, attribute order by tablename, attribute
 ) a where analysis <> ''
 group by id, analysis,tablename, attribute
@@ -1622,7 +1661,7 @@ order by tablename,  analysis, attribute, commodity
 -- SER_Heat_Micro_CHP_NGA                                'heat-ser_microchp-nga'
 -- SER_Heat_Elec_Storage_Heater                        'heat-ser_storheater-elec'
 
-COPY ( 
+COPY (
 select analysis || '|' || tablename || '|' || attribute || '|' || 'various|various'::varchar(300) "id", analysis, tablename,attribute,
     'various'::varchar(50) "commodity",
     'various'::varchar(50) "process",
@@ -1645,36 +1684,36 @@ from (
         period,pv,
         case
             when process in ('SHLSHTRE00','SWLWHTRE00','SHLBLRRE01','SHLSHTRE01',
-                'SWLWHTRE01','SHLBLSRE01','SHHBLRRE00','SWHWHTRE00','SHHBLRRE01','SWHWHTRE01','SHLBLRRE00') 
-                    then 'heat-ser_boiler/heater-elec'
+                'SWLWHTRE01','SHLBLSRE01','SHHBLRRE00','SWHWHTRE00','SHHBLRRE01','SWHWHTRE01','SHLBLRRE00')
+                    then 'heat-ser_boiler/heater-elec'  --*Filter 155*
             when process in('SHLBLCRG00','SHLSHTRG00','SWLWHTRG00','SHLBLCRG01','SWLWHTRG01',
-                'SHLBLSRG01','SHHBLRRG00','SWHBLRRG00','SHHBLRRG01','SWHBLRRG01','SHLBLRRG00') 
-                    then 'heat-ser_boiler/heater-nga'
+                'SHLBLSRG01','SHHBLRRG00','SWHBLRRG00','SHHBLRRG01','SWHBLRRG01','SHLBLRRG00')
+                    then 'heat-ser_boiler/heater-nga'  --*Filter 156*
             when process in('SHLBLCRP01','SHLBLRRW01','SHLBLSRP01','SHLBLSRW01','SHHBLRRW00',
-                'SWHBLRRW00','SHHBLRRW01','SWHBLRRW01','SHLBLRRW00') then 'heat-ser_boiler-bio'
-            when process in('SHLBLSRH01','SHHBLRRH01','SWHBLRRH01','SHLBLCRH01') then 'heat-ser_boiler-h2'
+                'SWHBLRRW00','SHHBLRRW01','SWHBLRRW01','SHLBLRRW00') then 'heat-ser_boiler-bio' --*Filter 157*
+            when process in('SHLBLSRH01','SHHBLRRH01','SWHBLRRH01','SHLBLCRH01') then 'heat-ser_boiler-h2' --*Filter 158*
             when process in('SHLBLCRO00','SHLBLRRC00','SHLSHTRO00','SHLBLCRO01','SHLBLSRO01',
                 'SHHBLRRO00','SHHBLRRC00','SWHBLRRO00','SWHBLRRC00','SHHBLRRO01','SHHBLRRC01',
-                'SWHBLRRO01','SWHBLRRC01','SHLBLRRO00') then 'heat-ser_boiler-otherFF'
+                'SWHBLRRO01','SWHBLRRC01','SHLBLRRO00') then 'heat-ser_boiler-otherFF' --*Filter 159*
             when process in('SCSLROFF01','SCSLROFP01','SCSLCAVW01','SCSHPTHM01','SCSHROFF01',
-                'SCSHROFP01','SCSHCAVW01','SCSLPTHM01') then 'heat-ser_conserv'
-            when process in('SHLAHBUE01','SHLGHBRE01','SHLGHBUE01','SHLAHBRE01') then  'heat-ser_hyb-boil+hp-nga'
+                'SCSHROFP01','SCSHCAVW01','SCSLPTHM01') then 'heat-ser_conserv'  --*Filter 160*
+            when process in('SHLAHBUE01','SHLGHBRE01','SHLGHBUE01','SHLAHBRE01') then  'heat-ser_hyb-boil+hp-nga' --*Filter 161*
             when process in('SHLAHPRE01','SHLAHPUE01','SHLGHPRE01','SHLGHPUE01','SHLAHSRE01',
-                'SHLAHSUE01','SHLGHSRE01','SHLGHSUE01','SHLAHPRE00') then 'heat-ser_heatpump-elec'
-            when process in('SHHVACAE01','SHHVACAE00') then 'heat-ser_hvac'
-            when process in('SHHVACAE02') then 'heat-ser_hvac-ad'
-            when process in('SHLAHHUE01','SHLGHHRE01','SHLGHHUE01','SHLAHHRE01') then 'heat-ser_hyb-boil+hp-h2'
-            when process in('SHLDHP101','SHHDHP100','SHHDHP101','SHLDHP100') then 'heat-ser_dh'
-            when process in('SHLCHPRW01') then 'heat-ser_microchp-bio'
-            when process in('SHLCHBRH01','SHHFCLRH01','SHLCHPRH01') then 'heat-ser_microchp-h2'
-            when process in('SHLCHPRG01') then 'heat-ser_microchp-nga'
-            when process in('SHLNSTRE01','SHLNSTRE00') then 'heat-ser_storheater-elec'
+                'SHLAHSUE01','SHLGHSRE01','SHLGHSUE01','SHLAHPRE00') then 'heat-ser_heatpump-elec' --*Filter 162*
+            when process in('SHHVACAE01','SHHVACAE00') then 'heat-ser_hvac' --*Filter 163*
+            when process in('SHHVACAE02') then 'heat-ser_hvac-ad' --*Filter 164*
+            when process in('SHLAHHUE01','SHLGHHRE01','SHLGHHUE01','SHLAHHRE01') then 'heat-ser_hyb-boil+hp-h2' --*Filter 165*
+            when process in('SHLDHP101','SHHDHP100','SHHDHP101','SHLDHP100') then 'heat-ser_dh' --*Filter 166*
+            when process in('SHLCHPRW01') then 'heat-ser_microchp-bio' --*Filter 167*
+            when process in('SHLCHBRH01','SHHFCLRH01','SHLCHPRH01') then 'heat-ser_microchp-h2' --*Filter 168*
+            when process in('SHLCHPRG01') then 'heat-ser_microchp-nga' --*Filter 169*
+            when process in('SHLNSTRE01','SHLNSTRE00') then 'heat-ser_storheater-elec' --*Filter 170*
             else 'heat-ser_other'
         end as "analysis",
     tablename, attribute
-    from vedastore 
+    from vedastore
     where attribute = 'VAR_FOut' AND commodity in('SHHCSVDMD','SHHDELVAIR','SHHDELVRAD',
-        'SHLCSVDMD','SHLDELVAIR','SHLDELVRAD','SHLDELVUND','SWHDELVPIP','SWHDELVSTD','SWLDELVSTD')
+        'SHLCSVDMD','SHLDELVAIR','SHLDELVRAD','SHLDELVUND','SWHDELVPIP','SWHDELVSTD','SWLDELVSTD') --*Filter 171*
     group by period,process, pv,tablename, id, analysis, attribute order by tablename, attribute
 ) a
 group by id, analysis,tablename, attribute
@@ -1682,7 +1721,7 @@ order by tablename,  analysis, attribute, commodity
  ) TO '%~dp0ServWholeHeatOut.csv' delimiter ',' CSV;
 
 /* *New build services heat output by source* */
-COPY ( 
+COPY (
 select analysis || '|' || tablename || '|' || attribute || '|' || 'various|various'::varchar(300) "id", analysis, tablename,attribute,
     'various'::varchar(50) "commodity",
     'various'::varchar(50) "process",
@@ -1706,35 +1745,35 @@ from (
         case
             when process in ('SHLSHTRE00','SWLWHTRE00','SHLBLRRE01','SHLSHTRE01',
                 'SWLWHTRE01','SHLBLSRE01','SHHBLRRE00','SWHWHTRE00','SHHBLRRE01','SWHWHTRE01',
-                'SHLBLRRE00') then 'new-heat-ser_boiler/heater-elec'
+                'SHLBLRRE00') then 'new-heat-ser_boiler/heater-elec' --*Filter 172*
             when process in('SHLBLCRG00','SHLSHTRG00','SWLWHTRG00','SHLBLCRG01','SWLWHTRG01',
-                'SHLBLSRG01','SHHBLRRG00','SWHBLRRG00','SHHBLRRG01','SWHBLRRG01','SHLBLRRG00') 
-                    then 'new-heat-ser_boiler/heater-nga'
+                'SHLBLSRG01','SHHBLRRG00','SWHBLRRG00','SHHBLRRG01','SWHBLRRG01','SHLBLRRG00')
+                    then 'new-heat-ser_boiler/heater-nga' --*Filter 173*
             when process in('SHLBLCRP01','SHLBLRRW01','SHLBLSRP01','SHLBLSRW01','SHHBLRRW00',
-                'SWHBLRRW00','SHHBLRRW01','SWHBLRRW01','SHLBLRRW00') then 'new-heat-ser_boiler-bio'
-            when process in('SHLBLSRH01','SHHBLRRH01','SWHBLRRH01','SHLBLCRH01') then 'new-heat-ser_boiler-h2'
+                'SWHBLRRW00','SHHBLRRW01','SWHBLRRW01','SHLBLRRW00') then 'new-heat-ser_boiler-bio' --*Filter 174*
+            when process in('SHLBLSRH01','SHHBLRRH01','SWHBLRRH01','SHLBLCRH01') then 'new-heat-ser_boiler-h2' --*Filter 175*
             when process in('SHLBLCRO00','SHLBLRRC00','SHLSHTRO00','SHLBLCRO01','SHLBLSRO01',
                 'SHHBLRRO00','SHHBLRRC00','SWHBLRRO00','SWHBLRRC00','SHHBLRRO01','SHHBLRRC01',
-                'SWHBLRRO01','SWHBLRRC01','SHLBLRRO00') then 'new-heat-ser_boiler-otherFF'
+                'SWHBLRRO01','SWHBLRRC01','SHLBLRRO00') then 'new-heat-ser_boiler-otherFF' --*Filter 176*
             when process in('SCSLROFF01','SCSLROFP01','SCSLCAVW01','SCSHPTHM01','SCSHROFF01',
-                'SCSHROFP01','SCSHCAVW01','SCSLPTHM01') then 'new-heat-ser_conserv'
-            when process in('SHLAHBUE01','SHLGHBRE01','SHLGHBUE01','SHLAHBRE01') then  'new-heat-ser_hyb-boil+hp-nga'
+                'SCSHROFP01','SCSHCAVW01','SCSLPTHM01') then 'new-heat-ser_conserv' --*Filter 177*
+            when process in('SHLAHBUE01','SHLGHBRE01','SHLGHBUE01','SHLAHBRE01') then 'new-heat-ser_hyb-boil+hp-nga' --*Filter 178*
             when process in('SHLAHPRE01','SHLAHPUE01','SHLGHPRE01','SHLGHPUE01','SHLAHSRE01',
-                'SHLAHSUE01','SHLGHSRE01','SHLGHSUE01','SHLAHPRE00') then 'new-heat-ser_heatpump-elec'
-            when process in('SHHVACAE01','SHHVACAE00') then 'new-heat-ser_hvac'
-            when process in('SHHVACAE02') then 'new-heat-ser_hvac-ad'
-            when process in('SHLAHHUE01','SHLGHHRE01','SHLGHHUE01','SHLAHHRE01') then 'new-heat-ser_hyb-boil+hp-h2'
-            when process in('SHLDHP101','SHHDHP100','SHHDHP101','SHLDHP100') then 'new-heat-ser_dh'
-            when process in('SHLCHPRW01') then 'new-heat-ser_microchp-bio'
-            when process in('SHLCHBRH01','SHHFCLRH01','SHLCHPRH01') then 'new-heat-ser_microchp-h2'
-            when process in('SHLCHPRG01') then 'new-heat-ser_microchp-nga'
-            when process in('SHLNSTRE01','SHLNSTRE00') then 'new-heat-ser_storheater-elec'
+                'SHLAHSUE01','SHLGHSRE01','SHLGHSUE01','SHLAHPRE00') then 'new-heat-ser_heatpump-elec' --*Filter 179*
+            when process in('SHHVACAE01','SHHVACAE00') then 'new-heat-ser_hvac' --*Filter 180*
+            when process in('SHHVACAE02') then 'new-heat-ser_hvac-ad' --*Filter 181*
+            when process in('SHLAHHUE01','SHLGHHRE01','SHLGHHUE01','SHLAHHRE01') then 'new-heat-ser_hyb-boil+hp-h2' --*Filter 182*
+            when process in('SHLDHP101','SHHDHP100','SHHDHP101','SHLDHP100') then 'new-heat-ser_dh' --*Filter 183*
+            when process in('SHLCHPRW01') then 'new-heat-ser_microchp-bio' --*Filter 184*
+            when process in('SHLCHBRH01','SHHFCLRH01','SHLCHPRH01') then 'new-heat-ser_microchp-h2' --*Filter 185*
+            when process in('SHLCHPRG01') then 'new-heat-ser_microchp-nga' --*Filter 186*
+            when process in('SHLNSTRE01','SHLNSTRE00') then 'new-heat-ser_storheater-elec' --*Filter 187*
             else 'new-new-heat-ser_other'
         end as "analysis",
     tablename, attribute
-    from vedastore 
-    where attribute = 'VAR_FOut' AND commodity in('SHHCSVDMD','SHHDELVAIR','SHHDELVRAD','SHLCSVDMD',
-        'SHLDELVAIR','SHLDELVRAD','SHLDELVUND','SWHDELVPIP','SWHDELVSTD','SWLDELVSTD')
+    from vedastore
+    where attribute = 'VAR_FOut' AND commodity in('SHHCSVDMD','SHHDELVAIR','SHHDELVRAD',
+        'SHLCSVDMD','SHLDELVAIR','SHLDELVRAD','SHLDELVUND','SWHDELVPIP','SWHDELVSTD','SWLDELVSTD') --*Filter 171*
     and vintage=period
     group by period,process, pv,tablename, id, analysis, attribute order by tablename, attribute
 ) a
@@ -1744,18 +1783,18 @@ order by tablename,  analysis, attribute, commodity
 
 /* *End user final energy demand by sector* */
 -- This table uses common table expressions- In postgres these can make the crosstab slower than other ways of implementing the query because
--- PG creates a temporary table for each one- But refactoring this code to make all the CTEs sub-selects actually made the query slower rather 
+-- PG creates a temporary table for each one- But refactoring this code to make all the CTEs sub-selects actually made the query slower rather
 -- than faster so have retained the original ver here [also easier to read]- Have tried to replicate the relevant Veda BE tables where possible-
 
 -- NB includes FE for hydrogen production, fuel use for processing and for elec gen
 -- Includes non-energy use of fuels in the industry chemicals sub-sector
-COPY ( 
+COPY (
 with hydrogen_chp as (
 -- This is the Veda table of the same name with added tablename and with period in a single column
 -- NB currently excludes existing average houses, def of "hydrogen boiler" might be wrong
     select chp_hyd,commodity, period,tablename,sum(pv) "pv"
     from (
-        select case 
+        select case
             when process in ('RHEABLCRH01','RHEACHBRH01','RHFCBLCRH01','RHFCCHBRH01','RHFSBLCRH01','RHFSCHBRH01','RHHCBLCRH01'
                 ,'RHHCCHBRH01','RHHSBLCRH01','RHHSCHBRH01','RHNABLCRH01','RHNACHBRH01') then 'RES BOI HYG'
             when process in ('RHFCCHPRH01','RHFSCHPRH01','RHHCCHPRH01','RHHSCHPRH01','RHNACHPRH01','RHEACHPRH01') then 'RES MCHP HYG'
@@ -1781,15 +1820,15 @@ with hydrogen_chp as (
         -- i.e. the multiplier for ser h for elec gen
     from (
 -- Items here relate to veda table "Hydrogen_CHP" but it's not the same because that has a commodity col, and some items there are not here-
-        select 
-            sum(case when chp_hyd='RES MCHP HYG' and commodity='RESHOUSEHYG' then pv else 0 end) res_chp_mains_h2, 
+        select
+            sum(case when chp_hyd='RES MCHP HYG' and commodity='RESHOUSEHYG' then pv else 0 end) res_chp_mains_h2,  --*Filter 189*
 -- residential hydrogen from network in CHP; NB doesn't exist in equivalent Veda table in XL [is in tbl def]- Part of hydrogen_chp q entity
             sum(case when chp_hyd='RES MCHP HYG' and commodity in('RESHYGREF-FC','RESHYGREF-FS',
-                'RESHYGREF-HC','RESHYGREF-HS','RESHYGREF-NA') then pv else 0 end) res_chp_reformer_h2,
+                'RESHYGREF-HC','RESHYGREF-HS','RESHYGREF-NA') then pv else 0 end) res_chp_reformer_h2,  --*Filter 190*
 -- residential hydrogen from reformer in CHP; NB doesn't exist in equivalent Veda table in XL [is in tbl def]- Part of hydrogen_chp q entity
-            sum(case when chp_hyd='SER MCHP HYG' and commodity ='SERHYGREF' then pv else 0 end) ser_chp_reformer_h2,
+            sum(case when chp_hyd='SER MCHP HYG' and commodity ='SERHYGREF' then pv else 0 end) ser_chp_reformer_h2,  --*Filter 191*
 -- services hydrogen from reformer in CHP- Part of hydrogen_chp q entity
-            sum(case when chp_hyd='SER MCHP HYG' and commodity in('SERBUILDHYG','SERMAINSHYG') then pv else 0 end) ser_chp_mains_h2 
+            sum(case when chp_hyd='SER MCHP HYG' and commodity in('SERBUILDHYG','SERMAINSHYG') then pv else 0 end) ser_chp_mains_h2 --*Filter 192*
 -- services hydrogen from network in CHP- Part of hydrogen_chp q entity
             ,tablename,period
         from hydrogen_chp
@@ -1804,7 +1843,7 @@ with hydrogen_chp as (
 -- This table creates the basic assignments to sector and fuel which are then used to derive the "main" chp fuel use table [below]
     select chp_sec, chp_fuel, period, tablename,sum(pv) "pv"
     from (
-        select case 
+        select case
                 when commodity in('AGRBIODST','AGRBIOLPG','AGRBOM','AGRGRASS','AGRMAINSBOM','AGRPOLWST','BGRASS','BIODST','BIODST-FT','BIOJET-FT','BIOKER-FT','BIOLFO'
                     ,'BIOLPG','BIOOIL','BOG-AD','BOG-G','BOG-LF','BOM','BPELH','BPELL','BRSEED','BSEWSLG','BSLURRY','BSTARCH'
                     ,'BSTWWST','BSUGAR','BTREATSTW','BTREATWOD','BVOIL','BWOD','BWODLOG','BWODWST','ELCBIOCOA','ELCBIOCOA2','ELCBIOLFO','ELCBIOOIL'
@@ -1815,7 +1854,7 @@ with hydrogen_chp as (
                     ,'SERMAINSBOM','SERMSWBIO','SERMSWINO','SERMSWORG','SERPELH','SERWOD','TRABIODST','TRABIODST-FT','TRABIODST-FTL','TRABIODST-FTS','TRABIODSTL','TRABIODSTS'
                     ,'TRABIOJET-FTDA','TRABIOJET-FTDAL','TRABIOJET-FTIA','TRABIOJET-FTIAL','TRABIOLFO','TRABIOLFODS','TRABIOLFODSL','TRABIOLFOL','TRABIOOILIS','TRABIOOILISL','TRABOM','TRAETH','TRAETHL','TRAETHS','TRAMAINSBOM','TRAMETH') then 'ALL BIO'
                 when commodity in ('AGRCOA','COA','COA-E','COACOK','ELCCOA','HYGCOA','INDCOA','INDCOACOK','INDSYNCOA','PRCCOA','PRCCOACOK','RESCOA'
-                    ,'SERCOA','SYNCOA','TRACOA') then 'ALL COALS' 
+                    ,'SERCOA','SYNCOA','TRACOA') then 'ALL COALS'
 -- NB excludes 'IISCOACOKB' for compatibility with VEDA
                 when commodity in('AGRHYG','ELCHYG','ELCHYGIGCC','HYGL','HYGL-IGCC','HYGLHPD','HYGLHPT','HYL','HYLTK','INDHYG','INDMAINSHYG','RESHOUSEHYG'
                     ,'RESHYG','RESHYGREF-EA','RESHYGREF-NA','RESMAINSHYG','SERBUILDHYG','SERHYG','SERMAINSHYG','TRAHYG','TRAHYGDCN','TRAHYGL','TRAHYGS','TRAHYL'
@@ -1901,21 +1940,21 @@ chp_fuels_used as (
         case when ser_chp_reformer_h2+ser_boi_reformer_h2>0 then ser_reformer*ser_chp_reformer_h2/(ser_chp_reformer_h2+ser_boi_reformer_h2) else 0 end chp_gas_for_h_ser from
         (
 -- Following required because the hydrogen_chp table is split by commodity:
-        select 
+        select
             sum(case when chp_hyd='RES BOI HYG' and commodity in('RESHYGREF-FC','RESHYGREF-FS',
-                'RESHYGREF-HC','RESHYGREF-HS','RESHYGREF-NA') then pv else 0 end) res_boi_reformer_h2,
+                'RESHYGREF-HC','RESHYGREF-HS','RESHYGREF-NA') then pv else 0 end) res_boi_reformer_h2,  --*Filter 193*
 --                 i.e. only part of hydrogen boilers; bit which is from reformers
             sum(case when chp_hyd='RES MCHP HYG' and commodity in('RESHYGREF-FC','RESHYGREF-FS',
-                'RESHYGREF-HC','RESHYGREF-HS','RESHYGREF-NA') then pv else 0 end) res_chp_reformer_h2,
+                'RESHYGREF-HC','RESHYGREF-HS','RESHYGREF-NA') then pv else 0 end) res_chp_reformer_h2,  --*Filter 190*
 --                 i.e. only part of hydrogen chp; bit which is from reformers
-            sum(case when chp_hyd='RES REFORMER' then pv else 0 end) res_reformer,
+            sum(case when chp_hyd='RES REFORMER' then pv else 0 end) res_reformer,  --*Filter 195*
 --                    i.e. same as hydrogen_chp q but summed across commodities
-            sum(case when chp_hyd='SER BOI HYG' and commodity ='SERHYGREF' then pv else 0 end) ser_boi_reformer_h2,
+            sum(case when chp_hyd='SER BOI HYG' and commodity ='SERHYGREF' then pv else 0 end) ser_boi_reformer_h2, --*Filter 196*
 --                 i.e. only part of hydrogen boilers; bit which is from reformers
-            sum(case when chp_hyd='SER MCHP HYG' and commodity ='SERHYGREF' then pv else 0 end) ser_chp_reformer_h2,
---                 i.e. only part of hydrogen chp; bit which is from reformers            
-            sum(case when chp_hyd='SER REFORMER' then pv else 0 end) ser_reformer
---                    i.e. same as hydrogen_chp q but summed across commodities            
+            sum(case when chp_hyd='SER MCHP HYG' and commodity ='SERHYGREF' then pv else 0 end) ser_chp_reformer_h2,  --*Filter 191*
+--                 i.e. only part of hydrogen chp; bit which is from reformers
+            sum(case when chp_hyd='SER REFORMER' then pv else 0 end) ser_reformer --*Filter 198*
+--                    i.e. same as hydrogen_chp q but summed across commodities
             ,tablename,period
         from hydrogen_chp
         group by tablename,period
@@ -1928,7 +1967,7 @@ chp_fuels_used as (
     select chp_sec, period,tablename,sum(pv) "pv"
         from (
             select
-                case 
+                case
                     when process in('ICHCHPBIOG01','ICHCHPBIOS00','ICHCHPBIOS01','IFDCHPBIOG01','IFDCHPBIOS00','IFDCHPBIOS01','IISCHPBIOG01','IISCHPBIOS01','INMCHPBIOG01','INMCHPBIOS01'
                         ,'IOICHPBIOG01','IOICHPBIOS00','IOICHPBIOS01','IPPCHPBIOG01','IPPCHPBIOS00','IPPCHPBIOS01','IPPCHPWST00','IPPCHPWST01') then 'CHP IND BIO'
                     when process in('ICHCHPPRO00','ICHCHPPRO01') then 'CHP IND BY PRODUCTS'
@@ -1950,7 +1989,7 @@ chp_fuels_used as (
             end as chp_sec, * from vedastore
             where attribute='VAR_FOut' and commodity in ('ICHSTM','IFDSTM','IISLTH','INMSTM','IOISTM','IPPLTH','PCHPHEAT','RESLTH-NA','RHEATPIPE-NA',
                 'SERLTH','SHLDELVRAD','SHHDELVRAD','UPSHEAT','RESLTH-FC','RESLTH-FS','RESLTH-HC','RESLTH-HS','RHEATPIPE-FC',
-                'RHEATPIPE-FS','RHEATPIPE-HC','RHEATPIPE-HS')
+                'RHEATPIPE-FS','RHEATPIPE-HC','RHEATPIPE-HS') --*Filter 199*
         ) a
     where chp_sec is not null is not null
     group by tablename, period,chp_sec order by chp_sec
@@ -1979,7 +2018,7 @@ chp_fuels_used as (
         a.ind_bio,a.ind_gas,a.ind_hyd,a.ind_coa,a.ind_oil,a.ind_man,a.ind_bypro,a.ups_gas,
         a.prc_heat*c.prc_gas_pc "prc_gas",a.prc_heat*c.prc_refgas_pc "prc_refgas", a.prc_heat*c.prc_oil_pc "prc_oil"
     from (
-            select 
+            select
             sum(case when chp_sec='CHP RES BIO' then pv else 0 end) res_bio
             ,sum(case when chp_sec='CHP RES GAS' then pv else 0 end) res_gas
             ,sum(case when chp_sec='CHP RES HYDROGEN' then pv else 0 end) res_hyd
@@ -2030,7 +2069,7 @@ chp_fuels_used as (
             when process in('UCHP-CCG00','UCHP-CCG01') then 'CHP UPS SECTOR'
         end as chp_sec
         from vedastore
-        where attribute='VAR_FOut' and commodity in('ELCGEN','INDELC','RESELC','RESHOUSEELC','SERBUILDELC','SERDISTELC','SERELC')
+        where attribute='VAR_FOut' and commodity in('ELCGEN','INDELC','RESELC','RESHOUSEELC','SERBUILDELC','SERDISTELC','SERELC') --*Filter 215*
     ) a
     where chp_sec is not null
     group by tablename, chp_sec, period
@@ -2050,7 +2089,7 @@ chp_fuels_used as (
 -- [below] see notes on res above
         a.ser_gas+a.res_hyd*(case when b.chp_gas_for_h_ser_mult is null then 0 else b.chp_gas_for_h_ser_mult end) ser_gas,
         a.ser_hyd*(1-(case when b.chp_gas_for_h_ser_mult is null then 0 else b.chp_gas_for_h_ser_mult end)) ser_hyd,
-        a.prc_elc*c.prc_gas_pc "prc_gas",a.prc_elc*c.prc_oil_pc "prc_oil",a.prc_elc*c.prc_refgas_pc "prc_refgas", 
+        a.prc_elc*c.prc_gas_pc "prc_gas",a.prc_elc*c.prc_oil_pc "prc_oil",a.prc_elc*c.prc_refgas_pc "prc_refgas",
 -- i.e. apportion generated elc by fuel shares of fuel used
         a.ups_gas
     from
@@ -2092,10 +2131,10 @@ chp_fuels_used as (
         sum(case when elc.ind_hyd+heat.ind_hyd>0 then (2*fuel.ind_hyd*elc.ind_hyd)/(2*elc.ind_hyd+heat.ind_hyd) else 0 end) "ind_hyd_chp",
         sum(case when elc.ind_oil+heat.ind_oil>0 then (2*fuel.ind_oil*elc.ind_oil)/(2*elc.ind_oil+heat.ind_oil) else 0 end) "ind_oil_chp",
         sum(case when elc.ind_man+heat.ind_man>0 then (2*fuel.ind_man*elc.ind_man)/(2*elc.ind_man+heat.ind_man) else 0 end) "ind_man_chp",
-        sum(case when elc.ind_bypro+heat.ind_bypro>0 then (2*fuel.ind_bypro*elc.ind_bypro)/(2*elc.ind_bypro+heat.ind_bypro) else 0 end) "ind_bypro_chp",        
+        sum(case when elc.ind_bypro+heat.ind_bypro>0 then (2*fuel.ind_bypro*elc.ind_bypro)/(2*elc.ind_bypro+heat.ind_bypro) else 0 end) "ind_bypro_chp",
         sum(case when elc.res_bio+heat.res_bio>0 then (2*fuel.res_bio*elc.res_bio)/(2*elc.res_bio+heat.res_bio) else 0 end) "res_bio_chp",
         sum(case when elc.res_gas+heat.res_gas>0 then (2*fuel.res_gas*elc.res_gas)/(2*elc.res_gas+heat.res_gas) else 0 end) "res_gas_chp",
-        sum(case when elc.res_hyd+heat.res_hyd>0 then (2*fuel.res_hyd*elc.res_hyd)/(2*elc.res_hyd+heat.res_hyd) else 0 end) "res_hyd_chp",     
+        sum(case when elc.res_hyd+heat.res_hyd>0 then (2*fuel.res_hyd*elc.res_hyd)/(2*elc.res_hyd+heat.res_hyd) else 0 end) "res_hyd_chp",
         sum(case when elc.ser_bio+heat.ser_bio>0 then (2*fuel.ser_bio*elc.ser_bio)/(2*elc.ser_bio+heat.ser_bio) else 0 end) "ser_bio_chp",
         sum(case when elc.ser_gas+heat.ser_gas>0 then (2*fuel.ser_gas*elc.ser_gas)/(2*elc.ser_gas+heat.ser_gas) else 0 end) "ser_gas_chp",
         sum(case when elc.ser_hyd+heat.ser_hyd>0 then (2*fuel.ser_hyd*elc.ser_hyd)/(2*elc.ser_hyd+heat.ser_hyd) else 0 end) "ser_hyd_chp",
@@ -2103,13 +2142,13 @@ chp_fuels_used as (
         sum(case when elc.prc_oil+heat.prc_oil>0 then (2*fuel.prc_oil*elc.prc_oil)/(2*elc.prc_oil+heat.prc_oil) else 0 end) "prc_oil_chp",
         sum(case when elc.prc_refgas+heat.prc_refgas>0 then (2*fuel.prc_refgas*elc.prc_refgas)/(2*elc.prc_refgas+heat.prc_refgas) else 0 end) "prc_refgas_chp",
         sum(case when elc.ups_gas+heat.ups_gas>0 then (2*fuel.ups_gas*elc.ups_gas)/(2*elc.ups_gas+heat.ups_gas) else 0 end) "ups_gas_chp"
-    from chp_fuels_used fuel inner join chp_heat heat on fuel.period=heat.period and fuel.tablename=heat.tablename inner join chp_elc elc 
+    from chp_fuels_used fuel inner join chp_heat heat on fuel.period=heat.period and fuel.tablename=heat.tablename inner join chp_elc elc
     on elc.period=fuel.period and elc.tablename=fuel.tablename
     group by elc.tablename, elc.period
     order by elc.period
 )
 , "all_finencon_all" as(
--- This is the Veda Be "ALL_FinEnCon_all" table- Not all elements are used in FE by end user- Elc and gas come from the "elc+gas_final_consumption" (most 
+-- This is the Veda Be "ALL_FinEnCon_all" table- Not all elements are used in FE by end user- Elc and gas come from the "elc+gas_final_consumption" (most
 -- secs - only elc in tra)
 -- NB Veda table "ELC_SCTR_FC" seems to be covere by the "FUEL TECHS ELC" bit of this table
 select tablename, proc_set,comm_set,period,sum(pv) "pv"
@@ -2183,12 +2222,12 @@ group by tablename, proc_set,comm_set,period
 order by proc_set,comm_set
 )
 , "elc+gas_final_consumption" as(
--- This is the Veda BE table- Differences are period is in one col, tablename is included    
+-- This is the Veda BE table- Differences are period is in one col, tablename is included
 -- Note that only some of the elements of the Veda BE "elc+gas_final_consumption" are used in FE by end user-
     select tablename, commodity,period,sum(pv) "pv"
     from vedastore
     where attribute='VAR_FOut' and commodity in('AGRBOM','AGRDISTELC','AGRMAINSBOM','AGRMAINSGAS','INDBOM','INDDISTELC','INDMAINSBOM','INDMAINSGAS','RESBOM','RESDISTELC','RESMAINSBOM','RESMAINSGAS',
-        'SERBOM','SERDISTELC','SERMAINSBOM','SERMAINSGAS','TRABOM','TRADISTELC','TRAMAINSBOM','TRAMAINSGAS','RESELC-NS-E','RESELC-NS-N')
+        'SERBOM','SERDISTELC','SERMAINSBOM','SERMAINSGAS','TRABOM','TRADISTELC','TRAMAINSBOM','TRAMAINSGAS','RESELC-NS-E','RESELC-NS-N') --*Filter 200*
     group by tablename, period, commodity
 )
 , mainsbom as(
@@ -2199,13 +2238,13 @@ order by proc_set,comm_set
 ), elc_waste_heat_distribution as(
     select tablename, commodity,attribute,process,period,sum(pv) "pv"
     from vedastore
-    where commodity='ELCLTH' and attribute in ('VAR_FIn','VAR_FOut')
+    where commodity='ELCLTH' and attribute in ('VAR_FIn','VAR_FOut')  --*Filter 201*
     group by tablename, commodity,attribute,process,period
-), 
+),
 elc_prd_fuel as (
 -- This is the same as the Veda BE table (same name) with the addition of more years & the addition of CHP & the heat offtake generation penalty
 -- NB CCSRET lines currently missing from veda (sets not defined since are part of PRE set not ELE which is in the filter definition)
-    select 
+    select
         proc_set,tablename,period, sum(pv) "pv"
     from (
         select tablename,period, pv,
@@ -2217,9 +2256,9 @@ elc_prd_fuel as (
             when process='ECOAQR01' then 'ELC FROM COAL CCSRET'
             when process in('ECOARR01') then 'ELC FROM COAL RR'
             when process in('ECOA00','ECOABIO00') then 'ELC FROM COAL-COF'
-            when process in('ECOAQ01') then 'ELC FROM COALCOF CCS'
+            when process in('ECOAQ01','ECOAQDEMO01') then 'ELC FROM COALCOF CCS'
             when process in('ENGACCT00','ENGAOCT00','ENGAOCT01','ENGARCPE00','ENGARCPE01') then 'ELC FROM GAS'
-            when process in('ENGACCTQ01') then 'ELC FROM GAS CCS'
+            when process in('ENGACCTQ01','ENGACCTQDEMO01') then 'ELC FROM GAS CCS'
             when process='ENGAQR01' then 'ELC FROM GAS CCSRET'
             when process in('ENGACCTRR01') then 'ELC FROM GAS RR'
             when process in('EGEO01') then 'ELC FROM GEO'
@@ -2238,9 +2277,9 @@ elc_prd_fuel as (
             when process in('ELCEE00','ELCEE01','ELCEI00','ELCEI01') then 'ELC TO EXPORTS'
          end as proc_set
         from vedastore
-        where attribute='VAR_FOut' and commodity in('ELCDUMMY','ELC','ELC-E-IRE','ELC-E-EU','ELCGEN')
+        where attribute='VAR_FOut' and commodity in('ELCDUMMY','ELC','ELC-E-IRE','ELC-E-EU','ELCGEN')  --*Filter 78*
     ) a
-    where proc_set is not null 
+    where proc_set is not null
     group by tablename, period,proc_set
 )
 , end_demand as(
@@ -2270,7 +2309,7 @@ elc_prd_fuel as (
             when sec_fuel='elc-hyd' then sum(a.pv+ind_hyd_chp+res_hyd_chp+ser_hyd_chp)
             else sum(pv)
         end as pv,a.period
-    from(    
+    from(
         select case
                 when commodity='AGRDISTELC' then 'agr-elc'
                 when commodity='AGRMAINSGAS' then 'agr-gas'
@@ -2299,7 +2338,7 @@ elc_prd_fuel as (
         case
             when comm_set='ALL BIO' then 'bio'
             when comm_set='ALL COALS' then 'coa'
-            when comm_set='ALL ELECTRICITY' then 'elc' 
+            when comm_set='ALL ELECTRICITY' then 'elc'
             when comm_set='ALL GAS' then 'gas'
             when comm_set='ALL HYDROGEN' then 'hyd'
             when comm_set='ALL OIL PRODUCTS' then 'oil'
@@ -2307,20 +2346,20 @@ elc_prd_fuel as (
             when comm_set='ALL MANFUELS' then 'man'
         end as sec_fuel,tablename, period,pv
         from all_finencon_all
-        where proc_set in('FUEL TECHS HYG','FUEL TECHS PRC') or (proc_set in('FUEL TECHS AGR','FUEL TECHS INDUS','FUEL TECHS RES','FUEL TECHS SERV') and 
-            comm_set in('ALL BIO','ALL COALS','ALL HYDROGEN','ALL OIL PRODUCTS','ALL MANFUELS','ALL OTHER RNW')) or 
+        where proc_set in('FUEL TECHS HYG','FUEL TECHS PRC') or (proc_set in('FUEL TECHS AGR','FUEL TECHS INDUS','FUEL TECHS RES','FUEL TECHS SERV') and
+            comm_set in('ALL BIO','ALL COALS','ALL HYDROGEN','ALL OIL PRODUCTS','ALL MANFUELS','ALL OTHER RNW')) or
             (proc_set in('FUEL TECHS TRA','FUEL TECHS ELC') and comm_set in('ALL BIO','ALL COALS','ALL HYDROGEN','ALL OIL PRODUCTS','ALL MANFUELS','ALL OTHER RNW','ALL GAS'))
 -- Filters reflect where the different entitites come from (don't nec- come from the same table, depending which process group it is
 -- NB includes FE use for h2 prod
         union all
-        select case 
-        when process='SDH-WHO01' then 'ser-wh'
-        when process in('RDHEA-WHO01','RDHHC-WHO01','RDHHS-WHO01','RDHFC-WHO01','RDHFS-WHO01','RDHNA-WHO01') then 'res-wh'
+        select case
+        when process='SDH-WHO01' then 'ser-wh'  --*Filter 203*
+        when process in('RDHEA-WHO01','RDHHC-WHO01','RDHHS-WHO01','RDHFC-WHO01','RDHFS-WHO01','RDHNA-WHO01') then 'res-wh'  --*Filter 204*
             end as sec_fuel, tablename, period,sum(pv) "pv"
         from elc_waste_heat_distribution
-        where process in('RDHEA-WHO01','RDHHC-WHO01','RDHHS-WHO01','RDHFC-WHO01','RDHFS-WHO01','RDHNA-WHO01','SDH-WHO01')
+        where process in('RDHEA-WHO01','RDHHC-WHO01','RDHHS-WHO01','RDHFC-WHO01','RDHFS-WHO01','RDHNA-WHO01','SDH-WHO01') --*Filter 205*
         group by sec_fuel, tablename, period
-        union all 
+        union all
         select 'elc-urn' "sec_fuel",tablename, period,sum(pv/0.398)
 -- Thermal efficiency of nuclear plants: 39-80% DUKES 2013 paragraph 5-46 https://www-gov-uk/government/uploads/system/uploads/attachment_data/file/65818/DUKES_2013_Chapter_5-pdf
 -- cell g31 on ucl template
@@ -2352,7 +2391,7 @@ select 'fin-en-main-secs_' || sec_fuel || '|' || tablename || '|various|various|
     sum(case when a.period='2045' then pv else 0 end) as "2045",
     sum(case when a.period='2050' then pv else 0 end) as "2050",
     sum(case when a.period='2055' then pv else 0 end) as "2055",
-    sum(case when a.period='2060' then pv else 0 end) as "2060" 
+    sum(case when a.period='2060' then pv else 0 end) as "2060"
 from end_demand a
 group by tablename,sec_fuel
 order by tablename,analysis
@@ -2361,10 +2400,10 @@ order by tablename,analysis
 
 /* *Primary energy demand and biomass, imports exports and domestic production* */
 -- Includes non-energy use of fuels in the industry chemicals sub-sector
-COPY ( 
+COPY (
 with rsr_min as(
 -- This is the veda BE table
-    select 
+    select
         sum(case when proc_set='IMPORT URN' then pv else 0 end) "IMPORT URN"
         ,sum(case when proc_set='MINING BIOMASS' then pv else 0 end) "MINING BIOMASS"
         ,sum(case when proc_set='MINING COAL' then pv else 0 end) "MINING COAL"
@@ -2395,15 +2434,10 @@ with rsr_min as(
                 when  process in('RNWTID') then 'MINING TIDAL'
                 when  process in('RNWWAV') then 'MINING WAVE'
                 when  process in('RNWWNDOFF','RNWWNDONS') then 'MINING WIND'
+                else null
             end as proc_set
         from vedastore
         where attribute='VAR_FOut'
-            and process in('IMPURN','MINBGRASS1','MINBGRASS2','MINBGRASS3','MINBIOOILCRP','MINBOG-LF','MINBRSEED','MINBSEWSLG','MINBSLURRY1','MINBSTWWST1',
-                'MINBSUGAR','MINBTALLOW','MINBVOFAT','MINBWHT1','MINBWHT2','MINBWHT3','MINBWOD1','MINBWOD2','MINBWOD3','MINBWOD4','MINBWODLOG','MINBWODWST',
-                'MINBWODWSTSAW','MINMSWBIO','MINMSWINO','MINMSWORG','MINCOA1','MINCOA2','MINCOA3','MINCOA4','MINCOA5','MINCOA6','MINCOACOK1','MINCOACOK2',
-                'RNWGEO','RNWHYDDAM','RNWHYDROR','MINNGA1','MINNGA2','MINNGA3','MINNGA4','MINNGA5','MINNGA6','MINNGA7','MINNGA8','MINNGA9','MINNGASHL1',
-                'MINNGASHL2','MINNGASHL3','MINNGASHL1','MINNGASHL2','MINNGASHL3','MINOILCRD1','MINOILCRD2','MINOILCRD3','MINOILCRD4','MINOILCRD5','MINOILCRD6',
-                'MINOILCRD7','MINOILCRD8','MINOILCRD9','RNWSOL','RNWTID','RNWWAV','RNWWNDOFF','RNWWNDONS')
             and commodity in('AGRBIODST','AGRBIOLPG','AGRBOM','AGRGRASS','AGRMAINSBOM','AGRPOLWST','BGRASS','BIODST','BIODST-FT',
                 'BIOJET-FT','BIOKER-FT','BIOLFO','BIOLPG','BIOOIL','BOG-AD','BOG-G','BOG-LF','BOM','BPELH','BPELL','BRSEED','BSEWSLG',
                 'BSLURRY','BSTARCH','BSTWWST','BSUGAR','BTREATSTW','BTREATWOD','BVOIL','BWOD','BWODLOG','BWODWST','ELCBIOCOA',
@@ -2425,13 +2459,13 @@ with rsr_min as(
                 'TRAHFO','TRAHFODS','TRAHFODSL','TRAHFOIS','TRAHFOISL','TRAJETDA','TRAJETDAEL','TRAJETIA','TRAJETIAEL','TRAJETIANL',
                 'TRAJETL','TRALFO','TRALFODS','TRALFODSL','TRALFOL','TRALPG','TRALPGL','TRALPGS','TRAPET','TRAPETL','TRAPETS','UPSLFO',
                 'ELCGEO','ELCHYDDAM','ELCSOL','ELCTID','ELCWAV','ELCWNDOFS','ELCWNDONS','GEO','HYDDAM','HYDROR','RESSOL','SERGEO',
-                'SERSOL','SOL','TID','WAV','WNDOFF','WNDONS','URN')
+                'SERSOL','SOL','TID','WAV','WNDOFF','WNDONS','URN') --*Filter 206*
     ) a
     where proc_set is not null group by tablename, period order by tablename,period
 )
 ,rsr_imports as(
 -- This is the veda BE table
-    select 
+    select
         sum(case when proc_set='IMPORT BDL' then pv else 0 end) "IMPORT BDL"
         ,sum(case when proc_set='IMPORT FTD' then pv else 0 end) "IMPORT FTD"
         ,sum(case when proc_set='IMPORT FTK-AVI' then pv else 0 end) "IMPORT FTK-AVI"
@@ -2457,7 +2491,7 @@ with rsr_min as(
         ,tablename,period
     from (
         select tablename,period, pv,
-        case 
+        case
             when process in('IMPBIODST') then 'IMPORT BDL'
             when process in('IMPBIODST-FT') then 'IMPORT FTD'
             when process in('IMPBIOJET-FT') then 'IMPORT FTK-AVI'
@@ -2509,17 +2543,14 @@ with rsr_min as(
                 ,'ICHOTH','TRAMAINSBOM','RESLPG','TRACELC','TID','INDMAINSBOM','TRAHFODS','RESSOL','TRAHYGDCN','TRALFOL','PRCELC','ELCPELH'
                 ,'WNDONS','OILCRDRAW-E','ELCBIOLFO','ELCHYG','OILDST','PRCNGA','OILKER','AGRBIOLPG','SOL','ICHSTM','RESCOA','INDELC'
                 ,'OILCRD','SERLPG','ELCBIOCOA2','HYGMSWORG','ELCCOA','URN','RHCSV-RHEA','INDMSWORG','TRAHYL','BIOOIL','ELCMSC','SERHYG'
-                ,'UPSELC','RESPELH','TRABIOLFO','RESLFO','INDBIOLFO','SERKER','INDLFO','IFDSTM')
-            and process in('IMPBIODST-FT','IMPCOA-E','IMPOILMSC','IMPOILLPG','IMPCOACOK','IMPBIOJET-FT','IMPBIOOIL','IMPETH','IMPOILCRD2','IMPOILHFO','IMPBSTARCH','IMPBVOIL'
-                ,'IMPAGWST','IMPCOK','IMPBIODST','IMPOILJET','IMPBGRASS','IMPOILCRD1-E','IMPOILKER','IMPOILDST','IMPNGA-E','IMPBWODWST','IMPELC-IRE','IMPELC-EU'
-                ,'IMPNGA-N','IMPOILCRD1','IMPBWOD','IMPHYL','IMPBIOKET-FT','IMPBVOFAT','IMPNGA-EU','IMPOILPET','IMPOILLFO','IMPNGA-LNG','IMPURN','IMPCOA')
+                ,'UPSELC','RESPELH','TRABIOLFO','RESLFO','INDBIOLFO','SERKER','INDLFO','IFDSTM') --*Filter 207*
     ) a
     where proc_set is not null group by tablename, period order by tablename,period
 )
 ,rsr_export as(
 -- This is the veda BE table
     select sum(case when proc_set='EXPORT BIOMASS' then pv else 0 end) "EXPORT BIOMASS"
--- NB is no biomass export in the model     
+-- NB is no biomass export in the model
         ,sum(case when proc_set='EXPORT COAL' then pv else 0 end) "EXPORT COAL"
         ,sum(case when proc_set='EXPORT COKE' then pv else 0 end) "EXPORT COKE"
         ,sum(case when proc_set='EXPORT ELC' then pv else 0 end) "EXPORT ELC"
@@ -2537,7 +2568,7 @@ with rsr_min as(
         ,tablename,period
     from (
         select tablename,period, pv,
-            case   
+            case
                 when process in('EXPCOA','EXPCOA-E') then 'EXPORT COAL'
                 when process in('EXPCOK') then 'EXPORT COKE'
                 when process in('EXPELC-EU','EXPELC-IRE') then 'EXPORT ELC'
@@ -2590,9 +2621,7 @@ with rsr_min as(
                 ,'COA','ELC-E-IRE','IFDDRY','RESELC','RWCSV-RWHC','TRABIODSTL','TRABOM','TRABIOJET-FTDA','INDBIOLPG','AGRNGA','AGRPOLWST','ELCMSWINO'
                 ,'IPPELCO1','RESMAINSGAS','RHEATPIPE-HC','RESLTHSURPLUS-HC','INDNEULFO','TRACOA','ELCHYDDAM','ELCWNDOFS','BOM','SERPELH','RHEATPIPE-EA','BGRASS'
                 ,'INDNEUMSC','INDBOM','BENZ','TRADST','SERBUILDBOM','ELC-I-IRE','NGA','RESDISTELC','SCHDELVAIR','BIOKER-FT','TRALPGS','COACOK'
-                ,'IFDLTH','PRCCOACOK','RESWOD')
-            and process in('EXPCOA','EXPCOA-E','EXPETH','EXPCOK','EXPOILLPG','EXPOILJET','EXPOILPET','EXPOILLFO','EXPOILCRD1','EXPNGA-E','EXPOILCRD2','EXPELC-EU'
-                ,'EXPOILMSC','EXPOILDST','EXPOILCRD1-E','EXPNGA-IRE','EXPNGA-EU','EXPOILHFO','EXPELC-IRE','EXPOILKER')
+                ,'IFDLTH','PRCCOACOK','RESWOD')  --*Filter 208*
     ) a
     where proc_set is not null group by tablename, period order by tablename,period
 )
@@ -2603,11 +2632,11 @@ with rsr_min as(
     from vedastore
     where attribute='VAR_FOut'
         and commodity in('ELCDUMMY','ELC','ELC-E-IRE','ELC-E-EU','ELCGEN')
-        and process in('ENUCPWR101','ENUCPWR102','ENUCPWR00')
-    group by tablename,period order by tablename,period 
+        and process in('ENUCPWR101','ENUCPWR102','ENUCPWR00')  --*Filter 209*
+    group by tablename,period order by tablename,period
  )
  ,end_demand as(
-    select 
+    select
         sum("MINING BIOMASS")+sum("IMPORT BIOMASS")+sum("IMPORT BDL")+sum("IMPORT BIOOIL")+sum("IMPORT ETHANOL")+sum("IMPORT FTD")+sum("IMPORT FTK-AVI")-SUM("EXPORT ETH")-sum("EXPORT BIOMASS") "bio"
 -- NB is no biomass export in the model
         ,sum("MINING COAL")+sum("IMPORT COAL")-sum("EXPORT COAL")+sum("IMPORT COKE")-sum("EXPORT COKE") "coa"
@@ -2621,7 +2650,7 @@ with rsr_min as(
         ,sum(d."ELC FROM NUCLEAR") "nuc"
         ,a.period,a.tablename
     from rsr_min a join rsr_imports b
-    on a.period=b.period and a.tablename=b.tablename join rsr_export c on a.period=c.period and a.tablename=c.tablename join nuclear d on a.period=d.period and a.tablename=d.tablename 
+    on a.period=b.period and a.tablename=b.tablename join rsr_export c on a.period=c.period and a.tablename=c.tablename join nuclear d on a.period=d.period and a.tablename=d.tablename
     group by a.tablename,a.period order by a.period
 )
 select 'pri-en_' || cols || '|' || tablename || '|various|various|various'::varchar "id",
@@ -2644,7 +2673,7 @@ select 'pri-en_' || cols || '|' || tablename || '|various|various|various'::varc
     sum(case when a.period='2045' then vals else 0 end) as "2045",
     sum(case when a.period='2050' then vals else 0 end) as "2050",
     sum(case when a.period='2055' then vals else 0 end) as "2055",
-    sum(case when a.period='2060' then vals else 0 end) as "2060" 
+    sum(case when a.period='2060' then vals else 0 end) as "2060"
     from
     (
         SELECT unnest(array['bio','coa','elc','gas','hyd','oil','orens','nuc']) as "cols",
@@ -2674,17 +2703,17 @@ select 'bio-en_' || cols || '|' || tablename || '|VAR_FOut|various|' || process:
     sum(case when a.period='2045' then vals else 0 end) as "2045",
     sum(case when a.period='2050' then vals else 0 end) as "2050",
     sum(case when a.period='2055' then vals else 0 end) as "2055",
-    sum(case when a.period='2060' then vals else 0 end) as "2060" 
+    sum(case when a.period='2060' then vals else 0 end) as "2060"
     from
     (
         select 'dom-prod' "cols", 'MINING BIOMASS' "process", "MINING BIOMASS" "vals", period, tablename from rsr_min
         union all
-        select 'imports' "cols", 'various' "process", 
+        select 'imports' "cols", 'various' "process",
             "IMPORT BDL"+"IMPORT BIOOIL"+"IMPORT ETHANOL"+"IMPORT FTD"+"IMPORT FTK-AVI"+"IMPORT BIOMASS" "vals", period, tablename from rsr_imports
         union all
-        select 'exports' "cols", 'various' "process", 
+        select 'exports' "cols", 'various' "process",
             "EXPORT BIOMASS"+"EXPORT ETH" "vals", period, tablename from rsr_export
-    -- NB There is no biomass export in the model        
+    -- NB There is no biomass export in the model
     ) a
 group by tablename,cols,process
 ORDER BY tablename,analysis
@@ -2717,7 +2746,7 @@ ORDER BY tablename,analysis
     -- changed biofuel to not report biofuel (broad) type, just overall quantity
     -- whole stock vehicle kms, emissions amalgamated to single query; original kms one removed. Expanded to 19 veh types
     -- "CHP & other elec generation" query removed (was sum of individual queries for CHP and other gen, within rounding errors: largest difference = 7.95808E-12)
-    -- GHG from electricity generation; Elec Interconnectors; Electricity Generation and Elec waste heat removed (duplicated in "GHG emissions by sector" or the revised 
+    -- GHG from electricity generation; Elec Interconnectors; Electricity Generation and Elec waste heat removed (duplicated in "GHG emissions by sector" or the revised
     -- Electricity generation by source query)
     -- Electricity generation by source revised to include a temporary table giving total generation & interconnectors
     -- Services whole stock, and new build heat output added
@@ -2763,4 +2792,7 @@ ORDER BY tablename,analysis
     -- Corrections to script including change from VAR_ComnetM to EQ_CombalM
 -- 7:47 PM 12 August, 2016:
     -- Consistency check and correction of all set definitions (were some legacy errors from Veda BE)
+-- 7:58 PM 18 August, 2016:
+    -- Changed definitions of the co-firing tables for oil (changed to commodity consumed basis). Updated the co-firing %s (block 2036ff) to reflect model change so CCS retrofits are no longer a subset of retrofit ready
+    -- Minor correction to include 2 ccs demo plant types. Addition of filter identifiers to help in maintaining queries when model changes.
     
