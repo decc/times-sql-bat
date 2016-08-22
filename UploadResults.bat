@@ -409,7 +409,7 @@ echo 'IPPCHPCCGTH01','IPPCHPCOA00','IPPCHPCOA01','IPPCHPFCH01','IPPCHPGT01','IPP
 echo 'PCHP-CCP00','PCHP-CCP01','RCHPEA-CCG00','RCHPEA-CCG01','RCHPEA-CCH01','RCHPEA-FCH01','RCHPEA-STW01','RCHPNA-CCG01', >> VedaBatchUpload.sql
 echo 'RCHPNA-CCH01','RCHPNA-FCH01','RCHPNA-STW01','RHEACHPRG01','RHEACHPRH01','RHEACHPRW01','RHNACHPRG01','RHNACHPRH01', >> VedaBatchUpload.sql
 echo 'RHNACHPRW01','SCHP-ADM01','SCHP-CCG00','SCHP-CCG01','SCHP-CCH01','SCHP-FCH01','SCHP-GES00','SCHP-GES01','SCHP-STM01', >> VedaBatchUpload.sql
-echo 'SCHP-STW00','SCHP-STW01','SHLCHPRG01','SHLCHPRH01','SHLCHPRW01','UCHP-CCG00','UCHP-CCG01') then 'elec-gen_chp' else null >> VedaBatchUpload.sql
+echo 'SCHP-STW00','SCHP-STW01','SHHFCLRH01','SHLCHPRG01','SHLCHPRH01','SHLCHPRW01','UCHP-CCG00','UCHP-CCG01') then 'elec-gen_chp' else null >> VedaBatchUpload.sql
 echo end proc_set >> VedaBatchUpload.sql
 echo from vedastore >> VedaBatchUpload.sql
 echo where period in('2010','2011','2012','2015','2020','2025','2030','2035','2040','2045','2050','2055','2060') and attribute='VAR_FOut'  >> VedaBatchUpload.sql
@@ -807,7 +807,7 @@ echo 'RCHPEA-CCG01','RCHPEA-CCH01','RCHPEA-FCH01','RCHPEA-STW01','RCHPNA-CCG01',
 echo 'RCHPNA-CCH01','RCHPNA-FCH01','RCHPNA-STW01','RHEACHPRG01','RHEACHPRH01', >> VedaBatchUpload.sql
 echo 'RHEACHPRW01','RHNACHPRG01','RHNACHPRH01','RHNACHPRW01','SCHP-ADM01', >> VedaBatchUpload.sql
 echo 'SCHP-CCG00','SCHP-CCG01','SCHP-CCH01','SCHP-FCH01','SCHP-GES00','SCHP-GES01', >> VedaBatchUpload.sql
-echo 'SCHP-STM01','SCHP-STW00','SCHP-STW01','SHLCHPRG01','SHLCHPRH01','SHLCHPRW01', >> VedaBatchUpload.sql
+echo 'SCHP-STM01','SCHP-STW00','SCHP-STW01','SHHFCLRH01','SHLCHPRG01','SHLCHPRH01','SHLCHPRW01', >> VedaBatchUpload.sql
 echo 'UCHP-CCG00','UCHP-CCG01') then 'elec-cap_chp'::varchar(50) >> VedaBatchUpload.sql
 echo when process in('ELCIE00','ELCII00','ELCIE01','ELCII01') then 'elec-cap_intercon'::varchar(50) >> VedaBatchUpload.sql
 echo end as "analysis", >> VedaBatchUpload.sql

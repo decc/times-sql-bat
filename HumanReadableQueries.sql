@@ -172,20 +172,7 @@ with base_cng_emissions as(
         select
             tablename,process,period,pv,
         case
-            when process = 'TFSSCNG01' and attribute ='VAR_FOut' and
-                commodity in('GHG-AGR-NO-LULUCF',
-                'GHG-ELC','GHG-ELC-CAPTURED','GHG-ETS-NET',
-                'GHG-ETS-NO-IAS-NET','GHG-ETS-NO-IAS-TER','GHG-ETS-TER','GHG-ETS-YES-IAS-NET',
-                'GHG-ETS-YES-IAS-TER','GHG-IAS-ETS','GHG-IAS-NON-ETS','GHG-IND-ETS',
-                'GHG-IND-ETS-CAPTURED','GHG-IND-NON-ETS','GHG-IND-NON-ETS-CAPTURED','GHG-LULUCF',
-                'GHG-NO-IAS-NO-LULUCF-NET','GHG-NO-IAS-NO-LULUCF-TER',
-                'GHG-NO-IAS-YES-LULUCF-NET','GHG-NO-IAS-YES-LULUCF-TER',
-                'GHG-NON-ETS-NO-LULUCF-NET','GHG-NON-ETS-NO-LULUCF-TER',
-                'GHG-NON-ETS-YES-LULUCF-NET','GHG-NON-ETS-YES-LULUCF-TER','GHG-OTHER-ETS',
-                'GHG-OTHER-ETS-CAPTURED','GHG-OTHER-NON-ETS','GHG-RES-ETS','GHG-RES-NON-ETS',
-                'GHG-SER-ETS','GHG-SER-NON-ETS','GHG-TRA-ETS-NO-IAS','GHG-TRA-NON-ETS-NO-IAS',
-                'GHG-YES-IAS-NO-LULUCF-NET','GHG-YES-IAS-NO-LULUCF-TER',
-                'GHG-YES-IAS-YES-LULUCF-NET','GHG-YES-IAS-YES-LULUCF-TER') then 'cng-conv-emis' --Filter 3
+            when process = 'TFSSCNG01' and attribute ='VAR_FOut' and commodity in('GHG-TRA-NON-ETS-NO-IAS') then 'cng-conv-emis' --Filter 18
             when attribute = 'VAR_FIn' and commodity in('TRACNGS','TRACNGL') then
                 case
                     when process like 'TC%' then 'cars-cng-in' --Filter 4
@@ -395,13 +382,13 @@ with base_cng_emissions as(
                     case
                         when process in('TBDST00','TBDST01','TCDST00','TCDST01','THDST00','THDST01','TLDST00','TLDST01') then 'diesel'::varchar(50) --Filter 8
                         when process in('TCE8501','TLE8501') then 'E85'::varchar(50) --Filter 9
-                        when process in('TBELC01','TCELC01','TLELC01','TWELC01') then 'electric'::varchar(50) --Filter 28
+                        when process in('TBELC01','TCELC01','TLELC01','TWELC01') then 'electric'::varchar(50) --Filter 10
                         when process in('TBFCHBHYG01','TCFCHBHYG01','TCFCHYG01','TCHBE8501','TCHBHYL01','THFCHBHYG01','TLFCHBHYG01','TLFCHYG01'
                             ,'TLHBHYL01','TWFCHYG01') then 'h2+hybrid'::varchar(50) --Filter 11
                         when process in('TCFCPHBHYG01') then 'h2-plug-in-hybrid'::varchar(50) --Filter 12
                         when process in('TBHBDST01','TCHBDST01','TCHBPET00','TCHBPET01','THHBDST01','TLHBDST01','TLHBPET01') then 'hybrid'::varchar(50) --Filter 13
-                        when process in('TBCNG01','TCCNG01','TCLPG00','TCLPG01','THCNG01','TLCNG01','TLLPG01') then 'lpg-and-cng-fueled'::varchar(50) --Filter 32
-                        when process in('TCPET00','TCPET01','TLPET00','TLPET01','TWPET00','TWPET01','TWPET01') then 'petrol'::varchar(50) --Filter 33
+                        when process in('TBCNG01','TCCNG01','TCLPG00','TCLPG01','THCNG01','TLCNG01','TLLPG01') then 'lpg-and-cng-fueled'::varchar(50) --Filter 14
+                        when process in('TCPET00','TCPET01','TLPET00','TLPET01','TWPET00','TWPET01') then 'petrol'::varchar(50) --Filter 15
                         when process in('TCPHBDST01','TCPHBPET01','TLPHBDST01','TLPHBPET01') then 'plug-in-hybrid'::varchar(50) --Filter 16
                     end as "analysis"
                     from vedastore
@@ -666,7 +653,7 @@ from (
                 'GHG-IAS-NON-ETS','GHG-IND-NON-ETS','GHG-RES-NON-ETS','GHG-SER-NON-ETS','GHG-TRA-NON-ETS-NO-IAS',
                 'GHG-AGR-NO-LULUCF','GHG-OTHER-NON-ETS','GHG-LULUCF','Traded-Emission-Non-ETS','GHG-ELC-CAPTURED','GHG-IND-ETS-CAPTURED',
                 'GHG-IND-NON-ETS-CAPTURED','GHG-OTHER-ETS-CAPTURED') then 'ghg_sec-main-secs' --Filter 59
-            when commodity in('PRCCO2P', 'PRCCH4N', 'PRCCH4P', 'PRCN2ON', 'PRCN2OP')  then 'ghg_sec-prc-non-ets' --Filter 60
+            when commodity in('PRCCO2P','PRCCH4N','PRCCH4P','PRCN2ON','PRCN2OP') then 'ghg_sec-prc-non-ets' --Filter 60
             when commodity ='PRCCO2N' then 'ghg_sec-prc-ets'  --Filter 61
         end as "analysis"
     from vedastore
@@ -825,7 +812,7 @@ with emissions_chp as (
                 then 'CHP IND SECTOR'
             when process in('PCHP-CCP00','PCHP-CCP01') then 'CHP PRC SECTOR'
             when process in('SCHP-ADM01','SCHP-CCG00','SCHP-CCG01','SCHP-CCH01','SCHP-FCH01','SCHP-GES00','SCHP-GES01','SCHP-STM01','SCHP-STW00','SCHP-STW01','SHHFCLRH01','SHLCHPRG01'
-,'SHLCHPRH01','SHLCHPRW01') then 'CHP SER SECTOR'
+                ,'SHLCHPRH01','SHLCHPRW01') then 'CHP SER SECTOR'
             when process in('UCHP-CCG00','UCHP-CCG01') then 'CHP UPS SECTOR'
             when process in('RHEACHPRG01','RHEACHPRH01','RHEACHPRW01','RHFCCHPRG01','RHFCCHPRH01','RHFCCHPRW01','RHFSCHPRG01','RHFSCHPRH01','RHFSCHPRW01','RHHCCHPRG01','RHHCCHPRH01','RHHCCHPRW01'
                 ,'RHHSCHPRG01','RHHSCHPRH01','RHHSCHPRW01','RHNACHPRG01','RHNACHPRH01','RHNACHPRW01') then 'CHP RES MICRO'
@@ -899,7 +886,7 @@ with emissions_chp as (
     select
         tablename,period,sum(pv)/1000 "elc-emis" --/1000 = Convert from kilo to Mega tonnes
     from (
-        select tablename,pv,period from "emis_co2_sector" where comm_set='EMIS CO2 ELC'  --Filter 75
+        select tablename,pv,period from "emis_co2_sector" where comm_set='EMIS CO2 ELC'
         union all
         select tablename,pv,period from "emis_ghg_dif" where commodity in('ELCCH4N','ELCN2ON')  --Filter 76
         union all
@@ -966,7 +953,7 @@ with emissions_chp as (
                 'PCHP-CCP00','PCHP-CCP01','RCHPEA-CCG00','RCHPEA-CCG01','RCHPEA-CCH01','RCHPEA-FCH01','RCHPEA-STW01','RCHPNA-CCG01',
                 'RCHPNA-CCH01','RCHPNA-FCH01','RCHPNA-STW01','RHEACHPRG01','RHEACHPRH01','RHEACHPRW01','RHNACHPRG01','RHNACHPRH01',
                 'RHNACHPRW01','SCHP-ADM01','SCHP-CCG00','SCHP-CCG01','SCHP-CCH01','SCHP-FCH01','SCHP-GES00','SCHP-GES01','SCHP-STM01',
-                'SCHP-STW00','SCHP-STW01','SHLCHPRG01','SHLCHPRH01','SHLCHPRW01','UCHP-CCG00','UCHP-CCG01') then 'elec-gen_chp' else null --Filter 79
+                'SCHP-STW00','SCHP-STW01','SHHFCLRH01','SHLCHPRG01','SHLCHPRH01','SHLCHPRW01','UCHP-CCG00','UCHP-CCG01') then 'elec-gen_chp' else null --Filter 79
     -- NB This is different from the Veda BE chp gen q as that only looks at centralised chp generation - not all chp generation which is what we report in the overall q here
             end proc_set
             from vedastore
@@ -1411,7 +1398,7 @@ from (
                 'RCHPNA-CCH01','RCHPNA-FCH01','RCHPNA-STW01','RHEACHPRG01','RHEACHPRH01',
                 'RHEACHPRW01','RHNACHPRG01','RHNACHPRH01','RHNACHPRW01','SCHP-ADM01',
                 'SCHP-CCG00','SCHP-CCG01','SCHP-CCH01','SCHP-FCH01','SCHP-GES00','SCHP-GES01',
-                'SCHP-STM01','SCHP-STW00','SCHP-STW01','SHLCHPRG01','SHLCHPRH01','SHLCHPRW01',
+                'SCHP-STM01','SCHP-STW00','SCHP-STW01','SHHFCLRH01','SHLCHPRG01','SHLCHPRH01','SHLCHPRW01',
                 'UCHP-CCG00','UCHP-CCG01') then 'elec-cap_chp'::varchar(50) --Filter 114
             when process in('ELCIE00','ELCII00','ELCIE01','ELCII01') then 'elec-cap_intercon'::varchar(50) --Filter 115
         end as "analysis",
@@ -2796,4 +2783,4 @@ ORDER BY tablename,analysis
     -- Changed definitions of the co-firing tables for oil (changed to commodity consumed basis). Updated the co-firing %s (block 2036ff) to reflect model change so CCS retrofits are no longer a subset of retrofit ready
     -- Minor correction to include 2 ccs demo plant types. Addition of filter identifiers to help in maintaining queries when model changes.
 -- 5:24 PM 22 August, 2016:
-    -- Correction to grid intensity calculation (sign of interconnection changed to reflect change on 11th Aug.) Removed asterisks from filter numbers
+    -- Correction to grid intensity calculation (sign of interconnection changed to reflect change on 11th Aug.) Removed asterisks from filter numbers. Added ser hydrogen cell "chp" to some filters where missing
