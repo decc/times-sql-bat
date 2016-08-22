@@ -679,7 +679,7 @@ echo "elc-emis"/ >> VedaBatchUpload.sql
 echo ("coal-unad"*b.coal+"coalccs-unad"*b.coal+"gas-unad"*b.gas+"gasccs-unad"*b.gas+"ELC FROM OIL"*b.oil+"coal-unad"*b.oilcoal+"ELC FROM OIL CCS"*b.oil+"coalccs-unad"*b.oilcoal+ >> VedaBatchUpload.sql
 echo "ELC FROM MANFUELS"+"ELC FROM BIO"+"coal-unad"*b.biocoal+"ELC FROM OIL"*b.biooil+"gas-unad"*b.biogas+"ELC FROM BIO CCS"+"coalccs-unad"*b.biocoal+"ELC FROM OIL CCS"*b.biooil+ >> VedaBatchUpload.sql
 echo "gasccs-unad"*b.biogas+"elec-gen_other-rens"+"elec-gen_solar"+"elec-gen_nuclear"+"elec-gen_offw"+"elec-gen_onw"+"elec-gen_chp"-"elec-gen_waste-heat-penalty" >> VedaBatchUpload.sql
-echo +(case when "elec-gen_intercon"^>0 then "elec-gen_intercon" else 0 end))*3600 >> VedaBatchUpload.sql
+echo -(case when "elec-gen_intercon"^<0 then "elec-gen_intercon" else 0 end))*3600 >> VedaBatchUpload.sql
 echo "elec-gen_inten" >> VedaBatchUpload.sql
 echo from( >> VedaBatchUpload.sql
 echo select a.period, a.tablename, >> VedaBatchUpload.sql
