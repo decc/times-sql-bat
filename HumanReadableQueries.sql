@@ -919,7 +919,7 @@ with emissions_chp as (
             when process in('EGEO01') then 'ELC FROM GEO'
             when process in('EHYD00','EHYD01') then 'ELC FROM HYDRO'
             when process in('EHYGCCT01','EHYGOCT01') then 'ELC FROM HYDROGEN'
-            when process in('ELCIE00','ELCIE01') then 'ELC FROM IMPORTS'
+            when process in('ELCIE00','ELCIE01','ELCII00','ELCII01') then 'ELC FROM IMPORTS'
             when process in('EMANOCT00','EMANOCT01') then 'ELC FROM MANFUELS'
             when process in('ENUCPWR00','ENUCPWR101','ENUCPWR102') then 'ELC FROM NUCLEAR'
             when process in('EDSTRCPE00','EDSTRCPE01','EHFOIGCC01','EOILL00','EOILL01','EOILS00','EOILS01') then 'ELC FROM OIL'
@@ -1078,7 +1078,7 @@ with emissions_chp as (
             when process in('ENGACCT00','ENGAOCT00','ENGAOCT01','ENGARCPE00','ENGARCPE01') then 'Natural Gas' --Filter 94
             when process in('ENGACCTQ01','ENGACCTQDEMO01') then 'Natural Gas CCS' --Filter 95
             when process in('ENGACCTRR01') then 'Natural Gas RR' --Filter 96
-            when process in('EDSTRCPE00','EDSTRCPE01','EOILL00','EOILS00','EOILS01','EOILL01','EHFOIGCC01') then 'Oil' --Filter 96
+            when process in('EDSTRCPE00','EDSTRCPE01','EOILL00','EOILS00','EOILS01','EOILL01','EHFOIGCC01') then 'Oil' --Filter 216
             when process in('EHFOIGCCQ01') then 'OIL CCS' --Filter 97
             end "waste_heat"
         from elc_waste_heat_available
@@ -1450,7 +1450,7 @@ from (
             else 'costs_other'::varchar(50)
         end as "analysis",tablename, attribute
     from vedastore
-    where attribute in('Cost_Act', 'Cost_Flo', 'Cost_Fom', 'Cost_Inv', 'Cost_Salv')
+    where attribute in('Cost_Act', 'Cost_Flo', 'Cost_Fom', 'Cost_Inv', 'Cost_Salv') --Filter 217
     union all
     select 'various'::varchar(50) "process",
         period,pv,
@@ -1590,33 +1590,29 @@ from (
     select process,commodity,
         period,pv,
         case
-            when process in('RHEABLCRP01','RHEABLRRW00','RHEABLRRW01','RHEABLSRP01',
+            when process in('RHEABLCRP01','RHEABLRRW01','RHEABLSRP01',
                 'RHEABLSRW01','RHNABLCRP01','RHNABLRRW01','RHNABLSRP01','RHNABLSRW01') then 'new-heat-res_boiler-bio'::varchar(50)  --Filter 141
             when process in('RHEABLCRH01','RHEABLSRH01','RHNABLCRH01','RHNABLSRH01') then 'new-heat-res_boiler-h2'::varchar(50)  --Filter 142
-            when process in('RHEABLCRO00','RHEABLCRO01','RHEABLRRC00','RHEABLRRO00',
-                'RHEABLSRO01','RHNABLCRO01','RHNABLSRO01') then 'new-heat-res_boiler-otherFF'::varchar(50)  --Filter 143
-            when process in('RHEABLRRE00','RHEABLRRE01','RHEABLSRE01','RHEAGHPUE01',
-                'RHEASHTRE00','RHEASHTRE01','RHNABLRRE01','RHNABLSRE01','RHNAGHPUE01',
-                'RHNASHTRE01','RWEAWHTRE00','RWEAWHTRE01','RWNAWHTRE01') then 'new-heat-res_boiler/heater-elec'::varchar(50)  --Filter 144
-            when process in('RHEABLCRG00','RHEABLCRG01','RHEABLRRG00','RHEABLSRG01',
-                'RHEASHTRG00','RHEASHTRG01','RHNABLCRG01','RHNABLSRG01','RHNASHTRG01',
-                'RWEAWHTRG00','RWEAWHTRG01','RWNAWHTRG01') then 'new-heat-res_boiler/heater-nga'::varchar(50)  --Filter 145
-            when process in('RHEACSV01','RHEACSVCAV01','RHEACSVCAV02','RHEACSVFLR01',
-                'RHEACSVLOF02','RHEACSVSOL01','RHEACSVSOL02','RHEACSVSOL03') then 'new-heat-res_conserv'::varchar(50)  --Filter 146
-            when process in('RHEADHP100','RHEADHP101','RHEADHP201','RHEADHP301','RHEADHP401',
+            when process in('RHEABLCRO01','RHEABLSRO01','RHNABLCRO01','RHNABLSRO01') then 'new-heat-res_boiler-otherFF'::varchar(50)  --Filter 143
+            when process in('RHEABLRRE01','RHEABLSRE01','RHEAGHPUE01','RHEASHTRE01','RHNABLRRE01','RHNABLSRE01','RHNAGHPUE01',
+                'RHNASHTRE01','RWEAWHTRE01','RWNAWHTRE01') then 'new-heat-res_boiler/heater-elec'::varchar(50)  --Filter 144
+            when process in('RHEABLCRG01','RHEABLSRG01','RHEASHTRG01','RHNABLCRG01','RHNABLSRG01','RHNASHTRG01'
+                ,'RWEAWHTRG01','RWNAWHTRG01') then 'new-heat-res_boiler/heater-nga'::varchar(50)  --Filter 145
+            when process in('RHEACSV01','RHEACSVCAV01','RHEACSVCAV02','RHEACSVFLR01','RHEACSVLOF02','RHEACSVSOL01','RHEACSVSOL02'
+                ,'RHEACSVSOL03') then 'new-heat-res_conserv'::varchar(50)  --Filter 146
+            when process in('RHEADHP101','RHEADHP201','RHEADHP301','RHEADHP401',
                 'RHNADHP101','RHNADHP201','RHNADHP301','RHNADHP401') then 'new-heat-res_dh'::varchar(50)  --Filter 147
-            when process in('RHEAAHPRE00','RHEAAHPRE01','RHEAAHPUE01','RHEAAHSRE01',
-                'RHEAAHSUE01','RHEAGHPRE01','RHEAGHSRE01','RHEAGHSUE01','RHNAAHPRE01',
-                'RHNAAHPUE01','RHNAAHSRE01','RHNAAHSUE01','RHNAGHPRE01','RHNAGHSRE01','RHNAGHSUE01') then 'new-heat-res_heatpump-elec'::varchar(50) --Filter 148
-            when process in('RHEAAHHRE01','RHEAAHHUE01','RHEAGHHRE01','RHEAGHHUE01',
-                'RHNAAHHRE01','RHNAAHHUE01','RHNAGHHRE01','RHNAGHHUE01') then 'new-heat-res_hyb-boil+hp-h2'::varchar(50) --Filter 149
+            when process in('RHEAAHPRE01','RHEAAHPUE01','RHEAAHSRE01',
+                'RHEAAHSUE01','RHEAGHPRE01','RHEAGHSRE01','RHEAGHSUE01','RHNAAHPRE01','RHNAAHPUE01','RHNAAHSRE01','RHNAAHSUE01'
+                ,'RHNAGHPRE01','RHNAGHSRE01','RHNAGHSUE01') then 'new-heat-res_heatpump-elec'::varchar(50) --Filter 148
+            when process in('RHEAAHHRE01','RHEAAHHUE01','RHEAGHHRE01','RHEAGHHUE01','RHNAAHHRE01','RHNAAHHUE01','RHNAGHHRE01'
+                ,'RHNAGHHUE01') then 'new-heat-res_hyb-boil+hp-h2'::varchar(50) --Filter 149
             when process in('RHEAAHBRE01','RHEAAHBUE01','RHEAGHBRE01','RHEAGHBUE01',
                 'RHNAAHBRE01','RHNAAHBUE01','RHNAGHBRE01','RHNAGHBUE01') then 'new-heat-res_hyb-boil+hp-nga'::varchar(50) --Filter 150
-            when process in('RHEACHPRW01','RHNACHPRW01') then 'new-heat-res_microchp-bio'::varchar(50)
+            when process in('RHEACHPRW01','RHNACHPRW01') then 'new-heat-res_microchp-bio'::varchar(50) --Filter 218
             when process in('RHEACHBRH01','RHEACHPRH01','RHNACHBRH01','RHNACHPRH01') then 'new-heat-res_microchp-h2'::varchar(50)  --Filter 151
             when process in('RHEACHPRG01','RHNACHPRG01') then 'new-heat-res_microchp-nga'::varchar(50) --Filter 152
-            when process in('RHEANSTRE00','RHEANSTRE01','RHEASTGNT00','RHEASTGNT01',
-                'RHNANSTRE01','RHNASTGNT01') then 'new-heat-res_storheater-elec'::varchar(50) --Filter 153
+            when process in('RHEANSTRE01','RHEASTGNT01','RHNANSTRE01','RHNASTGNT01') then 'new-heat-res_storheater-elec'::varchar(50) --Filter 153
         end as "analysis",
     tablename, attribute
     from vedastore
@@ -1730,38 +1726,35 @@ from (
     select process,
         period,pv,
         case
-            when process in ('SHLSHTRE00','SWLWHTRE00','SHLBLRRE01','SHLSHTRE01',
-                'SWLWHTRE01','SHLBLSRE01','SHHBLRRE00','SWHWHTRE00','SHHBLRRE01','SWHWHTRE01',
-                'SHLBLRRE00') then 'new-heat-ser_boiler/heater-elec' --Filter 172
-            when process in('SHLBLCRG00','SHLSHTRG00','SWLWHTRG00','SHLBLCRG01','SWLWHTRG01',
-                'SHLBLSRG01','SHHBLRRG00','SWHBLRRG00','SHHBLRRG01','SWHBLRRG01','SHLBLRRG00')
-                    then 'new-heat-ser_boiler/heater-nga' --Filter 173
-            when process in('SHLBLCRP01','SHLBLRRW01','SHLBLSRP01','SHLBLSRW01','SHHBLRRW00',
-                'SWHBLRRW00','SHHBLRRW01','SWHBLRRW01','SHLBLRRW00') then 'new-heat-ser_boiler-bio' --Filter 174
+            when process in ('SHLBLRRE01','SHLSHTRE01','SWLWHTRE01','SHLBLSRE01','SHHBLRRE01','SWHWHTRE01')
+                then 'new-heat-ser_boiler/heater-elec' --Filter 172
+            when process in('SHLBLCRG01','SWLWHTRG01','SHLBLSRG01','SHHBLRRG01','SWHBLRRG01')
+                then 'new-heat-ser_boiler/heater-nga' --Filter 173
+            when process in('SHLBLCRP01','SHLBLRRW01','SHLBLSRP01','SHLBLSRW01','SHHBLRRW01','SWHBLRRW01')
+                then 'new-heat-ser_boiler-bio' --Filter 174
             when process in('SHLBLSRH01','SHHBLRRH01','SWHBLRRH01','SHLBLCRH01') then 'new-heat-ser_boiler-h2' --Filter 175
-            when process in('SHLBLCRO00','SHLBLRRC00','SHLSHTRO00','SHLBLCRO01','SHLBLSRO01',
-                'SHHBLRRO00','SHHBLRRC00','SWHBLRRO00','SWHBLRRC00','SHHBLRRO01','SHHBLRRC01',
-                'SWHBLRRO01','SWHBLRRC01','SHLBLRRO00') then 'new-heat-ser_boiler-otherFF' --Filter 176
+            when process in('SHLBLCRO01','SHLBLSRO01','SHHBLRRO01','SHHBLRRC01','SWHBLRRO01','SWHBLRRC01')
+                then 'new-heat-ser_boiler-otherFF' --Filter 176
             when process in('SCSLROFF01','SCSLROFP01','SCSLCAVW01','SCSHPTHM01','SCSHROFF01',
                 'SCSHROFP01','SCSHCAVW01','SCSLPTHM01') then 'new-heat-ser_conserv' --Filter 177
             when process in('SHLAHBUE01','SHLGHBRE01','SHLGHBUE01','SHLAHBRE01') then 'new-heat-ser_hyb-boil+hp-nga' --Filter 178
             when process in('SHLAHPRE01','SHLAHPUE01','SHLGHPRE01','SHLGHPUE01','SHLAHSRE01',
-                'SHLAHSUE01','SHLGHSRE01','SHLGHSUE01','SHLAHPRE00') then 'new-heat-ser_heatpump-elec' --Filter 179
-            when process in('SHHVACAE01','SHHVACAE00') then 'new-heat-ser_hvac' --Filter 180
+                'SHLAHSUE01','SHLGHSRE01','SHLGHSUE01') then 'new-heat-ser_heatpump-elec' --Filter 179
+            when process in('SHHVACAE01') then 'new-heat-ser_hvac' --Filter 180
             when process in('SHHVACAE02') then 'new-heat-ser_hvac-ad' --Filter 181
             when process in('SHLAHHUE01','SHLGHHRE01','SHLGHHUE01','SHLAHHRE01') then 'new-heat-ser_hyb-boil+hp-h2' --Filter 182
-            when process in('SHLDHP101','SHHDHP100','SHHDHP101','SHLDHP100') then 'new-heat-ser_dh' --Filter 183
+            when process in('SHLDHP101','SHHDHP101') then 'new-heat-ser_dh' --Filter 183
             when process in('SHLCHPRW01') then 'new-heat-ser_microchp-bio' --Filter 184
             when process in('SHLCHBRH01','SHHFCLRH01','SHLCHPRH01') then 'new-heat-ser_microchp-h2' --Filter 185
             when process in('SHLCHPRG01') then 'new-heat-ser_microchp-nga' --Filter 186
-            when process in('SHLNSTRE01','SHLNSTRE00') then 'new-heat-ser_storheater-elec' --Filter 187
+            when process in('SHLNSTRE01') then 'new-heat-ser_storheater-elec' --Filter 187
             else 'new-new-heat-ser_other'
         end as "analysis",
     tablename, attribute
     from vedastore
     where attribute = 'VAR_FOut' AND commodity in('SHHCSVDMD','SHHDELVAIR','SHHDELVRAD',
-        'SHLCSVDMD','SHLDELVAIR','SHLDELVRAD','SHLDELVUND','SWHDELVPIP','SWHDELVSTD','SWLDELVSTD') --Filter 171
-    and vintage=period
+        'SHLCSVDMD','SHLDELVAIR','SHLDELVRAD','SHLDELVUND','SWHDELVPIP','SWHDELVSTD','SWLDELVSTD') 
+    and vintage=period --Filter 219
     group by period,process, pv,tablename, id, analysis, attribute order by tablename, attribute
 ) a
 group by id, analysis,tablename, attribute
@@ -2251,7 +2244,7 @@ elc_prd_fuel as (
             when process in('EGEO01') then 'ELC FROM GEO'
             when process in('EHYD00','EHYD01') then 'ELC FROM HYDRO'
             when process in('EHYGCCT01','EHYGOCT01') then 'ELC FROM HYDROGEN'
-            when process in('ELCIE00','ELCIE01') then 'ELC FROM IMPORTS'
+            when process in('ELCIE00','ELCIE01','ELCII00','ELCII01') then 'ELC FROM IMPORTS'
             when process in('EMANOCT00','EMANOCT01') then 'ELC FROM MANFUELS'
             when process in('ENUCPWR00','ENUCPWR101','ENUCPWR102') then 'ELC FROM NUCLEAR'
             when process in('EDSTRCPE00','EDSTRCPE01','EHFOIGCC01','EOILL00','EOILL01','EOILS00','EOILS01') then 'ELC FROM OIL'
@@ -2784,3 +2777,5 @@ ORDER BY tablename,analysis
     -- Minor correction to include 2 ccs demo plant types. Addition of filter identifiers to help in maintaining queries when model changes.
 -- 5:24 PM 22 August, 2016:
     -- Correction to grid intensity calculation (sign of interconnection changed to reflect change on 11th Aug.) Removed asterisks from filter numbers. Added ser hydrogen cell "chp" to some filters where missing
+-- 5:34 PM 25 August, 2016:
+        -- "elc from imports" set wrong (not include ireland); corrected. Filters for new build heat output (res/ser) changed to exclude base year techs
