@@ -17,7 +17,7 @@ Since each postgres session is independent, the fact that the same table names a
 *	Put your VD files in a separate folder. The script currently has the limitation that the path to this must not contain spaces. For example, put here:
 C:\VTI_Local_4\Veda_FE\GAMS_WrkTIMES\upload_results
 *	Put the batch file(s) in the folder and double-click on each to run it/them. The batch file(s) will be called something like "UploadResults.BAT".
-*	Each batch file processes all the VD files in the folder. It creates a CSV called "ResultsOut.csv" (or similar) in the same folder. This contains the standardised results for the cross-tabs.
+*	Each batch file processes all the VD files in the folder. It creates a CSV called "ResultsOut.csv" (or similar) in the same folder. This contains the standardised results for the cross-tabs. If the batch process doesn't work check that the command line which invokes psql is pointing to the correct location. This will vary with the postgres installation and will be something like "C:\Program Files\PostgreSQL\9.4\bin"
 
 *2)	To run manual (bespoke) queries:*
 SQL script generated as part of above is called "VedaBatchUpload.sql" (or similar) in the same folder
