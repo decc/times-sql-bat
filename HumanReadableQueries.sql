@@ -653,7 +653,8 @@ from (
                 'GHG-IAS-NON-ETS','GHG-IND-NON-ETS','GHG-RES-NON-ETS','GHG-SER-NON-ETS','GHG-TRA-NON-ETS-NO-IAS',
                 'GHG-AGR-NO-LULUCF','GHG-OTHER-NON-ETS','GHG-LULUCF','Traded-Emission-Non-ETS','GHG-ELC-CAPTURED','GHG-IND-ETS-CAPTURED',
                 'GHG-IND-NON-ETS-CAPTURED','GHG-OTHER-ETS-CAPTURED') then 'ghg_sec-main-secs' --Filter 59
-            when commodity in('PRCCO2P','PRCCH4N','PRCCH4P','PRCN2ON','PRCN2OP') then 'ghg_sec-prc-non-ets' --Filter 60
+            when commodity in('PRCCH4N','PRCN2ON') then 'ghg_sec-prc-non-waste-non-ets' --Filter 60
+            when commodity in('PRCCO2P','PRCCH4P','PRCN2OP') then 'ghg_sec-prc-waste-non-ets' --Filter 3
             when commodity ='PRCCO2N' then 'ghg_sec-prc-ets'  --Filter 61
         end as "analysis"
     from vedastore
