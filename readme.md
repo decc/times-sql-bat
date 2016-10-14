@@ -39,7 +39,7 @@ Run manual postgres queries with PostgreSQL by:
     *	Select * from vedastore where period = ‘2010’
     etc
 *	You can now write bespoke cross-tabs etc. against this using SQL (select and run any code as above); or by using the graphical query builder (other tab of the window). The latter is something like the MS Access query builder window. Note that to see the temporary table vedastore in the graphical query builder, you need to find the correct schema in the tree to the left of the screen. The temporary tables will be in the schema called something like "pg_temp_<some number>". It will be the one with the cross next to it to show that there's more than one entry. Click on this. Then drag the vedastore table to the main window and construct your query. Run as above.
-*	You can select, copy and paste the results from the results window below the query window. If you do this, note that field [column] headings will be missing. If you instead do "Query"=>"Execute to file" you will have the headings. In both cases will need to break results into fields again when in XLS [default delimiter is ";" but you can change this in the settings.]
+*	You can select, copy and paste the results from the results window below the query window. If you do this, note that field [column] headings will be missing. If you instead do "Query"=>"Execute to file" you will have the headings. In both cases will need to break results into fields again when in XLS [default delimiter is ";" but you can change this in the settings.]. In Excel this is done by Data -> data tools -> Text to columns
 
 *3)	Notes / caveats on what is being extracted*
 
