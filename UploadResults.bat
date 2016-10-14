@@ -155,7 +155,7 @@ echo         case >> VedaBatchUpload.sql
 echo             when commodity='Traded-Emission-ETS' then 'ghg_sec-traded-emis-ets'  >> VedaBatchUpload.sql
 echo             when commodity in('GHG-ELC','GHG-IND-ETS','GHG-RES-ETS','GHG-SER-ETS','GHG-OTHER-ETS','GHG-TRA-ETS-NO-IAS','GHG-IAS-ETS', >> VedaBatchUpload.sql
 echo                 'GHG-IAS-NON-ETS','GHG-IND-NON-ETS','GHG-RES-NON-ETS','GHG-SER-NON-ETS','GHG-TRA-NON-ETS-NO-IAS', >> VedaBatchUpload.sql
-echo                 'GHG-AGR-NO-LULUCF','GHG-OTHER-NON-ETS','GHG-LULUCF','Traded-Emission-Non-ETS','GHG-ELC-CAPTURED','GHG-IND-ETS-CAPTURED', >> VedaBatchUpload.sql
+echo                 'GHG-AGR-NO-LULUCF','GHG-OTHER-NON-ETS','GHG-LULUCF','GHG-HFC-NON-ETS','Traded-Emission-Non-ETS','GHG-ELC-CAPTURED','GHG-IND-ETS-CAPTURED', >> VedaBatchUpload.sql
 echo                 'GHG-IND-NON-ETS-CAPTURED','GHG-OTHER-ETS-CAPTURED') then 'ghg_sec-main-secs'  >> VedaBatchUpload.sql
 echo             when commodity in('PRCCH4N','PRCN2ON') then 'ghg_sec-prc-non-waste-non-ets'  >> VedaBatchUpload.sql
 echo             when commodity in('PRCCO2P','PRCCH4P','PRCN2OP') then 'ghg_sec-prc-waste-non-ets'  >> VedaBatchUpload.sql
@@ -164,7 +164,7 @@ echo         end as "analysis" >> VedaBatchUpload.sql
 echo     from vedastore >> VedaBatchUpload.sql
 echo     where (attribute='VAR_FOut' and commodity in('GHG-ELC','GHG-IND-ETS','GHG-RES-ETS','GHG-SER-ETS','GHG-OTHER-ETS', >> VedaBatchUpload.sql
 echo         'GHG-TRA-ETS-NO-IAS','GHG-IAS-ETS','GHG-IAS-NON-ETS','Traded-Emission-ETS','GHG-IND-NON-ETS','GHG-RES-NON-ETS', >> VedaBatchUpload.sql
-echo         'GHG-SER-NON-ETS','GHG-TRA-NON-ETS-NO-IAS','GHG-AGR-NO-LULUCF','GHG-OTHER-NON-ETS','GHG-LULUCF', >> VedaBatchUpload.sql
+echo         'GHG-SER-NON-ETS','GHG-TRA-NON-ETS-NO-IAS','GHG-AGR-NO-LULUCF','GHG-OTHER-NON-ETS','GHG-LULUCF', 'GHG-HFC-NON-ETS', >> VedaBatchUpload.sql
 echo         'Traded-Emission-Non-ETS','GHG-ELC-CAPTURED','GHG-IND-ETS-CAPTURED','GHG-IND-NON-ETS-CAPTURED', >> VedaBatchUpload.sql
 echo         'GHG-OTHER-ETS-CAPTURED','PRCCO2P','PRCCH4N','PRCCH4P','PRCN2ON','PRCN2OP', >> VedaBatchUpload.sql
 echo         'PRCCO2N')) or (attribute='VAR_FIn' and commodity='Traded-Emission-ETS')   >> VedaBatchUpload.sql
