@@ -35,8 +35,11 @@ Revisions section placed at end of file.
 */
 
 /* ******List of completed queries*******/
+/* **Miscellaneous queries (not included in batch files): ** */
+/* ----------------------------------------------------------*/
+/* *Total fuel consumption by fuel for other industry (industry sub-sector)* */
 /* **For agriculture / LULUCF batch file: ** */
-/* -------------------------------*/
+/* ------------------------------------------*/
 /* *Land use and crop / livestock mitigation (MACC) measures* */
 /* *Afforestation rate* */
 
@@ -65,10 +68,111 @@ Revisions section placed at end of file.
 /* *End user final energy demand by sector* */ -- line 1830
 /* *Primary energy demand and biomass, imports exports and domestic production* */ -- line 2458
 
+/* *Total fuel consumption by fuel for other industry (industry sub-sector)* */
+with ind_oi_chp as (
+-- I.e. the Veda BE table of the same name
+	select comm_set,tablename, period,pv
+	from (
+		select tablename, period,pv,
+		case 
+			when commodity in('INDBENZ','INDBFG','INDCOK','INDCOG') then 'IND MANFUELS'
+			when commodity in('INDCOACOK','INDCOA') then 'IND COALS'
+			when commodity in('INDELC','INDDISTELC') then 'IND ELEC'
+			when commodity in('INDHFO','INDLFO','INDLPG','INDKER') then 'IND OIL'
+			when commodity in('INDMAINSGAS','INDNGA') then 'IND GAS'
+			when commodity in('INDMAINSHYG','INDHYG') then 'IND HYDROGEN'
+			when commodity in('INDMSWORG','INDMSWINO','INDWOD','INDPELH','INDPOLWST','INDBIOLFO','INDPELL','INDMAINSBOM',
+				'INDBIOOIL','INDWODWST','INDBOG-AD','INDBIOLPG','INDGRASS','INDBOG-LF') then 'IND BIO'
+			else null
+		end as comm_set
+		from vedastore
+		where attribute='VAR_FIn' and 
+			process in('IOICHPBIOS01','IOICHPCCGT01','IOICHPBIOS00','IOICHPCCGTH01','IOICHPNGA00','IOICHPHFO00','IOICHPGT01','IOICHPBIOG01','IOICHPFCH01','IOICHPCOA01')
+	) a
+	where comm_set is not null
+), ind_oi_prd as (
+-- I.e. the Veda BE table of the same name
+	select comm_set,tablename, period,pv
+	from (
+		select tablename, period,pv,
+		case 
+			when commodity in('INDBENZ','INDBFG','INDCOK','INDCOG') then 'IND MANFUELS'
+			when commodity in('INDCOACOK','INDCOA') then 'IND COALS'
+			when commodity in('INDELC','INDDISTELC') then 'IND ELEC'
+			when commodity in('INDHFO','INDLFO','INDLPG','INDKER') then 'IND OIL'
+			when commodity in('INDMAINSGAS','INDNGA') then 'IND GAS'
+			when commodity in('INDMAINSHYG','INDHYG') then 'IND HYDROGEN'
+			when commodity in('INDMSWORG','INDMSWINO','INDWOD','INDPELH','INDPOLWST','INDBIOLFO','INDPELL','INDMAINSBOM',
+				'INDBIOOIL','INDWODWST','INDBOG-AD','INDBIOLPG','INDGRASS','INDBOG-LF') then 'IND BIO'
+			else null
+		end as comm_set
+		from vedastore
+		where attribute='VAR_FIn' and 
+			process in('IOIDRYBIOL01','IOILTHBIOS02','IOIDRYCOK00','IOIDRYELC00','IOILTHELC02','IOIOTHLFO00','IOIHTHLFO01','IOILTHHCO01','IOIHTHHFO01','IOIOTHNGA01','IOILTHLPG02','IOILTHKER00'
+			,'IOIDRYHDG02','IOILTHCOK00','IOILTHHFO00','IOIMOTELC00','IOILTHCOK01','IOIDRYNGA01','IOIDRYSTM01','IOIDRYKER00','IOILTHHCO02','IOIHTHKER01','IOIOTHBIOS01','IOIREFEHFC00'
+			,'IOIDRYCOK01','IOIOTHCOK01','IOIOTHHFO00','IOIOTHLFO01','IOIOTHBENZ00','IOIDRYBIOS00','IOIREFEHFO01','IOIHTHBIOG01','IOIHTHLPG00','IOIDRYHCO02','IOIOTHKER00','IOIOTHNGA00'
+			,'IOIDRYBIOG02','IOIDRYHFO02','IOIHTHBIOS00','IOIHTHCOK00','IOILTHLPG01','IOIDRYCOK02','IOILTHHCO00','IOIHTHBIOS01','IOIDRYHDG01','IOIDRYLFO01','IOILTHBIOG02','IOIOTHSTM01'
+			,'IOILTHNGA01','IOIOTHBIOS00','IOIDRYBIOS02','IOIDRYLPG00','IOIDRYBENZ02','IOILTHCOK02','IOIHTHHCO01','IOILTHSTM01','IOIREFEHFC01','IOIHTHCOK01','IOIHTHLFO00','IOIHTHBIOL01'
+			,'IOILTHBIOG01','IOIMOTELC02','IOIDRYNGA00','IOILTHBIOS00','IOILTHELC00','IOIOTHKER01','IOIDRYHFO00','IOIDRYKER02','IOIDRYLPG01','IOIHTHNGA00','IOIOTHELC01','IOIDRYKER01'
+			,'IOIDRYSTM00','IOIHTHBENZ00','IOILTHBIOL02','IOIHTHELC01','IOIHTHLPG01','IOIOTHELC00','IOILTHSTM00','IOIHTHBIOG00','IOILTHLPG00','IOIDRYBIOG01','IOILTHHDG02','IOILTHKER01'
+			,'IOIOTHSTM00','IOIDRYBIOG00','IOILTHLFO00','IOIOTHBIOL01','IOIDRYHCO00','IOIOTHHCO01','IOIDRYELC01','IOIOTHHCO00','IOIOTHLPG01','IOILTHELC01','IOIHTHBENZ01','IOILTHNGA00'
+			,'IOIDRYBENZ01','IOIDRYHCO01','IOILTHNGA02','IOIOTHBIOG01','IOIHTHELC00','IOIDRYELC02','IOILTHLFO01','IOIDRYBENZ00','IOIDRYLFO00','IOIHTHHFO00','IOILTHBENZ02','IOILTHBIOG00'
+			,'IOIOTHCOK00','IOIHTHKER00','IOIOTHHFO01','IOILTHLFO02','IOIHTHNGA01','IOIHTHHCO00','IOILTHBIOL01','IOIMOTELC01','IOIDRYBIOS01','IOIDRYHFO01','IOIDRYLFO02','IOIOTHBIOG00'
+			,'IOIDRYNGA02','IOILTHBENZ01','IOIOTHBENZ01','IOILTHHDG01','IOIOTHHDG01','IOIDRYBIOL02','IOIHTHHDG01','IOILTHBENZ00','IOILTHBIOS01','IOIOTHLPG00','IOIDRYLPG02','IOILTHHFO02'
+			,'IOILTHKER02','IOILTHHFO01')
+	) a
+	where comm_set is not null
+)
+select 'fin-en-other-ind_'|| comm_set ||'|' || tablename || '|' || 'VAR_FIn' || '|' || 'various' || '|various'::varchar(300) "id",
+	'fin-en-other-ind_' || comm_set::varchar(300) "analysis", tablename, 'VAR_FIn'::varchar(50) "attribute",
+	'various'::varchar(50) "commodity",
+	'various'::varchar(50) "process",
+	sum(pv)::numeric "all",
+	sum(case when period='2010' then pv else 0 end)::numeric "2010",
+	sum(case when period='2011' then pv else 0 end)::numeric "2011",
+	sum(case when period='2012' then pv else 0 end)::numeric "2012",
+	sum(case when period='2015' then pv else 0 end)::numeric "2015",
+	sum(case when period='2020' then pv else 0 end)::numeric "2020",
+	sum(case when period='2025' then pv else 0 end)::numeric "2025",
+	sum(case when period='2030' then pv else 0 end)::numeric "2030",
+	sum(case when period='2035' then pv else 0 end)::numeric "2035",
+	sum(case when period='2040' then pv else 0 end)::numeric "2040",
+	sum(case when period='2045' then pv else 0 end)::numeric "2045",
+	sum(case when period='2050' then pv else 0 end)::numeric "2050",
+	sum(case when period='2055' then pv else 0 end)::numeric "2055",
+	sum(case when period='2060' then pv else 0 end)::numeric "2060"
+from (
+	select case
+		when comm_set='IND COALS' then 'coa'
+		when comm_set='IND HYDROGEN' then 'hyd'
+		when comm_set='IND MANFUELS' then 'man'
+		when comm_set='IND GAS' then 'gas'
+		when comm_set='IND ELEC' then 'elc'
+		when comm_set='IND BIO' then 'bio'
+		when comm_set='IND OIL' then 'oil'
+		end as comm_set,
+	tablename,period,pv
+	from ind_oi_chp
+	union all
+	select case
+		when comm_set='IND COALS' then 'coa'
+		when comm_set='IND HYDROGEN' then 'hyd'
+		when comm_set='IND MANFUELS' then 'man'
+		when comm_set='IND GAS' then 'gas'
+		when comm_set='IND ELEC' then 'elc'
+		when comm_set='IND BIO' then 'bio'
+		when comm_set='IND OIL' then 'oil'
+		end as comm_set,
+	tablename,period,pv
+	from ind_oi_prd
+) a
+group by tablename, comm_set
+order by tablename, comm_set
 
 /*  *Land use and crop / livestock mitigation (MACC) measures* */
 -- Gives  breakdown for "agr-GHG-land","agr-GHG-livestock-mitigation","agr-GHG-crop-mitigation","agr-GHG-afforestation","agr-GHG-energy"
 -- by table.
+-- This is GHG emissions and so some measures are not included here (biomass / h2 boilers, reduced cultivation) as they don't produce GHG
 
 select 'ag-lulucf-meas-ghg_'|| proc_set || '|' || tablename || '|' || attribute || '|' || 'various' || '|various'::varchar(300) "id",
     'ag-lulucf-meas-ghg_' || proc_set "analysis", tablename, attribute,
@@ -2779,4 +2883,6 @@ ORDER BY tablename,analysis
 -- 5:24 PM 22 August, 2016:
     -- Correction to grid intensity calculation (sign of interconnection changed to reflect change on 11th Aug.) Removed asterisks from filter numbers. Added ser hydrogen cell "chp" to some filters where missing
 -- 5:34 PM 25 August, 2016:
-        -- "elc from imports" set wrong (not include ireland); corrected. Filters for new build heat output (res/ser) changed to exclude base year techs
+    -- "elc from imports" set wrong (not include ireland); corrected. Filters for new build heat output (res/ser) changed to exclude base year techs
+-- 7:12 PM 31 October, 2016:
+	-- Addition of miscellaneous queries section with q for other industry	fuel use
