@@ -12,6 +12,7 @@ rem By Fernley Symons
 rem ***********
 rem 5:40 PM 15 July, 2016: First version: moved from main batch query
 REM 8:36 PM 06 September, 2016: changed to add postgres ver as a variable near top of script for ease of change
+rem 8:42 PM 15 November, 2016: added extract of fuel by transport mode to extract international transport fuel use (temporary measure)
 rem ***********
 echo processing vd files...
 @echo off
@@ -242,6 +243,71 @@ echo 'plug-in-hybrid'::varchar(50) end as "analysis", tablename, attribute,commo
 echo 'VAR_Ncap' and process like any(array['TC%%','TL%%','TH%%','TB%%','TW%%']) ) a where analysis ^<^>'' group by id, >> TraBatchUpload.sql
 echo analysis,tablename, attribute, commodity order by tablename, analysis, attribute, commodity ) TO >> TraBatchUpload.sql
 echo '%~dp0nVCapOut.csv' delimiter ',' CSV; >> TraBatchUpload.sql
+rem /* *TRA_Fuel_by_mode* */
+echo /* *TRA_Fuel_by_mode* */ >> TraBatchUpload.sql
+echo COPY ( >> TraBatchUpload.sql
+echo select analysis ^|^| '^|' ^|^| tablename ^|^| '^|' ^|^| attribute ^|^| '^|' ^|^| 'various' ^|^| '^|various'::varchar(300) "id", analysis, tablename,'VAR_FIn' "attribute", >> TraBatchUpload.sql
+echo 'various'::varchar(50) "commodity", >> TraBatchUpload.sql
+echo 'various'::varchar(50) "process", >> TraBatchUpload.sql
+echo sum(pv)::numeric "all", >> TraBatchUpload.sql
+echo sum(case when period='2010' then pv else 0 end)::numeric "2010", >> TraBatchUpload.sql
+echo sum(case when period='2011' then pv else 0 end)::numeric "2011", >> TraBatchUpload.sql
+echo sum(case when period='2012' then pv else 0 end)::numeric "2012", >> TraBatchUpload.sql
+echo sum(case when period='2015' then pv else 0 end)::numeric "2015", >> TraBatchUpload.sql
+echo sum(case when period='2020' then pv else 0 end)::numeric "2020", >> TraBatchUpload.sql
+echo sum(case when period='2025' then pv else 0 end)::numeric "2025", >> TraBatchUpload.sql
+echo sum(case when period='2030' then pv else 0 end)::numeric "2030", >> TraBatchUpload.sql
+echo sum(case when period='2035' then pv else 0 end)::numeric "2035", >> TraBatchUpload.sql
+echo sum(case when period='2040' then pv else 0 end)::numeric "2040", >> TraBatchUpload.sql
+echo sum(case when period='2045' then pv else 0 end)::numeric "2045", >> TraBatchUpload.sql
+echo sum(case when period='2050' then pv else 0 end)::numeric "2050", >> TraBatchUpload.sql
+echo sum(case when period='2055' then pv else 0 end)::numeric "2055", >> TraBatchUpload.sql
+echo sum(case when period='2060' then pv else 0 end)::numeric "2060" >> TraBatchUpload.sql
+echo from ( >> TraBatchUpload.sql
+echo select process,period,pv, >> TraBatchUpload.sql
+echo case  >> TraBatchUpload.sql
+echo when process in('TAIJETE00','TAIJETE01','TAIJETN00','TAIJETN01','TAIJET02','TAIHYLE01','TAIHYLN01') then 'int-air-fuel_' --last 3 of these might not be real processes >> TraBatchUpload.sql
+echo when process in('TSIHYG01','TSIOIL00','TSIOIL01') then 'int-ship-fuel_' >> TraBatchUpload.sql
+echo end ^|^| >> TraBatchUpload.sql
+echo case >> TraBatchUpload.sql
+echo when commodity in('AGRBIODST','AGRBIOLPG','AGRBOM','AGRGRASS','AGRMAINSBOM','AGRPOLWST','BGRASS','BIODST','BIODST-FT','BIOJET-FT','BIOKER-FT','BIOLFO' >> TraBatchUpload.sql
+echo ,'BIOLPG','BIOOIL','BOG-AD','BOG-G','BOG-LF','BOM','BPELH','BPELL','BRSEED','BSEWSLG','BSLURRY','BSTARCH' >> TraBatchUpload.sql
+echo ,'BSTWWST','BSUGAR','BTREATSTW','BTREATWOD','BVOIL','BWOD','BWODLOG','BWODWST','ELCBIOCOA','ELCBIOCOA2','ELCBIOLFO','ELCBIOOIL' >> TraBatchUpload.sql
+echo ,'ELCBOG-AD','ELCBOG-LF','ELCBOG-SW','ELCBOM','ELCMAINSBOM','ELCMSWINO','ELCMSWORG','ELCPELH','ELCPELL','ELCPOLWST','ELCSTWWST','ELCTRANSBOM' >> TraBatchUpload.sql
+echo ,'ETH','HYGBIOO','HYGBPEL','HYGMSWINO','HYGMSWORG','INDBIOLFO','INDBIOLPG','INDBIOOIL','INDBOG-AD','INDBOG-LF','INDBOM','INDGRASS' >> TraBatchUpload.sql
+echo ,'INDMAINSBOM','INDMSWINO','INDMSWORG','INDPELH','INDPELL','INDPOLWST','INDWOD','INDWODWST','METH','MSWBIO','MSWINO','MSWORG' >> TraBatchUpload.sql
+echo ,'PWASTEDUM','RESBIOLFO','RESBOM','RESHOUSEBOM','RESMAINSBOM','RESPELH','RESWOD','RESWODL','SERBIOLFO','SERBOG','SERBOM','SERBUILDBOM' >> TraBatchUpload.sql
+echo ,'SERMAINSBOM','SERMSWBIO','SERMSWINO','SERMSWORG','SERPELH','SERWOD','TRABIODST','TRABIODST-FT','TRABIODST-FTL','TRABIODST-FTS','TRABIODSTL','TRABIODSTS' >> TraBatchUpload.sql
+echo ,'TRABIOJET-FTDA','TRABIOJET-FTDAL','TRABIOJET-FTIA','TRABIOJET-FTIAL','TRABIOLFO','TRABIOLFODS','TRABIOLFODSL','TRABIOLFOL','TRABIOOILIS','TRABIOOILISL','TRABOM','TRAETH' >> TraBatchUpload.sql
+echo ,'TRAETHL','TRAETHS','TRAMAINSBOM','TRAMETH') then 'bio' >> TraBatchUpload.sql
+echo when commodity in('AGRDISTELC','AGRELC','ELC','ELC-E-EU','ELC-E-IRE','ELC-I-EU','ELC-I-IRE','ELCGEN','ELCSURPLUS','HYGELC','HYGELCSURP','HYGLELC' >> TraBatchUpload.sql
+echo ,'HYGSELC','INDDISTELC','INDELC','PRCELC','RESDISTELC','RESELC','RESELCSURPLUS','RESHOUSEELC','SERBUILDELC','SERDISTELC','SERELC','TRACELC' >> TraBatchUpload.sql
+echo ,'TRACPHB','TRADISTELC','TRAELC','UPSELC') then 'elc' >> TraBatchUpload.sql
+echo when commodity in('AGRNGA','ELCNGA','HYGLNGA','HYGSNGA','IISNGAB','IISNGAC','IISNGAE','INDNEUNGA','INDNGA','LNG','NGA','NGA-E' >> TraBatchUpload.sql
+echo ,'NGA-E-EU','NGA-E-IRE','NGA-I-EU','NGA-I-N','NGAPTR','PRCNGA','RESNGA','SERNGA','TRACNGL','TRACNGS','TRALNG','TRALNGDS' >> TraBatchUpload.sql
+echo ,'TRALNGDSL','TRALNGIS','TRALNGISL','TRANGA','UPSNGA') then 'gas' >> TraBatchUpload.sql
+echo when commodity in('AGRCOA','COA','COA-E','COACOK','ELCCOA','HYGCOA','INDCOA','INDCOACOK','INDSYNCOA','PRCCOA','PRCCOACOK','RESCOA' >> TraBatchUpload.sql
+echo ,'SERCOA','SYNCOA','TRACOA') then 'coa' >> TraBatchUpload.sql
+echo when commodity in('SERHFO','SERLFO','TRAPETL','OILLFO','TRAJETDA','TRALFO','TRALPGS','ELCMSC','INDLFO','AGRHFO','TRAHFOIS','TRADSTS' >> TraBatchUpload.sql
+echo ,'SERKER','TRAJETIANL','RESLFO','RESLPG','TRAHFODSL','TRALFOL','TRAJETIA','TRAJETL','TRAPETS','TRAHFODS','OILJET','OILDST' >> TraBatchUpload.sql
+echo ,'AGRLPG','OILCRDRAW-E','UPSLFO','ELCLFO','INDNEULFO','ELCHFO','TRAJETDAEL','SYNOIL','TRADSTL','INDLPG','OILMSC','OILPET' >> TraBatchUpload.sql
+echo ,'PRCHFO','OILCRDRAW','TRALFODSL','INDNEULPG','ELCLPG','TRADST','TRALFODS','OILKER','OILHFO','OILCRD','TRALPGL','SERLPG' >> TraBatchUpload.sql
+echo ,'INDNEUMSC','PRCOILCRD','INDKER','INDHFO','OILLPG','TRALPG','RESKER','TRAJETIAEL','TRAHFOISL','IISHFOB','TRAPET','INDSYNOIL' >> TraBatchUpload.sql
+echo ,'TRAHFO','AGRLFO') then 'oil' >> TraBatchUpload.sql
+echo when commodity in('AGRHYG','ELCHYG','ELCHYGIGCC','HYGL','HYGL-IGCC','HYGLHPD','HYGLHPT','HYL','HYLTK','INDHYG','INDMAINSHYG','RESHOUSEHYG' >> TraBatchUpload.sql
+echo ,'RESHYG','RESHYGREF-EA','RESHYGREF-NA','RESMAINSHYG','SERBUILDHYG','SERHYG','SERMAINSHYG','TRAHYG','TRAHYGDCN','TRAHYGL','TRAHYGS','TRAHYL' >> TraBatchUpload.sql
+echo ,'UPSHYG','UPSMAINSHYG') then 'hyd' >> TraBatchUpload.sql
+echo when commodity in('WNDONS','GEO','ELCWAV','RESSOL','HYDROR','ELCTID','SERSOL','HYDDAM','TID','ELCSOL','WNDOFF','WAV' >> TraBatchUpload.sql
+echo ,'SOL','ELCWNDOFS','ELCGEO','ELCWNDONS','ELCHYDDAM','SERGEO') then 'orens' >> TraBatchUpload.sql
+echo end as "analysis", >> TraBatchUpload.sql
+echo tablename, attribute >> TraBatchUpload.sql
+echo from vedastore >> TraBatchUpload.sql
+echo where attribute = 'VAR_FIn' >> TraBatchUpload.sql
+echo ) a >> TraBatchUpload.sql
+echo where analysis ^<^>'' >> TraBatchUpload.sql
+echo group by id, analysis,tablename >> TraBatchUpload.sql
+echo order by tablename,  analysis >> TraBatchUpload.sql
+echo ) TO '%~dp0fuelByModeOut.csv' delimiter ',' CSV; >> TraBatchUpload.sql
 rem following line actually runs the SQL code generated by the above using the postgres command utility "psql".
 rem Comment this line out if you just want the SQL code to create the populated temp tables + the associated analysis queries:
 "C:\Program Files\PostgreSQL\%postgresver%\bin\psql.exe" -h localhost -p 5432 -U postgres -d gams -f %~dp0TraBatchUpload.sql
@@ -249,11 +315,13 @@ rem following concatenates individual results to the lulucfout.csv
 type newVehKms.csv >> VehKms.csv
 type VehCapOut.csv >> VehKms.csv
 type nVCapOut.csv >> VehKms.csv
+type fuelByModeOut.csv >> VehKms.csv
 rem before deleting the individual files and renaming VehKms as TraResultsOut
 IF EXIST TraResultsOut.csv del /F TraResultsOut.csv
 IF EXIST newVehKms.csv del /F newVehKms.csv
 IF EXIST VehCapOut.csv del /F VehCapOut.csv
 IF EXIST nVCapOut.csv del /F nVCapOut.csv
+IF EXIST fuelByModeOut.csv del /F fuelByModeOut.csv
 rename VehKms.csv TraResultsOut.csv
 rem finally, delete VehKms.csv if it exists
 IF EXIST VehKms.csv del /F VehKms.csv

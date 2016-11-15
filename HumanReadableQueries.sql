@@ -38,6 +38,7 @@ Revisions section placed at end of file.
 /* **Miscellaneous queries (not included in batch files): ** */
 /* ----------------------------------------------------------*/
 /* *Total fuel consumption by fuel for other industry (industry sub-sector)* */
+
 /* **For agriculture / LULUCF batch file: ** */
 /* ------------------------------------------*/
 /* *Land use and crop / livestock mitigation (MACC) measures* */
@@ -49,6 +50,7 @@ Revisions section placed at end of file.
 /* *New stock vehicle kms, emissions and emission intensity for 29 vehicle types* */
 /* *Whole stock capacity for vehicles for 29 vehicle types* */
 /* *New build capacity for vehicles for 29 vehicle types* */
+/* *TRA_Fuel_by_mode* */
 
 /* **Main "key outputs" crosstabs** */
 /* -------------------------------*/
@@ -645,6 +647,74 @@ where analysis <>''
 group by id, analysis,tablename, attribute, commodity
 order by tablename,  analysis, attribute, commodity
  ) TO '%~dp0newVehCapOut.csv' delimiter ',' CSV;
+ 
+/* *TRA_Fuel_by_mode* */
+-- A version of the above Veda table with just international shipping and aviation
+-- Added as a temporary measure to be able to remove international shipping / aviation from the main final energy and primary energy queries
+
+COPY (
+select analysis || '|' || tablename || '|' || attribute || '|' || 'various' || '|various'::varchar(300) "id", analysis, tablename,'VAR_FIn' "attribute",
+    'various'::varchar(50) "commodity",
+    'various'::varchar(50) "process",
+    sum(pv)::numeric "all",
+    sum(case when period='2010' then pv else 0 end)::numeric "2010",
+    sum(case when period='2011' then pv else 0 end)::numeric "2011",
+    sum(case when period='2012' then pv else 0 end)::numeric "2012",
+    sum(case when period='2015' then pv else 0 end)::numeric "2015",
+    sum(case when period='2020' then pv else 0 end)::numeric "2020",
+    sum(case when period='2025' then pv else 0 end)::numeric "2025",
+    sum(case when period='2030' then pv else 0 end)::numeric "2030",
+    sum(case when period='2035' then pv else 0 end)::numeric "2035",
+    sum(case when period='2040' then pv else 0 end)::numeric "2040",
+    sum(case when period='2045' then pv else 0 end)::numeric "2045",
+    sum(case when period='2050' then pv else 0 end)::numeric "2050",
+    sum(case when period='2055' then pv else 0 end)::numeric "2055",
+    sum(case when period='2060' then pv else 0 end)::numeric "2060"
+from (
+    select process,period,pv,
+	case 
+        when process in('TAIJETE00','TAIJETE01','TAIJETN00','TAIJETN01','TAIJET02','TAIHYLE01','TAIHYLN01') then 'int-air-fuel_' --last 3 of these might not be real processes
+        when process in('TSIHYG01','TSIOIL00','TSIOIL01') then 'int-ship-fuel_'
+        end ||
+    case
+        when commodity in('AGRBIODST','AGRBIOLPG','AGRBOM','AGRGRASS','AGRMAINSBOM','AGRPOLWST','BGRASS','BIODST','BIODST-FT','BIOJET-FT','BIOKER-FT','BIOLFO'
+            ,'BIOLPG','BIOOIL','BOG-AD','BOG-G','BOG-LF','BOM','BPELH','BPELL','BRSEED','BSEWSLG','BSLURRY','BSTARCH'
+            ,'BSTWWST','BSUGAR','BTREATSTW','BTREATWOD','BVOIL','BWOD','BWODLOG','BWODWST','ELCBIOCOA','ELCBIOCOA2','ELCBIOLFO','ELCBIOOIL'
+            ,'ELCBOG-AD','ELCBOG-LF','ELCBOG-SW','ELCBOM','ELCMAINSBOM','ELCMSWINO','ELCMSWORG','ELCPELH','ELCPELL','ELCPOLWST','ELCSTWWST','ELCTRANSBOM'
+            ,'ETH','HYGBIOO','HYGBPEL','HYGMSWINO','HYGMSWORG','INDBIOLFO','INDBIOLPG','INDBIOOIL','INDBOG-AD','INDBOG-LF','INDBOM','INDGRASS'
+            ,'INDMAINSBOM','INDMSWINO','INDMSWORG','INDPELH','INDPELL','INDPOLWST','INDWOD','INDWODWST','METH','MSWBIO','MSWINO','MSWORG'
+            ,'PWASTEDUM','RESBIOLFO','RESBOM','RESHOUSEBOM','RESMAINSBOM','RESPELH','RESWOD','RESWODL','SERBIOLFO','SERBOG','SERBOM','SERBUILDBOM'
+            ,'SERMAINSBOM','SERMSWBIO','SERMSWINO','SERMSWORG','SERPELH','SERWOD','TRABIODST','TRABIODST-FT','TRABIODST-FTL','TRABIODST-FTS','TRABIODSTL','TRABIODSTS'
+            ,'TRABIOJET-FTDA','TRABIOJET-FTDAL','TRABIOJET-FTIA','TRABIOJET-FTIAL','TRABIOLFO','TRABIOLFODS','TRABIOLFODSL','TRABIOLFOL','TRABIOOILIS','TRABIOOILISL','TRABOM','TRAETH'
+            ,'TRAETHL','TRAETHS','TRAMAINSBOM','TRAMETH') then 'bio'
+        when commodity in('AGRDISTELC','AGRELC','ELC','ELC-E-EU','ELC-E-IRE','ELC-I-EU','ELC-I-IRE','ELCGEN','ELCSURPLUS','HYGELC','HYGELCSURP','HYGLELC'
+            ,'HYGSELC','INDDISTELC','INDELC','PRCELC','RESDISTELC','RESELC','RESELCSURPLUS','RESHOUSEELC','SERBUILDELC','SERDISTELC','SERELC','TRACELC'
+            ,'TRACPHB','TRADISTELC','TRAELC','UPSELC') then 'elc'
+        when commodity in('AGRNGA','ELCNGA','HYGLNGA','HYGSNGA','IISNGAB','IISNGAC','IISNGAE','INDNEUNGA','INDNGA','LNG','NGA','NGA-E'
+            ,'NGA-E-EU','NGA-E-IRE','NGA-I-EU','NGA-I-N','NGAPTR','PRCNGA','RESNGA','SERNGA','TRACNGL','TRACNGS','TRALNG','TRALNGDS'
+            ,'TRALNGDSL','TRALNGIS','TRALNGISL','TRANGA','UPSNGA') then 'gas'
+        when commodity in('AGRCOA','COA','COA-E','COACOK','ELCCOA','HYGCOA','INDCOA','INDCOACOK','INDSYNCOA','PRCCOA','PRCCOACOK','RESCOA'
+            ,'SERCOA','SYNCOA','TRACOA') then 'coa'
+        when commodity in('SERHFO','SERLFO','TRAPETL','OILLFO','TRAJETDA','TRALFO','TRALPGS','ELCMSC','INDLFO','AGRHFO','TRAHFOIS','TRADSTS'
+            ,'SERKER','TRAJETIANL','RESLFO','RESLPG','TRAHFODSL','TRALFOL','TRAJETIA','TRAJETL','TRAPETS','TRAHFODS','OILJET','OILDST'
+            ,'AGRLPG','OILCRDRAW-E','UPSLFO','ELCLFO','INDNEULFO','ELCHFO','TRAJETDAEL','SYNOIL','TRADSTL','INDLPG','OILMSC','OILPET'
+            ,'PRCHFO','OILCRDRAW','TRALFODSL','INDNEULPG','ELCLPG','TRADST','TRALFODS','OILKER','OILHFO','OILCRD','TRALPGL','SERLPG'
+            ,'INDNEUMSC','PRCOILCRD','INDKER','INDHFO','OILLPG','TRALPG','RESKER','TRAJETIAEL','TRAHFOISL','IISHFOB','TRAPET','INDSYNOIL'
+            ,'TRAHFO','AGRLFO') then 'oil'
+        when commodity in('AGRHYG','ELCHYG','ELCHYGIGCC','HYGL','HYGL-IGCC','HYGLHPD','HYGLHPT','HYL','HYLTK','INDHYG','INDMAINSHYG','RESHOUSEHYG'
+            ,'RESHYG','RESHYGREF-EA','RESHYGREF-NA','RESMAINSHYG','SERBUILDHYG','SERHYG','SERMAINSHYG','TRAHYG','TRAHYGDCN','TRAHYGL','TRAHYGS','TRAHYL'
+            ,'UPSHYG','UPSMAINSHYG') then 'hyd'
+        when commodity in('WNDONS','GEO','ELCWAV','RESSOL','HYDROR','ELCTID','SERSOL','HYDDAM','TID','ELCSOL','WNDOFF','WAV'
+        ,'SOL','ELCWNDOFS','ELCGEO','ELCWNDONS','ELCHYDDAM','SERGEO') then 'orens'
+    end as "analysis",
+    tablename, attribute
+    from vedastore
+    where attribute = 'VAR_FIn'
+) a
+where analysis <>''
+group by id, analysis,tablename
+order by tablename, analysis
+) TO '%~dp0fuelByModeOut.csv' delimiter ',' CSV;
 
 /* **Main "key outputs" crosstabs** */
 /* -------------------------------*/
@@ -2241,7 +2311,7 @@ from (
     select tablename, period, pv,
     case
         when process in('AGRBIODST01','AGRBIOLPG01','AGRBOM01','AGRCOA00','AGRELC00','AGRELC01','AGRGRASS00','AGRGRASS01','AGRHFO00','AGRHFO01','AGRHYG01','AGRLAND00'
-            ,'AGRLAND01','AGRLFO00','AGRLFO01','AGRLPG00','AGRLPG01','AGRNGA00','AGRNGA01','AGRPOLWST00','AGRPOLWST01','AMAINPGAS01','AMAINPHYG01') then 'FUEL TECHS AGR'
+            ,'AGRLAND01','AGRLFO00','AGRLFO01','AGRLPG00','AGRLPG01','AGRNGA00','AGRNGA01','AGRPOLWST00','AGRPOLWST01') then 'FUEL TECHS AGR'
         when process in('ELCBFG00','ELCBFG01','ELCBIOLFO01','ELCBIOOIL01','ELCBOG-AD01','ELCBOG-LF00','ELCBOG-LF01','ELCBOG-SW00','ELCBOG-SW01','ELCBOM01','ELCCOA00','ELCCOA01'
             ,'ELCCOG00','ELCCOG01','ELCGEO01','ELCHFO00','ELCHFO01','ELCHYD00','ELCHYD01','ELCHYG01','ELCHYGD01','ELCHYGI01','ELCLFO00','ELCLFO01'
             ,'ELCLPG00','ELCLPG01','ELCMSC00','ELCMSC01','ELCMSWINO00','ELCMSWINO01','ELCMSWORG00','ELCMSWORG01','ELCNGA00','ELCNGA01','ELCPELH01','ELCPELL00'
@@ -2886,3 +2956,5 @@ ORDER BY tablename,analysis
     -- "elc from imports" set wrong (not include ireland); corrected. Filters for new build heat output (res/ser) changed to exclude base year techs
 -- 7:12 PM 31 October, 2016:
 	-- Addition of miscellaneous queries section with q for other industry	fuel use
+-- 7:49 PM 15 November, 2016:
+	-- Correction of error in FUEL TECHS AGR set to remove mains distribution pipes, AMAINPHYG01, AMAINPGAS01. Added TRA_Fuel_by_mode to transport batch file section of code (temporary measure)
