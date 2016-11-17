@@ -2329,10 +2329,10 @@ from (
         when process in('SERBIOLFO01','SERBOG-SW00','SERBOG-SW01','SERBOM01','SERCOA00','SERCOA01','SERELC00','SERELC01','SERGEO00','SERGEO01','SERHFO00','SERHFO01'
             ,'SERHYG01','SERKER01','SERLFO00','SERLFO01','SERLPG01','SERMSWBIO01','SERMSWINO00','SERMSWINO01','SERMSWORG00','SERMSWORG01','SERNGA00','SERNGA01'
             ,'SERPELH01','SERSOL01','SERWOD01') then 'FUEL TECHS SERV'
-        when process in('TRABIODST-FT01','TRABIODST00','TRABIODST01','TRABIOJET-FTDA01','TRABIOJET-FTIA01','TRABIOLFO01','TRABIOLFODS01','TRABIOOILIS01','TRABOM01','TRACOA00','TRADST00','TRADST01'
-            ,'TRAELC00','TRAELC01','TRAETH00','TRAETH01','TRAHFODS00','TRAHFODS01','TRAHFOIS00','TRAHFOIS01','TRAHYGP01','TRAHYGPDS01','TRAHYGPIS01','TRAHYL01'
-            ,'TRAHYLDA01','TRAHYLIA01','TRAJETDA00','TRAJETDA01','TRAJETIA00','TRAJETIA01','TRALFO00','TRALFO01','TRALFODS00','TRALFODS01','TRALPG00','TRALPG01'
-            ,'TRANGA01','TRAPET00','TRAPET01') then 'FUEL TECHS TRA'
+        when process in('TRABIODST00','TRACOA00','TRADST00','TRAELC00','TRAETH00','TRAHFODS00','TRAHFOIS00','TRAJETDA00','TRAJETIA00','TRALFO00','TRALFODS00','TRALPG00','TRAPET00',
+			'TRABIODST01','TRABIODST-FT01','TRABIOJET-FTDA01','TRABIOJET-FTIA01','TRABIOLFO01','TRABIOLFODS01','TRABIOOILIS01','TRABOM01','TRADST01','TRAELC01','TRAETH01',
+			'TRAHFODS01','TRAHFOIS01','TRAHYGP01','TRAHYGPDS01','TRAHYGPIS01','TRAHYL01','TRAHYLDA01','TRAHYLIA01','TRAJETDA01','TRAJETIA01','TRALFO01','TRALFODS01','TRALNGDS01',
+			'TRALNGIS01','TRALPG01','TRANGA01','TRAPET01') then 'FUEL TECHS TRA'
         when process in('UPSELC00','UPSELC01','UPSHYG01','UPSLFO00','UPSLFO01','UPSNGA00','UPSNGA01') then 'FUEL TECHS UPSTREAM'
     end as proc_set,
     case
@@ -2955,6 +2955,8 @@ ORDER BY tablename,analysis
 -- 5:34 PM 25 August, 2016:
     -- "elc from imports" set wrong (not include ireland); corrected. Filters for new build heat output (res/ser) changed to exclude base year techs
 -- 7:12 PM 31 October, 2016:
-	-- Addition of miscellaneous queries section with q for other industry	fuel use
+    -- Addition of miscellaneous queries section with q for other industry    fuel use
 -- 7:49 PM 15 November, 2016:
-	-- Correction of error in FUEL TECHS AGR set to remove mains distribution pipes, AMAINPHYG01, AMAINPGAS01. Added TRA_Fuel_by_mode to transport batch file section of code (temporary measure)
+    -- Correction of error in FUEL TECHS AGR set to remove mains distribution pipes, AMAINPHYG01, AMAINPGAS01. Added TRA_Fuel_by_mode to transport batch file section of code (temporary measure)
+-- 5:25 PM 17 November, 2016:
+    -- Correction: FUEL TECHS TRA = domestic and international shipping added ('TRALNGDS01','TRALNGIS01')

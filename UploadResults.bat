@@ -44,6 +44,7 @@ rem 1:48 PM 12 April, 2016: addition of primary energy demand by main fuel
 rem 8:47 PM 11 August, 2016: updated to reflect changes to elec gen techs
 rem 11:53 AM 15 August, 2016: updated to reflect corrected and standardised set definitions
 rem 8:52 PM 15 November, 2016: correction to FUEL TECHS AGR set in final energy query
+rem 5:29 PM 17 November, 2016: FUEL TECHS TRA part of final energy corrected  ('TRALNGDS01','TRALNGIS01' added)
 rem ***********
 echo processing vd files...
 @echo off
@@ -1499,10 +1500,10 @@ echo             ,'RESLFO01','RESLPG00','RESLPG01','RESNGAS00','RESNGAS01','RESP
 echo         when process in('SERBIOLFO01','SERBOG-SW00','SERBOG-SW01','SERBOM01','SERCOA00','SERCOA01','SERELC00','SERELC01','SERGEO00','SERGEO01','SERHFO00','SERHFO01' >> VedaBatchUpload.sql
 echo             ,'SERHYG01','SERKER01','SERLFO00','SERLFO01','SERLPG01','SERMSWBIO01','SERMSWINO00','SERMSWINO01','SERMSWORG00','SERMSWORG01','SERNGA00','SERNGA01' >> VedaBatchUpload.sql
 echo             ,'SERPELH01','SERSOL01','SERWOD01') then 'FUEL TECHS SERV' >> VedaBatchUpload.sql
-echo         when process in('TRABIODST-FT01','TRABIODST00','TRABIODST01','TRABIOJET-FTDA01','TRABIOJET-FTIA01','TRABIOLFO01','TRABIOLFODS01','TRABIOOILIS01','TRABOM01','TRACOA00','TRADST00','TRADST01' >> VedaBatchUpload.sql
-echo             ,'TRAELC00','TRAELC01','TRAETH00','TRAETH01','TRAHFODS00','TRAHFODS01','TRAHFOIS00','TRAHFOIS01','TRAHYGP01','TRAHYGPDS01','TRAHYGPIS01','TRAHYL01' >> VedaBatchUpload.sql
-echo             ,'TRAHYLDA01','TRAHYLIA01','TRAJETDA00','TRAJETDA01','TRAJETIA00','TRAJETIA01','TRALFO00','TRALFO01','TRALFODS00','TRALFODS01','TRALPG00','TRALPG01' >> VedaBatchUpload.sql
-echo             ,'TRANGA01','TRAPET00','TRAPET01') then 'FUEL TECHS TRA' >> VedaBatchUpload.sql
+echo         when process in('TRABIODST00','TRACOA00','TRADST00','TRAELC00','TRAETH00','TRAHFODS00','TRAHFOIS00','TRAJETDA00','TRAJETIA00','TRALFO00','TRALFODS00','TRALPG00','TRAPET00', >> VedaBatchUpload.sql
+echo             'TRABIODST01','TRABIODST-FT01','TRABIOJET-FTDA01','TRABIOJET-FTIA01','TRABIOLFO01','TRABIOLFODS01','TRABIOOILIS01','TRABOM01','TRADST01','TRAELC01','TRAETH01', >> VedaBatchUpload.sql
+echo             'TRAHFODS01','TRAHFOIS01','TRAHYGP01','TRAHYGPDS01','TRAHYGPIS01','TRAHYL01','TRAHYLDA01','TRAHYLIA01','TRAJETDA01','TRAJETIA01','TRALFO01','TRALFODS01','TRALNGDS01', >> VedaBatchUpload.sql
+echo             'TRALNGIS01','TRALPG01','TRANGA01','TRAPET01') then 'FUEL TECHS TRA' >> VedaBatchUpload.sql
 echo         when process in('UPSELC00','UPSELC01','UPSHYG01','UPSLFO00','UPSLFO01','UPSNGA00','UPSNGA01') then 'FUEL TECHS UPSTREAM' >> VedaBatchUpload.sql
 echo     end as proc_set, >> VedaBatchUpload.sql
 echo     case >> VedaBatchUpload.sql
