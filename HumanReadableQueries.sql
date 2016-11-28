@@ -493,7 +493,7 @@ with base_cng_emissions as(
                             ,'TLHBHYL01','TWFCHYG01') then 'h2+hybrid'::varchar(50) --Filter 11
                         when process in('TCFCPHBHYG01') then 'h2-plug-in-hybrid'::varchar(50) --Filter 12
                         when process in('TBHBDST01','TCHBDST01','TCHBPET00','TCHBPET01','THHBDST01','TLHBDST01','TLHBPET01') then 'hybrid'::varchar(50) --Filter 13
-                        when process in('TBCNG01','TCCNG01','TCLPG00','TCLPG01','THCNG01','TLCNG01','TLLPG01') then 'lpg-and-cng-fueled'::varchar(50) --Filter 14
+                        when process in('TBCNG01','TCCNG01','TCLPG00','TCLPG01','TH1CNG01','TH2CNG01','TH3CNG01','TLCNG01','TLLPG01') then 'lpg-and-cng-fueled'::varchar(50) --Filter 14
                         when process in('TCPET00','TCPET01','TLPET00','TLPET01','TWPET00','TWPET01') then 'petrol'::varchar(50) --Filter 15
                         when process in('TCPHBDST01','TCPHBPET01','TLPHBDST01','TLPHBPET01') then 'plug-in-hybrid'::varchar(50) --Filter 16
                     end as "analysis"
@@ -629,12 +629,12 @@ from (
         when process like 'TW%' then 'bike-new-cap_'
     end ||
     case
-        when process in('TBDST00','TBDST01','TCDST00','TCDST01','THDST00','THDST01','TLDST00','TLDST01') then 'diesel'::varchar(50) --Filter 8
+        when process in('TBDST00','TBDST01','TCDST00','TCDST01','TH1DST00','TH2DST0','TH3DST00','TH1DST01','TH2DST01','TH3DST01','TLDST00','TLDST01') then 'diesel'::varchar(50) --Filter 8
         when process in('TCE8501','TLE8501') then 'E85'::varchar(50) --Filter 9
         when process in('TBELC01','TCELC01','TLELC01','TWELC01') then 'electric'::varchar(50) --Filter 10
-        when process in('TBFCHBHYG01','TCFCHBHYG01','TCFCHYG01','TCHBE8501','TCHBHYL01','THFCHBHYG01','TLFCHBHYG01','TLFCHYG01','TLHBHYL01','TWFCHYG01') then 'h2+hybrid'::varchar(50) --Filter 11
+        when process in('TBFCHBHYG01','TCFCHBHYG01','TCFCHYG01','TCHBE8501','TCHBHYL01','TH1FCHBHYG01','TH2FCHBHYG01','TH3FCHBHYG01','TLFCHBHYG01','TLFCHYG01','TLHBHYL01','TWFCHYG01') then 'h2+hybrid'::varchar(50) --Filter 11
         when process in('TCFCPHBHYG01') then 'h2-plug-in-hybrid'::varchar(50) --Filter 12
-        when process in('TBHBDST01','TCHBDST01','TCHBPET00','TCHBPET01','THHBDST01','TLHBDST01','TLHBPET01') then 'hybrid'::varchar(50) --Filter 13
+        when process in('TBHBDST01','TCHBDST01','TCHBPET00','TCHBPET01','TH1HBDST01','TH2HBDST01','TH3HBDST01','TLHBDST01','TLHBPET01') then 'hybrid'::varchar(50) --Filter 13
         when process in('TBCNG01','TCCNG01','TCLPG00','TCLPG01','THCNG01','TLCNG01','TLLPG01') then 'lpg-and-cng-fueled'::varchar(50) --Filter 32
         when process in('TCPET00','TCPET01','TLPET00','TLPET01','TWPET00','TWPET01') then 'petrol'::varchar(50) --Filter 15
         when process in('TCPHBDST01','TCPHBPET01','TLPHBDST01','TLPHBPET01') then 'plug-in-hybrid'::varchar(50) --Filter 16
