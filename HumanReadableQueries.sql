@@ -2960,3 +2960,6 @@ ORDER BY tablename,analysis
     -- Correction of error in FUEL TECHS AGR set to remove mains distribution pipes, AMAINPHYG01, AMAINPGAS01. Added TRA_Fuel_by_mode to transport batch file section of code (temporary measure)
 -- 5:25 PM 17 November, 2016:
     -- Correction: FUEL TECHS TRA = domestic and international shipping added ('TRALNGDS01','TRALNGIS01')
+-- 4:46 PM 28 November, 2016:
+    -- [Jon Tecwyn] Addition of HGV disaggregation to filters 8,11,13,14.
+	
