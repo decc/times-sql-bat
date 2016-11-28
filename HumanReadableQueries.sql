@@ -629,7 +629,7 @@ from (
         when process like 'TW%' then 'bike-new-cap_'
     end ||
     case
-        when process in('TBDST00','TBDST01','TCDST00','TCDST01','TH1DST00','TH2DST0','TH3DST00','TH1DST01','TH2DST01','TH3DST01','TLDST00','TLDST01') then 'diesel'::varchar(50) --Filter 8
+        when process in('TBDST00','TBDST01','TCDST00','TCDST01','TH1DST00','TH2DST00','TH3DST00','TH1DST01','TH2DST01','TH3DST01','TLDST00','TLDST01') then 'diesel'::varchar(50) --Filter 8
         when process in('TCE8501','TLE8501') then 'E85'::varchar(50) --Filter 9
         when process in('TBELC01','TCELC01','TLELC01','TWELC01') then 'electric'::varchar(50) --Filter 10
         when process in('TBFCHBHYG01','TCFCHBHYG01','TCFCHYG01','TCHBE8501','TCHBHYL01','TH1FCHBHYG01','TH2FCHBHYG01','TH3FCHBHYG01','TLFCHBHYG01','TLFCHYG01','TLHBHYL01','TWFCHYG01') then 'h2+hybrid'::varchar(50) --Filter 11
