@@ -89,18 +89,19 @@ echo "hgv-cng-in"/"total_cng_in"*"cng-conv-emis" + pv else pv end else pv end "p
 echo analysis, attribute, commodity,sum(pv) "pv" from ( select tablename, process, period,pv,attribute,commodity, case >> TraBatchUpload.sql
 echo when process like 'TC%%' then 'cars-' when process like 'TL%%' then 'lgv-' when process like 'TH%%' then 'hgv-' when >> TraBatchUpload.sql
 echo process like 'TB%%' or process='TFSLCNG01' then 'bus-' when process like 'TW%%' then 'bike-' end ^|^| case >> TraBatchUpload.sql
-echo when commodity in('TC','TL','TH','TB','TW') then 'km_' when commodity in('GHG-TRA-NON-ETS-NO-IAS') then 'emis_' end >> TraBatchUpload.sql
-echo ^|^| case when process in('TBDST00','TBDST01','TCDST00','TCDST01','THDST00','THDST01','TLDST00','TLDST01') then >> TraBatchUpload.sql
+echo when commodity in('TC','TL','TH1','TH2','TH3','TB','TW') then 'km_' when commodity in('GHG-TRA-NON-ETS-NO-IAS') then 'emis_' end >> TraBatchUpload.sql
+echo ^|^| case when process in('TBDST00','TBDST01','TCDST00','TCDST01','TH1DST00','TH2DST00','TH3DST00','TH1DST01','TH2DST01','TH3DST01','TLDST00','TLDST01') then >> TraBatchUpload.sql
 echo 'diesel'::varchar(50) when process in('TCE8501','TLE8501') then 'E85'::varchar(50) when process >> TraBatchUpload.sql
-echo in('TBELC01','TCELC01','TLELC01','TWELC01') then 'electric'::varchar(50) when process >> TraBatchUpload.sql
-echo in('TBFCHBHYG01','TCFCHBHYG01','TCFCHYG01','TCHBE8501','TCHBHYL01','THFCHBHYG01','TLFCHBHYG01','TLFCHYG01','TLHBHYL01','TWFCHYG01') >> TraBatchUpload.sql
+echo in('TBELC01','TCELC01','TLELC01','TH3ELC01','TWELC01') then 'electric'::varchar(50) when process >> TraBatchUpload.sql
+echo in('TBFCHBHYG01','TCFCHBHYG01','TCFCHYG01','TCHBE8501','TCHBHYL01','TH1FCHBHYG01','TH2FCHBHYG01','TH3FCHBHYG01','TLFCHBHYG01','TLFCHYG01','TLHBHYL01','TWFCHYG01') >> TraBatchUpload.sql
 echo then 'h2+hybrid'::varchar(50) when process in('TCFCPHBHYG01') then 'h2-plug-in-hybrid'::varchar(50) when process >> TraBatchUpload.sql
-echo in('TBHBDST01','TCHBDST01','TCHBPET00','TCHBPET01','THHBDST01','TLHBDST01','TLHBPET01') then 'hybrid'::varchar(50) >> TraBatchUpload.sql
-echo when process in('TBCNG01','TCCNG01','TCLPG00','TCLPG01','THCNG01','TLCNG01','TLLPG01','TFSLCNG01') then >> TraBatchUpload.sql
+echo in('TBHBDST01','TCHBDST01','TCHBPET00','TCHBPET01','TH1HBDST01','TH2HBDST01','TH3HBDST01','TLHBDST01','TLHBPET01') then 'hybrid'::varchar(50) >> TraBatchUpload.sql
+echo when process in('TBCNG01','TCCNG01','TCLPG00','TCLPG01','TH1CNG01','TH2CNG01','TH3CNG01','TLCNG01','TLLPG01','TFSLCNG01') then >> TraBatchUpload.sql
 echo 'lpg-and-cng-fueled'::varchar(50) when process in('TCPET00','TCPET01','TLPET00','TLPET01','TWPET00','TWPET01') then >> TraBatchUpload.sql
 echo 'petrol'::varchar(50) when process in('TCPHBDST01','TCPHBPET01','TLPHBDST01','TLPHBPET01') then >> TraBatchUpload.sql
-echo 'plug-in-hybrid'::varchar(50) end as "analysis" from vedastore where attribute = 'VAR_FOut' and commodity >> TraBatchUpload.sql
-echo in('GHG-TRA-NON-ETS-NO-IAS','TB','TC','TH','TL','TW') and (process like any(array['TC%%','TL%%','TB%%','TW%%']) or >> TraBatchUpload.sql
+echo 'plug-in-hybrid'::varchar(50) when process in('TH2CNGDST01','TH3CNGDST01') then 'Dual fuel diesel-CNG'::varchar(50) >> TraBatchUpload.sql
+echo end as "analysis" from vedastore where attribute = 'VAR_FOut' and commodity >> TraBatchUpload.sql
+echo in('GHG-TRA-NON-ETS-NO-IAS','TB','TC','TH1','TH2','TH3','TL','TW') and (process like any(array['TC%%','TL%%','TB%%','TW%%']) or >> TraBatchUpload.sql
 echo process !textc!'!textd!TH[!textd!Y]' or process='TFSLCNG01') ) a where analysis ^<^>'' group by tablename, period, analysis, attribute, >> TraBatchUpload.sql
 echo commodity union select * from base_cng_emissions ) a left join cng_emis_shares b on a.tablename=b.tablename and >> TraBatchUpload.sql
 echo a.period=b.period ) b group by analysis, tablename,attribute,commodity,period order by tablename, analysis ) select >> TraBatchUpload.sql
@@ -157,19 +158,20 @@ echo "bus-new-cng-in"/"total_bus_cng_in"*"bus-cng-conv-emis" + pv else pv end el
 echo select tablename, period, analysis, attribute, commodity,sum(pv) "pv" from ( select tablename, process, >> TraBatchUpload.sql
 echo period,pv,attribute,commodity, case when process like 'TC%%' then 'cars-new-' when process like 'TL%%' then 'lgv-new-' >> TraBatchUpload.sql
 echo when process like 'TH%%' then 'hgv-new-' when process like 'TB%%' then 'bus-new-' when process like 'TW%%' then >> TraBatchUpload.sql
-echo 'bike-new-' end ^|^| case when commodity in('TC','TL','TH','TB','TW') then 'km_' when commodity >> TraBatchUpload.sql
+echo 'bike-new-' end ^|^| case when commodity in('TC','TL','TH1','TH2','TH3','TB','TW') then 'km_' when commodity >> TraBatchUpload.sql
 echo in('GHG-TRA-NON-ETS-NO-IAS') then 'emis_' end ^|^| case when process >> TraBatchUpload.sql
-echo in('TBDST00','TBDST01','TCDST00','TCDST01','THDST00','THDST01','TLDST00','TLDST01') then 'diesel'::varchar(50) when >> TraBatchUpload.sql
-echo process in('TCE8501','TLE8501') then 'E85'::varchar(50) when process in('TBELC01','TCELC01','TLELC01','TWELC01') then >> TraBatchUpload.sql
+echo in('TBDST00','TBDST01','TCDST00','TCDST01','TH1DST00','TH2DST00','TH3DST00','TH1DST01','TH2DST01','TH3DST01','TLDST00','TLDST01') then 'diesel'::varchar(50) when >> TraBatchUpload.sql
+echo process in('TCE8501','TLE8501') then 'E85'::varchar(50) when process in('TBELC01','TCELC01','TLELC01','TH3ELC01','TWELC01') then >> TraBatchUpload.sql
 echo 'electric'::varchar(50) when process >> TraBatchUpload.sql
-echo in('TBFCHBHYG01','TCFCHBHYG01','TCFCHYG01','TCHBE8501','TCHBHYL01','THFCHBHYG01','TLFCHBHYG01','TLFCHYG01','TLHBHYL01','TWFCHYG01') >> TraBatchUpload.sql
+echo in('TBFCHBHYG01','TCFCHBHYG01','TCFCHYG01','TCHBE8501','TCHBHYL01','TH1FCHBHYG01','TH2FCHBHYG01','TH3FCHBHYG01','TLFCHBHYG01','TLFCHYG01','TLHBHYL01','TWFCHYG01') >> TraBatchUpload.sql
 echo then 'h2+hybrid'::varchar(50) when process in('TCFCPHBHYG01') then 'h2-plug-in-hybrid'::varchar(50) when process >> TraBatchUpload.sql
-echo in('TBHBDST01','TCHBDST01','TCHBPET00','TCHBPET01','THHBDST01','TLHBDST01','TLHBPET01') then 'hybrid'::varchar(50) >> TraBatchUpload.sql
-echo when process in('TBCNG01','TCCNG01','TCLPG00','TCLPG01','THCNG01','TLCNG01','TLLPG01') then >> TraBatchUpload.sql
+echo in('TBHBDST01','TCHBDST01','TCHBPET00','TCHBPET01','TH1HBDST01','TH2HBDST01','TH3HBDST01','TLHBDST01','TLHBPET01') then 'hybrid'::varchar(50) >> TraBatchUpload.sql
+echo when process in('TBCNG01','TCCNG01','TCLPG00','TCLPG01','TH1CNG01','TH2CNG01','TH3CNG01','TLCNG01','TLLPG01') then >> TraBatchUpload.sql
 echo 'lpg-and-cng-fueled'::varchar(50) when process >> TraBatchUpload.sql
 echo in('TCPET00','TCPET01','TLPET00','TLPET01','TWPET00','TWPET01','TWPET01') then 'petrol'::varchar(50) when process >> TraBatchUpload.sql
-echo in('TCPHBDST01','TCPHBPET01','TLPHBDST01','TLPHBPET01') then 'plug-in-hybrid'::varchar(50) end as "analysis" from >> TraBatchUpload.sql
-echo vedastore where attribute = 'VAR_FOut' and commodity in('TC','TL','TH','TW','TB','GHG-TRA-NON-ETS-NO-IAS') and >> TraBatchUpload.sql
+echo in('TCPHBDST01','TCPHBPET01','TLPHBDST01','TLPHBPET01') then 'plug-in-hybrid'::varchar(50) when process in('TH2CNGDST01','TH3CNGDST01') then >> TraBatchUpload.sql
+echo 'Dual fuel diesel-CNG'::varchar(50) end as "analysis" from >> TraBatchUpload.sql
+echo vedastore where attribute = 'VAR_FOut' and commodity in('TC','TL','TH1','TH2','TH3','TW','TB','GHG-TRA-NON-ETS-NO-IAS') and >> TraBatchUpload.sql
 echo (process like any(array['TC%%','TL%%','TB%%','TW%%']) or process !textc!'!textd!TH[!textd!Y]') and vintage=period and process like '%%01' ) >> TraBatchUpload.sql
 echo a where analysis ^<^>'' group by tablename, period, analysis, attribute, commodity union select * from >> TraBatchUpload.sql
 echo base_cng_emissions ) a left join cng_emis_shares b on a.tablename=b.tablename and a.period=b.period ) b group by >> TraBatchUpload.sql
@@ -204,16 +206,17 @@ echo end)::numeric "2045", sum(case when period='2050' then pv else 0 end)::nume
 echo then pv else 0 end)::numeric "2055", sum(case when period='2060' then pv else 0 end)::numeric "2060" from ( select >> TraBatchUpload.sql
 echo process,period,pv, case when process like 'TC%%' then 'cars-cap_' when process like 'TL%%' then 'lgv-cap_' when >> TraBatchUpload.sql
 echo process like 'TH%%' then 'hgv-cap_' when process like 'TB%%' then 'bus-cap_' when process like 'TW%%' then 'bike-cap_' >> TraBatchUpload.sql
-echo end ^|^| case when process in('TBDST00','TBDST01','TCDST00','TCDST01','THDST00','THDST01','TLDST00','TLDST01') then >> TraBatchUpload.sql
+echo end ^|^| case when process in('TBDST00','TBDST01','TCDST00','TCDST01','TH1DST00','TH2DST00','TH3DST00','TH1DST01','TH2DST01','TH3DST01','TLDST00','TLDST01') then >> TraBatchUpload.sql
 echo 'diesel'::varchar(50) when process in('TCE8501','TLE8501') then 'E85'::varchar(50) when process >> TraBatchUpload.sql
-echo in('TBELC01','TCELC01','TLELC01','TWELC01') then 'electric'::varchar(50) when process >> TraBatchUpload.sql
-echo in('TBFCHBHYG01','TCFCHBHYG01','TCFCHYG01','TCHBE8501','TCHBHYL01','THFCHBHYG01','TLFCHBHYG01','TLFCHYG01','TLHBHYL01','TWFCHYG01') >> TraBatchUpload.sql
+echo in('TBELC01','TCELC01','TLELC01','TH3ELC01','TWELC01') then 'electric'::varchar(50) when process >> TraBatchUpload.sql
+echo in('TBFCHBHYG01','TCFCHBHYG01','TCFCHYG01','TCHBE8501','TCHBHYL01','TH1FCHBHYG01','TH2FCHBHYG01','TH3FCHBHYG01','TLFCHBHYG01','TLFCHYG01','TLHBHYL01','TWFCHYG01') >> TraBatchUpload.sql
 echo then 'h2+hybrid'::varchar(50) when process in('TCFCPHBHYG01') then 'h2-plug-in-hybrid'::varchar(50) when process >> TraBatchUpload.sql
-echo in('TBHBDST01','TCHBDST01','TCHBPET00','TCHBPET01','THHBDST01','TLHBDST01','TLHBPET01') then 'hybrid'::varchar(50) >> TraBatchUpload.sql
-echo when process in('TBCNG01','TCCNG01','TCLPG00','TCLPG01','THCNG01','TLCNG01','TLLPG01') then >> TraBatchUpload.sql
+echo in('TBHBDST01','TCHBDST01','TCHBPET00','TCHBPET01','TH1HBDST01','TH2HBDST01','TH3HBDST01','TLHBDST01','TLHBPET01') then 'hybrid'::varchar(50) >> TraBatchUpload.sql
+echo when process in('TBCNG01','TCCNG01','TCLPG00','TCLPG01','TH1CNG01','TH2CNG01','TH3CNG01','TLCNG01','TLLPG01') then >> TraBatchUpload.sql
 echo 'lpg-and-cng-fueled'::varchar(50) when process in('TCPET00','TCPET01','TLPET00','TLPET01','TWPET00','TWPET01') then >> TraBatchUpload.sql
 echo 'petrol'::varchar(50) when process in('TCPHBDST01','TCPHBPET01','TLPHBDST01','TLPHBPET01') then >> TraBatchUpload.sql
-echo 'plug-in-hybrid'::varchar(50) end as "analysis", tablename, attribute,commodity from vedastore where attribute = >> TraBatchUpload.sql
+echo 'plug-in-hybrid'::varchar(50) when process in('TH2CNGDST01','TH3CNGDST01') then 'Dual fuel diesel-CNG'::varchar(50) >> TraBatchUpload.sql
+echo end as "analysis", tablename, attribute,commodity from vedastore where attribute = >> TraBatchUpload.sql
 echo 'VAR_Cap' and process like any(array['TC%%','TL%%','TH%%','TB%%','TW%%']) ) a where analysis ^<^>'' group by id, >> TraBatchUpload.sql
 echo analysis,tablename, attribute, commodity order by tablename, analysis, attribute, commodity ) TO >> TraBatchUpload.sql
 echo '%~dp0VehCapOut.csv' delimiter ',' CSV; >> TraBatchUpload.sql
@@ -230,16 +233,17 @@ echo end)::numeric "2045", sum(case when period='2050' then pv else 0 end)::nume
 echo then pv else 0 end)::numeric "2055", sum(case when period='2060' then pv else 0 end)::numeric "2060" from ( select >> TraBatchUpload.sql
 echo process,period,pv, case when process like 'TC%%' then 'cars-new-cap_' when process like 'TL%%' then 'lgv-new-cap_' when >> TraBatchUpload.sql
 echo process like 'TH%%' then 'hgv-new-cap_' when process like 'TB%%' then 'bus-new-cap_' when process like 'TW%%' then 'bike-new-cap_' >> TraBatchUpload.sql
-echo end ^|^| case when process in('TBDST00','TBDST01','TCDST00','TCDST01','THDST00','THDST01','TLDST00','TLDST01') then >> TraBatchUpload.sql
+echo end ^|^| case when process in('TBDST00','TBDST01','TCDST00','TCDST01','TH1DST00','TH2DST00','TH3DST00','TH1DST01','TH2DST01','TH3DST01','TLDST00','TLDST01') then >> TraBatchUpload.sql
 echo 'diesel'::varchar(50) when process in('TCE8501','TLE8501') then 'E85'::varchar(50) when process >> TraBatchUpload.sql
-echo in('TBELC01','TCELC01','TLELC01','TWELC01') then 'electric'::varchar(50) when process >> TraBatchUpload.sql
-echo in('TBFCHBHYG01','TCFCHBHYG01','TCFCHYG01','TCHBE8501','TCHBHYL01','THFCHBHYG01','TLFCHBHYG01','TLFCHYG01','TLHBHYL01','TWFCHYG01') >> TraBatchUpload.sql
+echo in('TBELC01','TCELC01','TLELC01','TH3ELC01','TWELC01') then 'electric'::varchar(50) when process >> TraBatchUpload.sql
+echo in('TBFCHBHYG01','TCFCHBHYG01','TCFCHYG01','TCHBE8501','TCHBHYL01','TH1FCHBHYG01','TH2FCHBHYG01','TH3FCHBHYG01','TLFCHBHYG01','TLFCHYG01','TLHBHYL01','TWFCHYG01') >> TraBatchUpload.sql
 echo then 'h2+hybrid'::varchar(50) when process in('TCFCPHBHYG01') then 'h2-plug-in-hybrid'::varchar(50) when process >> TraBatchUpload.sql
-echo in('TBHBDST01','TCHBDST01','TCHBPET00','TCHBPET01','THHBDST01','TLHBDST01','TLHBPET01') then 'hybrid'::varchar(50) >> TraBatchUpload.sql
-echo when process in('TBCNG01','TCCNG01','TCLPG00','TCLPG01','THCNG01','TLCNG01','TLLPG01') then >> TraBatchUpload.sql
+echo in('TBHBDST01','TCHBDST01','TCHBPET00','TCHBPET01','TH1HBDST01','TH2HBDST01','TH3HBDST01','TLHBDST01','TLHBPET01') then 'hybrid'::varchar(50) >> TraBatchUpload.sql
+echo when process in('TBCNG01','TCCNG01','TCLPG00','TCLPG01','TH1CNG01','TH2CNG01','TH3CNG01','TLCNG01','TLLPG01') then >> TraBatchUpload.sql
 echo 'lpg-and-cng-fueled'::varchar(50) when process in('TCPET00','TCPET01','TLPET00','TLPET01','TWPET00','TWPET01') then >> TraBatchUpload.sql
 echo 'petrol'::varchar(50) when process in('TCPHBDST01','TCPHBPET01','TLPHBDST01','TLPHBPET01') then >> TraBatchUpload.sql
-echo 'plug-in-hybrid'::varchar(50) end as "analysis", tablename, attribute,commodity from vedastore where attribute = >> TraBatchUpload.sql
+echo 'plug-in-hybrid'::varchar(50) when process in('TH2CNGDST01','TH3CNGDST01') then 'Dual fuel diesel-CNG'::varchar(50) >> TraBatchUpload.sql
+echo end as "analysis", tablename, attribute,commodity from vedastore where attribute = >> TraBatchUpload.sql
 echo 'VAR_Ncap' and process like any(array['TC%%','TL%%','TH%%','TB%%','TW%%']) ) a where analysis ^<^>'' group by id, >> TraBatchUpload.sql
 echo analysis,tablename, attribute, commodity order by tablename, analysis, attribute, commodity ) TO >> TraBatchUpload.sql
 echo '%~dp0nVCapOut.csv' delimiter ',' CSV; >> TraBatchUpload.sql
