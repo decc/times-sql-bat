@@ -331,13 +331,13 @@ with base_cng_emissions as(
                         when process like 'TW%' then 'bike-'
                     end ||
                     case
-                    when commodity in('TC','TL','TH','TB','TW') then 'km_'
+                    when commodity in('TC','TL','TH1','TH2','TH3','TB','TW') then 'km_'
                     when commodity in('GHG-TRA-NON-ETS-NO-IAS') then 'emis_'
                     end ||
                     case
-                        when process in('TBDST00','TBDST01','TCDST00','TCDST01','TH1DST00','TH2DST00','TH3DST00','TH1DST01','TH2DST01','TH3DST01','TLDST00','TLDST01') then 'diesel'::varchar(50)
+                        when process in('TBDST00','TBDST01','TCDST00','TCDST01','TH1DST00','TH2DST00','TH3DST00','TH1DST01','TH2DST01','TH3DST01','TLDST00','TLDST01') then 'diesel'::varchar(50) --Filter 8
                         when process in('TCE8501','TLE8501') then 'E85'::varchar(50) --Filter 9
-                        when process in('TBELC01','TCELC01','TLELC01','TWELC01') then 'electric'::varchar(50) --Filter 10
+                        when process in('TBELC01','TCELC01','TLELC01','TH3ELC01','TWELC01') then 'electric'::varchar(50) --Filter 10
                         when process in('TBFCHBHYG01','TCFCHBHYG01','TCFCHYG01','TCHBE8501','TCHBHYL01','TH1FCHBHYG01','TH2FCHBHYG01','TH3FCHBHYG01','TLFCHBHYG01','TLFCHYG01','TLHBHYL01','TWFCHYG01') then 'h2+hybrid'::varchar(50) --Filter 11
                         when process in('TCFCPHBHYG01') then 'h2-plug-in-hybrid'::varchar(50) --Filter 12
                         when process in('TBHBDST01','TCHBDST01','TCHBPET00','TCHBPET01','TH1HBDST01','TH2HBDST01','TH3HBDST01','TLHBDST01','TLHBPET01') then 'hybrid'::varchar(50) --Filter 13
@@ -345,9 +345,10 @@ with base_cng_emissions as(
                         -- NB Includes the bus mains gas => CNG conversion process 'TFSLCNG01'. This is because emissions are counted at this point here but the demand is counted at "TBCNG01"
                         when process in('TCPET00','TCPET01','TLPET00','TLPET01','TWPET00','TWPET01') then 'petrol'::varchar(50) --Filter 15
                         when process in('TCPHBDST01','TCPHBPET01','TLPHBDST01','TLPHBPET01') then 'plug-in-hybrid'::varchar(50) --Filter 16
+						when process in('TH2CNGDST01','TH3CNGDST01') then 'Dual fuel diesel-CNG'::varchar(50) --Filter 221
                     end as "analysis"
                     from vedastore
-                    where attribute = 'VAR_FOut' and commodity in('GHG-TRA-NON-ETS-NO-IAS','TB','TC','TH','TL','TW')
+                    where attribute = 'VAR_FOut' and commodity in('GHG-TRA-NON-ETS-NO-IAS','TB','TC','TH1','TH2','TH3','TL','TW')
                         and (process like any(array['TC%','TL%','TB%','TW%']) or process ~'^TH[^Y]' or process='TFSLCNG01')  --Filter 17
                     ) a
             where analysis <>''
@@ -482,22 +483,23 @@ with base_cng_emissions as(
                         when process like 'TW%' then 'bike-new-'
                     end ||
                     case
-                        when commodity in('TC','TL','TH','TB','TW') then 'km_'
+                        when commodity in('TC','TL','TH1','TH2','TH3','TB','TW') then 'km_'
                         when commodity in('GHG-TRA-NON-ETS-NO-IAS') then 'emis_'
                     end ||
                     case
-                        when process in('TBDST00','TBDST01','TCDST00','TCDST01','TH1DST00','TH2DST00','TH3DST00','TH1DST01','TH2DST01','TH3DST01','TLDST00','TLDST01') then 'diesel'::varchar(50)
+                        when process in('TBDST00','TBDST01','TCDST00','TCDST01','TH1DST00','TH2DST00','TH3DST00','TH1DST01','TH2DST01','TH3DST01','TLDST00','TLDST01') then 'diesel'::varchar(50) --Filter 8
                         when process in('TCE8501','TLE8501') then 'E85'::varchar(50) --Filter 9
-                        when process in('TBELC01','TCELC01','TLELC01','TWELC01') then 'electric'::varchar(50) --Filter 10
+                        when process in('TBELC01','TCELC01','TLELC01','TH3ELC01','TWELC01') then 'electric'::varchar(50) --Filter 10
                         when process in('TBFCHBHYG01','TCFCHBHYG01','TCFCHYG01','TCHBE8501','TCHBHYL01','TH1FCHBHYG01','TH2FCHBHYG01','TH3FCHBHYG01','TLFCHBHYG01','TLFCHYG01','TLHBHYL01','TWFCHYG01') then 'h2+hybrid'::varchar(50) --Filter 11
                         when process in('TCFCPHBHYG01') then 'h2-plug-in-hybrid'::varchar(50) --Filter 12
                         when process in('TBHBDST01','TCHBDST01','TCHBPET00','TCHBPET01','TH1HBDST01','TH2HBDST01','TH3HBDST01','TLHBDST01','TLHBPET01') then 'hybrid'::varchar(50)  --Filter 13
                         when process in('TBCNG01','TCCNG01','TCLPG00','TCLPG01','TH1CNG01','TH2CNG01','TH3CNG01','TLCNG01','TLLPG01') then 'lpg-and-cng-fueled'::varchar(50) --Filter 220
                         when process in('TCPET00','TCPET01','TLPET00','TLPET01','TWPET00','TWPET01') then 'petrol'::varchar(50) --Filter 15
                         when process in('TCPHBDST01','TCPHBPET01','TLPHBDST01','TLPHBPET01') then 'plug-in-hybrid'::varchar(50) --Filter 16
+						when process in('TH2CNGDST01','TH3CNGDST01') then 'Dual fuel diesel-CNG'::varchar(50) --Filter 221
                     end as "analysis"
                     from vedastore
-                    where attribute = 'VAR_FOut' and commodity in('TC','TL','TH','TW','TB','GHG-TRA-NON-ETS-NO-IAS')
+                    where attribute = 'VAR_FOut' and commodity in('TC','TL','TH1','TH2','TH3','TW','TB','GHG-TRA-NON-ETS-NO-IAS')
                         and (process like any(array['TC%','TL%','TB%','TW%']) or process ~'^TH[^Y]') and vintage=period and process like '%01' --Filter 35
                     ) a
                 where analysis <>''
@@ -578,15 +580,16 @@ from (
         when process like 'TW%' then 'bike-cap_'
     end ||
     case
-        when process in('TBDST00','TBDST01','TCDST00','TCDST01','TH1DST00','TH2DST00','TH3DST00','TH1DST01','TH2DST01','TH3DST01','TLDST00','TLDST01') then 'diesel'::varchar(50)
+        when process in('TBDST00','TBDST01','TCDST00','TCDST01','TH1DST00','TH2DST00','TH3DST00','TH1DST01','TH2DST01','TH3DST01','TLDST00','TLDST01') then 'diesel'::varchar(50) --Filter 8
         when process in('TCE8501','TLE8501') then 'E85'::varchar(50) --Filter 9
-        when process in('TBELC01','TCELC01','TLELC01','TWELC01') then 'electric'::varchar(50) --Filter 10
+        when process in('TBELC01','TCELC01','TLELC01','TH3ELC01','TWELC01') then 'electric'::varchar(50) --Filter 10
         when process in('TBFCHBHYG01','TCFCHBHYG01','TCFCHYG01','TCHBE8501','TCHBHYL01','TH1FCHBHYG01','TH2FCHBHYG01','TH3FCHBHYG01','TLFCHBHYG01','TLFCHYG01','TLHBHYL01','TWFCHYG01') then 'h2+hybrid'::varchar(50) --Filter 11
         when process in('TCFCPHBHYG01') then 'h2-plug-in-hybrid'::varchar(50) --Filter 12
         when process in('TBHBDST01','TCHBDST01','TCHBPET00','TCHBPET01','TH1HBDST01','TH2HBDST01','TH3HBDST01','TLHBDST01','TLHBPET01') then 'hybrid'::varchar(50)  --Filter 13
-        when process in('TBCNG01','TCCNG01','TCLPG00','TCLPG01','THCNG01','TLCNG01','TLLPG01') then 'lpg-and-cng-fueled'::varchar(50) --Filter 32
+        when process in('TBCNG01','TCCNG01','TCLPG00','TCLPG01','TH1CNG01','TH2CNG01','TH3CNG01','TLCNG01','TLLPG01') then 'lpg-and-cng-fueled'::varchar(50) --Filter 220
         when process in('TCPET00','TCPET01','TLPET00','TLPET01','TWPET00','TWPET01') then 'petrol'::varchar(50) --Filter 15
         when process in('TCPHBDST01','TCPHBPET01','TLPHBDST01','TLPHBPET01') then 'plug-in-hybrid'::varchar(50) --Filter 16
+		when process in('TH2CNGDST01','TH3CNGDST01') then 'Dual fuel diesel-CNG'::varchar(50) --Filter 221
     end as "analysis",
     tablename, attribute,commodity
     from vedastore
@@ -630,13 +633,14 @@ from (
     case
         when process in('TBDST00','TBDST01','TCDST00','TCDST01','TH1DST00','TH2DST00','TH3DST00','TH1DST01','TH2DST01','TH3DST01','TLDST00','TLDST01') then 'diesel'::varchar(50) --Filter 8
         when process in('TCE8501','TLE8501') then 'E85'::varchar(50) --Filter 9
-        when process in('TBELC01','TCELC01','TLELC01','TWELC01') then 'electric'::varchar(50) --Filter 10
+        when process in('TBELC01','TCELC01','TLELC01','TH3ELC01','TWELC01') then 'electric'::varchar(50) --Filter 10
         when process in('TBFCHBHYG01','TCFCHBHYG01','TCFCHYG01','TCHBE8501','TCHBHYL01','TH1FCHBHYG01','TH2FCHBHYG01','TH3FCHBHYG01','TLFCHBHYG01','TLFCHYG01','TLHBHYL01','TWFCHYG01') then 'h2+hybrid'::varchar(50) --Filter 11
         when process in('TCFCPHBHYG01') then 'h2-plug-in-hybrid'::varchar(50) --Filter 12
         when process in('TBHBDST01','TCHBDST01','TCHBPET00','TCHBPET01','TH1HBDST01','TH2HBDST01','TH3HBDST01','TLHBDST01','TLHBPET01') then 'hybrid'::varchar(50) --Filter 13
-        when process in('TBCNG01','TCCNG01','TCLPG00','TCLPG01','THCNG01','TLCNG01','TLLPG01') then 'lpg-and-cng-fueled'::varchar(50) --Filter 32
+        when process in('TBCNG01','TCCNG01','TCLPG00','TCLPG01','TH1CNG01','TH2CNG01','TH3CNG01','TLCNG01','TLLPG01') then 'lpg-and-cng-fueled'::varchar(50) --Filter 220
         when process in('TCPET00','TCPET01','TLPET00','TLPET01','TWPET00','TWPET01') then 'petrol'::varchar(50) --Filter 15
         when process in('TCPHBDST01','TCPHBPET01','TLPHBDST01','TLPHBPET01') then 'plug-in-hybrid'::varchar(50) --Filter 16
+		when process in('TH2CNGDST01','TH3CNGDST01') then 'Dual fuel diesel-CNG'::varchar(50) --Filter 221
     end as "analysis",
     tablename, attribute,commodity
     from vedastore
