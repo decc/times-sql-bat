@@ -44,7 +44,6 @@ rem 1:48 PM 12 April, 2016: addition of primary energy demand by main fuel
 rem 8:47 PM 11 August, 2016: updated to reflect changes to elec gen techs
 rem 11:53 AM 15 August, 2016: updated to reflect corrected and standardised set definitions
 rem 8:52 PM 15 November, 2016: correction to FUEL TECHS AGR set in final energy query
-rem 5:29 PM 17 November, 2016: FUEL TECHS TRA part of final energy corrected  ('TRALNGDS01','TRALNGIS01' added)
 rem ***********
 echo processing vd files...
 @echo off
@@ -1063,45 +1062,65 @@ echo     sum(case when period='2050' then pv else 0 end)::numeric "2050", >> Ved
 echo     sum(case when period='2055' then pv else 0 end)::numeric "2055", >> VedaBatchUpload.sql
 echo     sum(case when period='2060' then pv else 0 end)::numeric "2060" >> VedaBatchUpload.sql
 echo from ( >> VedaBatchUpload.sql
-echo     select process, >> VedaBatchUpload.sql
-echo         period,pv, >> VedaBatchUpload.sql
-echo         case >> VedaBatchUpload.sql
-echo             when process in ('SHLSHTRE00','SWLWHTRE00','SHLBLRRE01','SHLSHTRE01', >> VedaBatchUpload.sql
-echo                 'SWLWHTRE01','SHLBLSRE01','SHHBLRRE00','SWHWHTRE00','SHHBLRRE01','SWHWHTRE01','SHLBLRRE00') >> VedaBatchUpload.sql
-echo                     then 'heat-ser_boiler/heater-elec'   >> VedaBatchUpload.sql
-echo             when process in('SHLBLCRG00','SHLSHTRG00','SWLWHTRG00','SHLBLCRG01','SWLWHTRG01', >> VedaBatchUpload.sql
-echo                 'SHLBLSRG01','SHHBLRRG00','SWHBLRRG00','SHHBLRRG01','SWHBLRRG01','SHLBLRRG00') >> VedaBatchUpload.sql
-echo                     then 'heat-ser_boiler/heater-nga'   >> VedaBatchUpload.sql
-echo             when process in('SHLBLCRP01','SHLBLRRW01','SHLBLSRP01','SHLBLSRW01','SHHBLRRW00', >> VedaBatchUpload.sql
-echo                 'SWHBLRRW00','SHHBLRRW01','SWHBLRRW01','SHLBLRRW00') then 'heat-ser_boiler-bio'  >> VedaBatchUpload.sql
-echo             when process in('SHLBLSRH01','SHHBLRRH01','SWHBLRRH01','SHLBLCRH01') then 'heat-ser_boiler-h2'  >> VedaBatchUpload.sql
-echo             when process in('SHLBLCRO00','SHLBLRRC00','SHLSHTRO00','SHLBLCRO01','SHLBLSRO01', >> VedaBatchUpload.sql
-echo                 'SHHBLRRO00','SHHBLRRC00','SWHBLRRO00','SWHBLRRC00','SHHBLRRO01','SHHBLRRC01', >> VedaBatchUpload.sql
-echo                 'SWHBLRRO01','SWHBLRRC01','SHLBLRRO00') then 'heat-ser_boiler-otherFF'  >> VedaBatchUpload.sql
-echo             when process in('SCSLROFF01','SCSLROFP01','SCSLCAVW01','SCSHPTHM01','SCSHROFF01', >> VedaBatchUpload.sql
-echo                 'SCSHROFP01','SCSHCAVW01','SCSLPTHM01') then 'heat-ser_conserv'   >> VedaBatchUpload.sql
-echo             when process in('SHLAHBUE01','SHLGHBRE01','SHLGHBUE01','SHLAHBRE01') then  'heat-ser_hyb-boil+hp-nga'  >> VedaBatchUpload.sql
-echo             when process in('SHLAHPRE01','SHLAHPUE01','SHLGHPRE01','SHLGHPUE01','SHLAHSRE01', >> VedaBatchUpload.sql
-echo                 'SHLAHSUE01','SHLGHSRE01','SHLGHSUE01','SHLAHPRE00') then 'heat-ser_heatpump-elec'  >> VedaBatchUpload.sql
-echo             when process in('SHHVACAE01','SHHVACAE00') then 'heat-ser_hvac'  >> VedaBatchUpload.sql
-echo             when process in('SHHVACAE02') then 'heat-ser_hvac-ad'  >> VedaBatchUpload.sql
-echo             when process in('SHLAHHUE01','SHLGHHRE01','SHLGHHUE01','SHLAHHRE01') then 'heat-ser_hyb-boil+hp-h2'  >> VedaBatchUpload.sql
-echo             when process in('SHLDHP101','SHHDHP100','SHHDHP101','SHLDHP100') then 'heat-ser_dh'  >> VedaBatchUpload.sql
-echo             when process in('SHLCHPRW01') then 'heat-ser_microchp-bio'  >> VedaBatchUpload.sql
-echo             when process in('SHLCHBRH01','SHHFCLRH01','SHLCHPRH01') then 'heat-ser_microchp-h2'  >> VedaBatchUpload.sql
-echo             when process in('SHLCHPRG01') then 'heat-ser_microchp-nga'  >> VedaBatchUpload.sql
-echo             when process in('SHLNSTRE01','SHLNSTRE00') then 'heat-ser_storheater-elec'  >> VedaBatchUpload.sql
-echo             else 'heat-ser_other' >> VedaBatchUpload.sql
-echo         end as "analysis", >> VedaBatchUpload.sql
-echo     tablename, attribute >> VedaBatchUpload.sql
-echo     from vedastore >> VedaBatchUpload.sql
-echo     where attribute = 'VAR_FOut' AND commodity in('SHHCSVDMD','SHHDELVAIR','SHHDELVRAD', >> VedaBatchUpload.sql
-echo         'SHLCSVDMD','SHLDELVAIR','SHLDELVRAD','SHLDELVUND','SWHDELVPIP','SWHDELVSTD','SWLDELVSTD')  >> VedaBatchUpload.sql
-echo     group by period,process, pv,tablename, id, analysis, attribute order by tablename, attribute >> VedaBatchUpload.sql
+echo select process, >> VedaBatchUpload.sql
+echo period,pv, >> VedaBatchUpload.sql
+echo case >> VedaBatchUpload.sql
+echo when process in ('SHLSHTRE00','SWLWHTRE00','SHLBLRRE01','SHLSHTRE01', >> VedaBatchUpload.sql
+echo 'SWLWHTRE01','SHLBLSRE01','SHHBLRRE00','SWHWHTRE00','SHHBLRRE01','SWHWHTRE01','SHLBLRRE00','SHH-BLRE01') >> VedaBatchUpload.sql
+echo then 'heat-ser_boiler/heater-elec'   >> VedaBatchUpload.sql
+echo when process in('SHLBLCRG00','SHLSHTRG00','SWLWHTRG00','SHLBLCRG01','SWLWHTRG01', >> VedaBatchUpload.sql
+echo 'SHLBLSRG01','SHHBLRRG00','SWHBLRRG00','SHHBLRRG01','SWHBLRRG01','SHLBLRRG00','SHH-BLRG01') >> VedaBatchUpload.sql
+echo then 'heat-ser_boiler/heater-nga'   >> VedaBatchUpload.sql
+echo when process in('SHLBLCRP01','SHLBLRRW01','SHLBLSRP01','SHLBLSRW01','SHHBLRRW00', >> VedaBatchUpload.sql
+echo 'SWHBLRRW00','SHHBLRRW01','SWHBLRRW01','SHLBLRRW00','SHH-BLRB01')  >> VedaBatchUpload.sql
+echo then 'heat-ser_boiler-bio'  >> VedaBatchUpload.sql
+echo when process in('SHLBLSRH01','SHHBLRRH01','SWHBLRRH01','SHLBLCRH01','SHH-BLRH01')  >> VedaBatchUpload.sql
+echo then 'heat-ser_boiler-h2'  >> VedaBatchUpload.sql
+echo when process in('SHLBLCRO00','SHLBLRRC00','SHLSHTRO00','SHLBLCRO01','SHLBLSRO01', >> VedaBatchUpload.sql
+echo 'SHHBLRRO00','SHHBLRRC00','SWHBLRRO00','SWHBLRRC00','SHHBLRRO01','SHHBLRRC01', >> VedaBatchUpload.sql
+echo 'SWHBLRRO01','SWHBLRRC01','SHLBLRRO00','SHH-BLRO01')  >> VedaBatchUpload.sql
+echo then 'heat-ser_boiler-otherFF'  >> VedaBatchUpload.sql
+echo when process in('SCSVSHL-METERS01','SCSVSHL-INSULAT01','SCSVSHL-GLAZING01','SCSVSHL-OTH_THM01', >> VedaBatchUpload.sql
+echo 'SCSVSHL-VENT_RC01','SCSVSHH-METERS01','SCSVSHH-INSULAT01','SCSVSHH-GLAZING01','SCSVSHH-OTH_THM01', >> VedaBatchUpload.sql
+echo 'SCSVSHH-VENT_RC01')  >> VedaBatchUpload.sql
+echo then 'heat-ser_conserv'   >> VedaBatchUpload.sql
+echo when process in('SHLAHBUE01','SHLGHBRE01','SHLGHBUE01','SHLAHBRE01')  >> VedaBatchUpload.sql
+echo then  'heat-ser_hyb-boil+hp-nga'  >> VedaBatchUpload.sql
+echo when process in('SHLAHPRE01','SHLAHPUE01','SHLAHSRE01','SHLAHSUE01','SHLAHPRE00','SHH-ASHP01','SHH-ASHP-R01')  >> VedaBatchUpload.sql
+echo then 'heat-ser_heatpump-air-elec'  >> VedaBatchUpload.sql
+echo when process in ('SHLGHPRE01','SHLGHPUE01','SHLGHSRE01','SHLGHSUE01','SHH-GSHP-V01','SHH-GSHP-H01') >> VedaBatchUpload.sql
+echo then 'heat-ser_heatpump-ground-elec'  >> VedaBatchUpload.sql
+echo when process in('SHH-WSHP01') >> VedaBatchUpload.sql
+echo then 'heat-ser_heatpump-water-elec'  >> VedaBatchUpload.sql
+echo when process in('SHHVACAE01','SHHVACAE00')  >> VedaBatchUpload.sql
+echo then 'heat-ser_hvac'  >> VedaBatchUpload.sql
+echo when process in('SHHVACAE02')  >> VedaBatchUpload.sql
+echo then 'heat-ser_hvac-ad'  >> VedaBatchUpload.sql
+echo when process in('SHLAHHUE01','SHLGHHRE01','SHLGHHUE01','SHLAHHRE01')  >> VedaBatchUpload.sql
+echo then 'heat-ser_hyb-boil+hp-h2'  >> VedaBatchUpload.sql
+echo when process in('SHLDHP101','SHHDHP100','SHHDHP101','SHLDHP100')  >> VedaBatchUpload.sql
+echo then 'heat-ser_dh'  >> VedaBatchUpload.sql
+echo when process in('SHLCHPRW01')  >> VedaBatchUpload.sql
+echo then 'heat-ser_microchp-bio'  >> VedaBatchUpload.sql
+echo when process in('SHLCHBRH01','SHHFCLRH01','SHLCHPRH01')  >> VedaBatchUpload.sql
+echo then 'heat-ser_microchp-h2'  >> VedaBatchUpload.sql
+echo when process in('SHLCHPRG01')  >> VedaBatchUpload.sql
+echo then 'heat-ser_microchp-nga'  >> VedaBatchUpload.sql
+echo when process in('SHLNSTRE01','SHLNSTRE00')  >> VedaBatchUpload.sql
+echo then 'heat-ser_storheater-elec'  >> VedaBatchUpload.sql
+echo when process in('SHH-DUM-PIP01')  >> VedaBatchUpload.sql
+echo then 'heat-ser_dummy-process'  >> VedaBatchUpload.sql
+echo else 'heat-ser_other' >> VedaBatchUpload.sql
+echo end as "analysis", >> VedaBatchUpload.sql
+echo tablename, attribute >> VedaBatchUpload.sql
+echo from vedastore >> VedaBatchUpload.sql
+echo where attribute = 'VAR_FOut' AND commodity in('SHHCSVDMD','SERHEAT','SHHDELVAIR','SHHDELVRAD', >> VedaBatchUpload.sql
+echo 'SHLCSVDMD','SHLDELVAIR','SHLDELVRAD','SHLDELVUND','SWHDELVPIP','SWHDELVSTD','SWLDELVSTD')  >> VedaBatchUpload.sql
+echo group by period,process, pv,tablename, id, analysis, attribute order by tablename, attribute >> VedaBatchUpload.sql
 echo ) a >> VedaBatchUpload.sql
 echo group by id, analysis,tablename, attribute >> VedaBatchUpload.sql
 echo order by tablename,  analysis, attribute, commodity >> VedaBatchUpload.sql
-echo  ) TO '%~dp0ServWholeHeatOut.csv' delimiter ',' CSV; >> VedaBatchUpload.sql
+echo ) TO '%~dp0ServWholeHeatOut.csv' delimiter ',' CSV; >> VedaBatchUpload.sql
 rem /* *New build services heat output by source* */
 rem /* *New build services heat output by source* */
 echo /* *New build services heat output by source* */ >> VedaBatchUpload.sql
@@ -1500,10 +1519,10 @@ echo             ,'RESLFO01','RESLPG00','RESLPG01','RESNGAS00','RESNGAS01','RESP
 echo         when process in('SERBIOLFO01','SERBOG-SW00','SERBOG-SW01','SERBOM01','SERCOA00','SERCOA01','SERELC00','SERELC01','SERGEO00','SERGEO01','SERHFO00','SERHFO01' >> VedaBatchUpload.sql
 echo             ,'SERHYG01','SERKER01','SERLFO00','SERLFO01','SERLPG01','SERMSWBIO01','SERMSWINO00','SERMSWINO01','SERMSWORG00','SERMSWORG01','SERNGA00','SERNGA01' >> VedaBatchUpload.sql
 echo             ,'SERPELH01','SERSOL01','SERWOD01') then 'FUEL TECHS SERV' >> VedaBatchUpload.sql
-echo         when process in('TRABIODST00','TRACOA00','TRADST00','TRAELC00','TRAETH00','TRAHFODS00','TRAHFOIS00','TRAJETDA00','TRAJETIA00','TRALFO00','TRALFODS00','TRALPG00','TRAPET00', >> VedaBatchUpload.sql
-echo             'TRABIODST01','TRABIODST-FT01','TRABIOJET-FTDA01','TRABIOJET-FTIA01','TRABIOLFO01','TRABIOLFODS01','TRABIOOILIS01','TRABOM01','TRADST01','TRAELC01','TRAETH01', >> VedaBatchUpload.sql
-echo             'TRAHFODS01','TRAHFOIS01','TRAHYGP01','TRAHYGPDS01','TRAHYGPIS01','TRAHYL01','TRAHYLDA01','TRAHYLIA01','TRAJETDA01','TRAJETIA01','TRALFO01','TRALFODS01','TRALNGDS01', >> VedaBatchUpload.sql
-echo             'TRALNGIS01','TRALPG01','TRANGA01','TRAPET01') then 'FUEL TECHS TRA' >> VedaBatchUpload.sql
+echo         when process in('TRABIODST-FT01','TRABIODST00','TRABIODST01','TRABIOJET-FTDA01','TRABIOJET-FTIA01','TRABIOLFO01','TRABIOLFODS01','TRABIOOILIS01','TRABOM01','TRACOA00','TRADST00','TRADST01' >> VedaBatchUpload.sql
+echo             ,'TRAELC00','TRAELC01','TRAETH00','TRAETH01','TRAHFODS00','TRAHFODS01','TRAHFOIS00','TRAHFOIS01','TRAHYGP01','TRAHYGPDS01','TRAHYGPIS01','TRAHYL01' >> VedaBatchUpload.sql
+echo             ,'TRAHYLDA01','TRAHYLIA01','TRAJETDA00','TRAJETDA01','TRAJETIA00','TRAJETIA01','TRALFO00','TRALFO01','TRALFODS00','TRALFODS01','TRALPG00','TRALPG01' >> VedaBatchUpload.sql
+echo             ,'TRANGA01','TRAPET00','TRAPET01') then 'FUEL TECHS TRA' >> VedaBatchUpload.sql
 echo         when process in('UPSELC00','UPSELC01','UPSHYG01','UPSLFO00','UPSLFO01','UPSNGA00','UPSNGA01') then 'FUEL TECHS UPSTREAM' >> VedaBatchUpload.sql
 echo     end as proc_set, >> VedaBatchUpload.sql
 echo     case >> VedaBatchUpload.sql
