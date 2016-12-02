@@ -1804,7 +1804,7 @@ order by tablename,  analysis, attribute, commodity
 
 /* *Whole stock heat output for services* */
 -- List of technology groupings (hvac ones are not in residential)
-
+--NEEDS UPDATING following Nov 2016 work
 -- SER_Heat_Elec_Boiler_or_Heater(inc_SolarTherm)        'heat-ser_boiler/heater-elec'
 -- SER_Heat_NGA_Boiler_or_Heater(inc_SolarTherm)        'heat-ser_boiler/heater-nga'
 -- SER_Heat_Bio-Boiler                                    'heat-ser_boiler-bio'
@@ -1845,36 +1845,56 @@ from (
         period,pv,
         case
             when process in ('SHLSHTRE00','SWLWHTRE00','SHLBLRRE01','SHLSHTRE01',
-                'SWLWHTRE01','SHLBLSRE01','SHHBLRRE00','SWHWHTRE00','SHHBLRRE01','SWHWHTRE01','SHLBLRRE00')
+                'SWLWHTRE01','SHLBLSRE01','SHHBLRRE00','SWHWHTRE00','SHHBLRRE01','SWHWHTRE01','SHLBLRRE00','SHH-BLRE01')
                     then 'heat-ser_boiler/heater-elec'  --Filter 155
             when process in('SHLBLCRG00','SHLSHTRG00','SWLWHTRG00','SHLBLCRG01','SWLWHTRG01',
-                'SHLBLSRG01','SHHBLRRG00','SWHBLRRG00','SHHBLRRG01','SWHBLRRG01','SHLBLRRG00')
+                'SHLBLSRG01','SHHBLRRG00','SWHBLRRG00','SHHBLRRG01','SWHBLRRG01','SHLBLRRG00','SHH-BLRG01')
                     then 'heat-ser_boiler/heater-nga'  --Filter 156
             when process in('SHLBLCRP01','SHLBLRRW01','SHLBLSRP01','SHLBLSRW01','SHHBLRRW00',
-                'SWHBLRRW00','SHHBLRRW01','SWHBLRRW01','SHLBLRRW00') then 'heat-ser_boiler-bio' --Filter 157
-            when process in('SHLBLSRH01','SHHBLRRH01','SWHBLRRH01','SHLBLCRH01') then 'heat-ser_boiler-h2' --Filter 158
+                'SWHBLRRW00','SHHBLRRW01','SWHBLRRW01','SHLBLRRW00','SHH-BLRB01') 
+					then 'heat-ser_boiler-bio' --Filter 157
+            when process in('SHLBLSRH01','SHHBLRRH01','SWHBLRRH01','SHLBLCRH01','SHH-BLRH01') 
+					then 'heat-ser_boiler-h2' --Filter 158
             when process in('SHLBLCRO00','SHLBLRRC00','SHLSHTRO00','SHLBLCRO01','SHLBLSRO01',
                 'SHHBLRRO00','SHHBLRRC00','SWHBLRRO00','SWHBLRRC00','SHHBLRRO01','SHHBLRRC01',
-                'SWHBLRRO01','SWHBLRRC01','SHLBLRRO00') then 'heat-ser_boiler-otherFF' --Filter 159
-            when process in('SCSLROFF01','SCSLROFP01','SCSLCAVW01','SCSHPTHM01','SCSHROFF01',
-                'SCSHROFP01','SCSHCAVW01','SCSLPTHM01') then 'heat-ser_conserv'  --Filter 160
-            when process in('SHLAHBUE01','SHLGHBRE01','SHLGHBUE01','SHLAHBRE01') then  'heat-ser_hyb-boil+hp-nga' --Filter 161
-            when process in('SHLAHPRE01','SHLAHPUE01','SHLGHPRE01','SHLGHPUE01','SHLAHSRE01',
-                'SHLAHSUE01','SHLGHSRE01','SHLGHSUE01','SHLAHPRE00') then 'heat-ser_heatpump-elec' --Filter 162
-            when process in('SHHVACAE01','SHHVACAE00') then 'heat-ser_hvac' --Filter 163
-            when process in('SHHVACAE02') then 'heat-ser_hvac-ad' --Filter 164
-            when process in('SHLAHHUE01','SHLGHHRE01','SHLGHHUE01','SHLAHHRE01') then 'heat-ser_hyb-boil+hp-h2' --Filter 165
-            when process in('SHLDHP101','SHHDHP100','SHHDHP101','SHLDHP100') then 'heat-ser_dh' --Filter 166
-            when process in('SHLCHPRW01') then 'heat-ser_microchp-bio' --Filter 167
-            when process in('SHLCHBRH01','SHHFCLRH01','SHLCHPRH01') then 'heat-ser_microchp-h2' --Filter 168
-            when process in('SHLCHPRG01') then 'heat-ser_microchp-nga' --Filter 169
-            when process in('SHLNSTRE01','SHLNSTRE00') then 'heat-ser_storheater-elec' --Filter 170
+                'SWHBLRRO01','SWHBLRRC01','SHLBLRRO00','SHH-BLRO01') 
+					then 'heat-ser_boiler-otherFF' --Filter 159
+            when process in('SCSVSHL-METERS01','SCSVSHL-INSULAT01','SCSVSHL-GLAZING01','SCSVSHL-OTH_THM01',
+				'SCSVSHL-VENT_RC01','SCSVSHH-METERS01','SCSVSHH-INSULAT01','SCSVSHH-GLAZING01','SCSVSHH-OTH_THM01',
+				'SCSVSHH-VENT_RC01') 
+					then 'heat-ser_conserv'  --Filter 160
+            when process in('SHLAHBUE01','SHLGHBRE01','SHLGHBUE01','SHLAHBRE01') 
+					then  'heat-ser_hyb-boil+hp-nga' --Filter 161
+            when process in('SHLAHPRE01','SHLAHPUE01','SHLAHSRE01','SHLAHSUE01','SHLAHPRE00','SHH-ASHP01','SHH-ASHP-R01') 
+					then 'heat-ser_heatpump-air-elec' --Filter 162
+			when process in ('SHLGHPRE01','SHLGHPUE01','SHLGHSRE01','SHLGHSUE01','SHH-GSHP-V01','SHH-GSHP-H01')
+					then 'heat-ser_heatpump-ground-elec' --Filter 222
+			when process in('SHH-WSHP01')
+					then 'heat-ser_heatpump-water-elec' --Filter 223
+            when process in('SHHVACAE01','SHHVACAE00') 
+					then 'heat-ser_hvac' --Filter 163
+            when process in('SHHVACAE02') 
+					then 'heat-ser_hvac-ad' --Filter 164
+            when process in('SHLAHHUE01','SHLGHHRE01','SHLGHHUE01','SHLAHHRE01') 
+					then 'heat-ser_hyb-boil+hp-h2' --Filter 165
+            when process in('SHLDHP101','SHHDHP100','SHHDHP101','SHLDHP100') 
+					then 'heat-ser_dh' --Filter 166
+            when process in('SHLCHPRW01') 
+					then 'heat-ser_microchp-bio' --Filter 167
+            when process in('SHLCHBRH01','SHHFCLRH01','SHLCHPRH01') 
+					then 'heat-ser_microchp-h2' --Filter 168
+            when process in('SHLCHPRG01') 
+					then 'heat-ser_microchp-nga' --Filter 169
+            when process in('SHLNSTRE01','SHLNSTRE00') 
+					then 'heat-ser_storheater-elec' --Filter 170
+			when process in('SHH-DUM-PIP01') 
+					then 'heat-ser_dummy-process' --Filter 224
             else 'heat-ser_other'
         end as "analysis",
     tablename, attribute
     from vedastore
-    where attribute = 'VAR_FOut' AND commodity in('SHHCSVDMD','SHHDELVAIR','SHHDELVRAD',
-        'SHLCSVDMD','SHLDELVAIR','SHLDELVRAD','SHLDELVUND','SWHDELVPIP','SWHDELVSTD','SWLDELVSTD') --Filter 171
+    where attribute = 'VAR_FOut' AND commodity in('SHHCSVDMD','SERHEAT','SHHDELVAIR','SHHDELVRAD',
+        'SHLCSVDMD','SHLDELVAIR','SHLDELVRAD','SHLDELVUND','SWHDELVPIP','SWHDELVSTD','SWLDELVSTD') 
     group by period,process, pv,tablename, id, analysis, attribute order by tablename, attribute
 ) a
 group by id, analysis,tablename, attribute
@@ -2965,4 +2985,5 @@ ORDER BY tablename,analysis
     -- Correction: FUEL TECHS TRA = domestic and international shipping added ('TRALNGDS01','TRALNGIS01')
 -- 4:46 PM 28 November, 2016:
     -- [Jon Tecwyn] Addition of HGV disaggregation to filters 8,11,13,14,222.
-	
+-- 5:42 PM 2 December, 2016: 
+    -- [Jon Tecwyn] Amended "Whole stock heat output for services" query.
