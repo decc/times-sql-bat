@@ -1254,7 +1254,7 @@ with emissions_chp as (
             when process in('ECOAQ01','ECOAQDEMO01') then 'Coal CCS' --Filter 92
             when process in('ECOARR01') then 'Coal RR' --Filter 93
             when process in('ENGACCT00','ENGAOCT00','ENGAOCT01','ENGARCPE00','ENGARCPE01') then 'Natural Gas' --Filter 94
-            when process in('ENGACCTQ01','ENGACCTQDEMO01') then 'Natural Gas CCS' --Filter 95
+            when process in('ENGACCTQ01','ENGACCTQDEMO01','ENGAQR01') then 'Natural Gas CCS' --Filter 95
             when process in('ENGACCTRR01') then 'Natural Gas RR' --Filter 96
             when process in('EDSTRCPE00','EDSTRCPE01','EOILL00','EOILS00','EOILS01','EOILL01','EHFOIGCC01') then 'Oil' --Filter 216
             when process in('EHFOIGCCQ01') then 'OIL CCS' --Filter 97
@@ -1544,7 +1544,7 @@ from (
             when process in('EHYGCCT01' ,'EHYGOCT01') then 'elec-cap_h2'::varchar(50) --Filter 104
             when process in('ENGACCT00','ENGACCTRR01','ENGAOCT00','ENGAOCT01','ENGARCPE00','ENGARCPE01') then
                 'elec-cap_nga'::varchar(50) --Filter 105
-            when process in('ENGACCTQ01' ,'ENGACCTQDEMO01') then 'elec-cap_nga-ccs'::varchar(50) --Filter 106
+            when process in('ENGACCTQ01','ENGACCTQDEMO01','ENGAQR01') then 'elec-cap_nga-ccs'::varchar(50) --Filter 106
             when process in('ENUCPWR00','ENUCPWR101','ENUCPWR102') then
                 'elec-cap_nuclear'::varchar(50)  --Filter 107
             when process in('EWNDOFF00' ,'EWNDOFF101' ,'EWNDOFF201' ,'EWNDOFF301') then

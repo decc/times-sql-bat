@@ -524,7 +524,7 @@ echo             when process in('ECOA00','ECOABIO00') then 'Coal'  >> VedaBatch
 echo             when process in('ECOAQ01','ECOAQDEMO01') then 'Coal CCS'  >> VedaBatchUpload.sql
 echo             when process in('ECOARR01') then 'Coal RR'  >> VedaBatchUpload.sql
 echo             when process in('ENGACCT00','ENGAOCT00','ENGAOCT01','ENGARCPE00','ENGARCPE01') then 'Natural Gas'  >> VedaBatchUpload.sql
-echo             when process in('ENGACCTQ01','ENGACCTQDEMO01') then 'Natural Gas CCS'  >> VedaBatchUpload.sql
+echo             when process in('ENGACCTQ01','ENGACCTQDEMO01','ENGAQR01') then 'Natural Gas CCS'  >> VedaBatchUpload.sql
 echo             when process in('ENGACCTRR01') then 'Natural Gas RR'  >> VedaBatchUpload.sql
 echo             when process in('EDSTRCPE00','EDSTRCPE01','EOILL00','EOILS00','EOILS01','EOILL01','EHFOIGCC01') then 'Oil'  >> VedaBatchUpload.sql
 echo             when process in('EHFOIGCCQ01') then 'OIL CCS'  >> VedaBatchUpload.sql
@@ -786,7 +786,7 @@ echo             when process in('ECOAQ01' ,'ECOAQDEMO01') then 'elec-cap_coal-c
 echo             when process in('EHYGCCT01' ,'EHYGOCT01') then 'elec-cap_h2'::varchar(50)  >> VedaBatchUpload.sql
 echo             when process in('ENGACCT00','ENGACCTRR01','ENGAOCT00','ENGAOCT01','ENGARCPE00','ENGARCPE01') then >> VedaBatchUpload.sql
 echo                 'elec-cap_nga'::varchar(50)  >> VedaBatchUpload.sql
-echo             when process in('ENGACCTQ01' ,'ENGACCTQDEMO01') then 'elec-cap_nga-ccs'::varchar(50)  >> VedaBatchUpload.sql
+echo             when process in('ENGACCTQ01','ENGACCTQDEMO01','ENGAQR01') then 'elec-cap_nga-ccs'::varchar(50)  >> VedaBatchUpload.sql
 echo             when process in('ENUCPWR00','ENUCPWR101','ENUCPWR102') then >> VedaBatchUpload.sql
 echo                 'elec-cap_nuclear'::varchar(50)   >> VedaBatchUpload.sql
 echo             when process in('EWNDOFF00' ,'EWNDOFF101' ,'EWNDOFF201' ,'EWNDOFF301') then >> VedaBatchUpload.sql
