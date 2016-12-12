@@ -1,4 +1,4 @@
-/* ***Human readable versions of "standard" queries analysing results from the UK TIMES [UKTM] model***
+/* ***Human readable versions of "standard" queries analysing results from the UK TIMES [UKTM] model*** 
 
 /*Developed against model ver = uktm_model_v1.2.3_d0.1.2_DNP
 
@@ -73,100 +73,100 @@ Revisions section placed at end of file.
 /* *Total fuel consumption by fuel for other industry (industry sub-sector)* */
 with ind_oi_chp as (
 -- I.e. the Veda BE table of the same name
-	select comm_set,tablename, period,pv
-	from (
-		select tablename, period,pv,
-		case 
-			when commodity in('INDBENZ','INDBFG','INDCOK','INDCOG') then 'IND MANFUELS'
-			when commodity in('INDCOACOK','INDCOA') then 'IND COALS'
-			when commodity in('INDELC','INDDISTELC') then 'IND ELEC'
-			when commodity in('INDHFO','INDLFO','INDLPG','INDKER') then 'IND OIL'
-			when commodity in('INDMAINSGAS','INDNGA') then 'IND GAS'
-			when commodity in('INDMAINSHYG','INDHYG') then 'IND HYDROGEN'
-			when commodity in('INDMSWORG','INDMSWINO','INDWOD','INDPELH','INDPOLWST','INDBIOLFO','INDPELL','INDMAINSBOM',
-				'INDBIOOIL','INDWODWST','INDBOG-AD','INDBIOLPG','INDGRASS','INDBOG-LF') then 'IND BIO'
-			else null
-		end as comm_set
-		from vedastore
-		where attribute='VAR_FIn' and 
-			process in('IOICHPBIOS01','IOICHPCCGT01','IOICHPBIOS00','IOICHPCCGTH01','IOICHPNGA00','IOICHPHFO00','IOICHPGT01','IOICHPBIOG01','IOICHPFCH01','IOICHPCOA01')
-	) a
-	where comm_set is not null
+    select comm_set,tablename, period,pv
+    from (
+        select tablename, period,pv,
+        case 
+            when commodity in('INDBENZ','INDBFG','INDCOK','INDCOG') then 'IND MANFUELS'      --Filter 278
+            when commodity in('INDCOACOK','INDCOA') then 'IND COALS'      --Filter 257
+            when commodity in('INDELC','INDDISTELC') then 'IND ELEC'      --Filter 242
+            when commodity in('INDHFO','INDLFO','INDLPG','INDKER') then 'IND OIL'      --Filter 360
+            when commodity in('INDMAINSGAS','INDNGA') then 'IND GAS'      --Filter 313
+            when commodity in('INDMAINSHYG','INDHYG') then 'IND HYDROGEN'      --Filter 268
+            when commodity in('INDMSWORG','INDMSWINO','INDWOD','INDPELH','INDPOLWST','INDBIOLFO','INDPELL','INDMAINSBOM',
+                'INDBIOOIL','INDWODWST','INDBOG-AD','INDBIOLPG','INDGRASS','INDBOG-LF') then 'IND BIO'      --Filter 376
+            else null
+        end as comm_set
+        from vedastore
+        where attribute='VAR_FIn' and 
+            process in('IOICHPBIOS01','IOICHPCCGT01','IOICHPBIOS00','IOICHPCCGTH01','IOICHPNGA00','IOICHPHFO00','IOICHPGT01','IOICHPBIOG01','IOICHPFCH01','IOICHPCOA01')
+    ) a
+    where comm_set is not null
 ), ind_oi_prd as (
 -- I.e. the Veda BE table of the same name
-	select comm_set,tablename, period,pv
-	from (
-		select tablename, period,pv,
-		case 
-			when commodity in('INDBENZ','INDBFG','INDCOK','INDCOG') then 'IND MANFUELS'
-			when commodity in('INDCOACOK','INDCOA') then 'IND COALS'
-			when commodity in('INDELC','INDDISTELC') then 'IND ELEC'
-			when commodity in('INDHFO','INDLFO','INDLPG','INDKER') then 'IND OIL'
-			when commodity in('INDMAINSGAS','INDNGA') then 'IND GAS'
-			when commodity in('INDMAINSHYG','INDHYG') then 'IND HYDROGEN'
-			when commodity in('INDMSWORG','INDMSWINO','INDWOD','INDPELH','INDPOLWST','INDBIOLFO','INDPELL','INDMAINSBOM',
-				'INDBIOOIL','INDWODWST','INDBOG-AD','INDBIOLPG','INDGRASS','INDBOG-LF') then 'IND BIO'
-			else null
-		end as comm_set
-		from vedastore
-		where attribute='VAR_FIn' and 
-			process in('IOIDRYBIOL01','IOILTHBIOS02','IOIDRYCOK00','IOIDRYELC00','IOILTHELC02','IOIOTHLFO00','IOIHTHLFO01','IOILTHHCO01','IOIHTHHFO01','IOIOTHNGA01','IOILTHLPG02','IOILTHKER00'
-			,'IOIDRYHDG02','IOILTHCOK00','IOILTHHFO00','IOIMOTELC00','IOILTHCOK01','IOIDRYNGA01','IOIDRYSTM01','IOIDRYKER00','IOILTHHCO02','IOIHTHKER01','IOIOTHBIOS01','IOIREFEHFC00'
-			,'IOIDRYCOK01','IOIOTHCOK01','IOIOTHHFO00','IOIOTHLFO01','IOIOTHBENZ00','IOIDRYBIOS00','IOIREFEHFO01','IOIHTHBIOG01','IOIHTHLPG00','IOIDRYHCO02','IOIOTHKER00','IOIOTHNGA00'
-			,'IOIDRYBIOG02','IOIDRYHFO02','IOIHTHBIOS00','IOIHTHCOK00','IOILTHLPG01','IOIDRYCOK02','IOILTHHCO00','IOIHTHBIOS01','IOIDRYHDG01','IOIDRYLFO01','IOILTHBIOG02','IOIOTHSTM01'
-			,'IOILTHNGA01','IOIOTHBIOS00','IOIDRYBIOS02','IOIDRYLPG00','IOIDRYBENZ02','IOILTHCOK02','IOIHTHHCO01','IOILTHSTM01','IOIREFEHFC01','IOIHTHCOK01','IOIHTHLFO00','IOIHTHBIOL01'
-			,'IOILTHBIOG01','IOIMOTELC02','IOIDRYNGA00','IOILTHBIOS00','IOILTHELC00','IOIOTHKER01','IOIDRYHFO00','IOIDRYKER02','IOIDRYLPG01','IOIHTHNGA00','IOIOTHELC01','IOIDRYKER01'
-			,'IOIDRYSTM00','IOIHTHBENZ00','IOILTHBIOL02','IOIHTHELC01','IOIHTHLPG01','IOIOTHELC00','IOILTHSTM00','IOIHTHBIOG00','IOILTHLPG00','IOIDRYBIOG01','IOILTHHDG02','IOILTHKER01'
-			,'IOIOTHSTM00','IOIDRYBIOG00','IOILTHLFO00','IOIOTHBIOL01','IOIDRYHCO00','IOIOTHHCO01','IOIDRYELC01','IOIOTHHCO00','IOIOTHLPG01','IOILTHELC01','IOIHTHBENZ01','IOILTHNGA00'
-			,'IOIDRYBENZ01','IOIDRYHCO01','IOILTHNGA02','IOIOTHBIOG01','IOIHTHELC00','IOIDRYELC02','IOILTHLFO01','IOIDRYBENZ00','IOIDRYLFO00','IOIHTHHFO00','IOILTHBENZ02','IOILTHBIOG00'
-			,'IOIOTHCOK00','IOIHTHKER00','IOIOTHHFO01','IOILTHLFO02','IOIHTHNGA01','IOIHTHHCO00','IOILTHBIOL01','IOIMOTELC01','IOIDRYBIOS01','IOIDRYHFO01','IOIDRYLFO02','IOIOTHBIOG00'
-			,'IOIDRYNGA02','IOILTHBENZ01','IOIOTHBENZ01','IOILTHHDG01','IOIOTHHDG01','IOIDRYBIOL02','IOIHTHHDG01','IOILTHBENZ00','IOILTHBIOS01','IOIOTHLPG00','IOIDRYLPG02','IOILTHHFO02'
-			,'IOILTHKER02','IOILTHHFO01')
-	) a
-	where comm_set is not null
+    select comm_set,tablename, period,pv
+    from (
+        select tablename, period,pv,
+        case 
+            when commodity in('INDBENZ','INDBFG','INDCOK','INDCOG') then 'IND MANFUELS'      --Filter 278
+            when commodity in('INDCOACOK','INDCOA') then 'IND COALS'      --Filter 257
+            when commodity in('INDELC','INDDISTELC') then 'IND ELEC'      --Filter 242
+            when commodity in('INDHFO','INDLFO','INDLPG','INDKER') then 'IND OIL'      --Filter 360
+            when commodity in('INDMAINSGAS','INDNGA') then 'IND GAS'      --Filter 313
+            when commodity in('INDMAINSHYG','INDHYG') then 'IND HYDROGEN'      --Filter 268
+            when commodity in('INDMSWORG','INDMSWINO','INDWOD','INDPELH','INDPOLWST','INDBIOLFO','INDPELL','INDMAINSBOM',
+                'INDBIOOIL','INDWODWST','INDBOG-AD','INDBIOLPG','INDGRASS','INDBOG-LF') then 'IND BIO'      --Filter 376
+            else null
+        end as comm_set
+        from vedastore
+        where attribute='VAR_FIn' and 
+            process in('IOIDRYBIOL01','IOILTHBIOS02','IOIDRYCOK00','IOIDRYELC00','IOILTHELC02','IOIOTHLFO00','IOIHTHLFO01','IOILTHHCO01','IOIHTHHFO01','IOIOTHNGA01','IOILTHLPG02','IOILTHKER00'
+            ,'IOIDRYHDG02','IOILTHCOK00','IOILTHHFO00','IOIMOTELC00','IOILTHCOK01','IOIDRYNGA01','IOIDRYSTM01','IOIDRYKER00','IOILTHHCO02','IOIHTHKER01','IOIOTHBIOS01','IOIREFEHFC00'
+            ,'IOIDRYCOK01','IOIOTHCOK01','IOIOTHHFO00','IOIOTHLFO01','IOIOTHBENZ00','IOIDRYBIOS00','IOIREFEHFO01','IOIHTHBIOG01','IOIHTHLPG00','IOIDRYHCO02','IOIOTHKER00','IOIOTHNGA00'
+            ,'IOIDRYBIOG02','IOIDRYHFO02','IOIHTHBIOS00','IOIHTHCOK00','IOILTHLPG01','IOIDRYCOK02','IOILTHHCO00','IOIHTHBIOS01','IOIDRYHDG01','IOIDRYLFO01','IOILTHBIOG02','IOIOTHSTM01'
+            ,'IOILTHNGA01','IOIOTHBIOS00','IOIDRYBIOS02','IOIDRYLPG00','IOIDRYBENZ02','IOILTHCOK02','IOIHTHHCO01','IOILTHSTM01','IOIREFEHFC01','IOIHTHCOK01','IOIHTHLFO00','IOIHTHBIOL01'
+            ,'IOILTHBIOG01','IOIMOTELC02','IOIDRYNGA00','IOILTHBIOS00','IOILTHELC00','IOIOTHKER01','IOIDRYHFO00','IOIDRYKER02','IOIDRYLPG01','IOIHTHNGA00','IOIOTHELC01','IOIDRYKER01'
+            ,'IOIDRYSTM00','IOIHTHBENZ00','IOILTHBIOL02','IOIHTHELC01','IOIHTHLPG01','IOIOTHELC00','IOILTHSTM00','IOIHTHBIOG00','IOILTHLPG00','IOIDRYBIOG01','IOILTHHDG02','IOILTHKER01'
+            ,'IOIOTHSTM00','IOIDRYBIOG00','IOILTHLFO00','IOIOTHBIOL01','IOIDRYHCO00','IOIOTHHCO01','IOIDRYELC01','IOIOTHHCO00','IOIOTHLPG01','IOILTHELC01','IOIHTHBENZ01','IOILTHNGA00'
+            ,'IOIDRYBENZ01','IOIDRYHCO01','IOILTHNGA02','IOIOTHBIOG01','IOIHTHELC00','IOIDRYELC02','IOILTHLFO01','IOIDRYBENZ00','IOIDRYLFO00','IOIHTHHFO00','IOILTHBENZ02','IOILTHBIOG00'
+            ,'IOIOTHCOK00','IOIHTHKER00','IOIOTHHFO01','IOILTHLFO02','IOIHTHNGA01','IOIHTHHCO00','IOILTHBIOL01','IOIMOTELC01','IOIDRYBIOS01','IOIDRYHFO01','IOIDRYLFO02','IOIOTHBIOG00'
+            ,'IOIDRYNGA02','IOILTHBENZ01','IOIOTHBENZ01','IOILTHHDG01','IOIOTHHDG01','IOIDRYBIOL02','IOIHTHHDG01','IOILTHBENZ00','IOILTHBIOS01','IOIOTHLPG00','IOIDRYLPG02','IOILTHHFO02'
+            ,'IOILTHKER02','IOILTHHFO01')
+    ) a
+    where comm_set is not null
 )
 select 'fin-en-other-ind_'|| comm_set ||'|' || tablename || '|' || 'VAR_FIn' || '|' || 'various' || '|various'::varchar(300) "id",
-	'fin-en-other-ind_' || comm_set::varchar(300) "analysis", tablename, 'VAR_FIn'::varchar(50) "attribute",
-	'various'::varchar(50) "commodity",
-	'various'::varchar(50) "process",
-	sum(pv)::numeric "all",
-	sum(case when period='2010' then pv else 0 end)::numeric "2010",
-	sum(case when period='2011' then pv else 0 end)::numeric "2011",
-	sum(case when period='2012' then pv else 0 end)::numeric "2012",
-	sum(case when period='2015' then pv else 0 end)::numeric "2015",
-	sum(case when period='2020' then pv else 0 end)::numeric "2020",
-	sum(case when period='2025' then pv else 0 end)::numeric "2025",
-	sum(case when period='2030' then pv else 0 end)::numeric "2030",
-	sum(case when period='2035' then pv else 0 end)::numeric "2035",
-	sum(case when period='2040' then pv else 0 end)::numeric "2040",
-	sum(case when period='2045' then pv else 0 end)::numeric "2045",
-	sum(case when period='2050' then pv else 0 end)::numeric "2050",
-	sum(case when period='2055' then pv else 0 end)::numeric "2055",
-	sum(case when period='2060' then pv else 0 end)::numeric "2060"
+    'fin-en-other-ind_' || comm_set::varchar(300) "analysis", tablename, 'VAR_FIn'::varchar(50) "attribute",
+    'various'::varchar(50) "commodity",
+    'various'::varchar(50) "process",
+    sum(pv)::numeric "all",
+    sum(case when period='2010' then pv else 0 end)::numeric "2010",
+    sum(case when period='2011' then pv else 0 end)::numeric "2011",
+    sum(case when period='2012' then pv else 0 end)::numeric "2012",
+    sum(case when period='2015' then pv else 0 end)::numeric "2015",
+    sum(case when period='2020' then pv else 0 end)::numeric "2020",
+    sum(case when period='2025' then pv else 0 end)::numeric "2025",
+    sum(case when period='2030' then pv else 0 end)::numeric "2030",
+    sum(case when period='2035' then pv else 0 end)::numeric "2035",
+    sum(case when period='2040' then pv else 0 end)::numeric "2040",
+    sum(case when period='2045' then pv else 0 end)::numeric "2045",
+    sum(case when period='2050' then pv else 0 end)::numeric "2050",
+    sum(case when period='2055' then pv else 0 end)::numeric "2055",
+    sum(case when period='2060' then pv else 0 end)::numeric "2060"
 from (
-	select case
-		when comm_set='IND COALS' then 'coa'
-		when comm_set='IND HYDROGEN' then 'hyd'
-		when comm_set='IND MANFUELS' then 'man'
-		when comm_set='IND GAS' then 'gas'
-		when comm_set='IND ELEC' then 'elc'
-		when comm_set='IND BIO' then 'bio'
-		when comm_set='IND OIL' then 'oil'
-		end as comm_set,
-	tablename,period,pv
-	from ind_oi_chp
-	union all
-	select case
-		when comm_set='IND COALS' then 'coa'
-		when comm_set='IND HYDROGEN' then 'hyd'
-		when comm_set='IND MANFUELS' then 'man'
-		when comm_set='IND GAS' then 'gas'
-		when comm_set='IND ELEC' then 'elc'
-		when comm_set='IND BIO' then 'bio'
-		when comm_set='IND OIL' then 'oil'
-		end as comm_set,
-	tablename,period,pv
-	from ind_oi_prd
+    select case
+        when comm_set='IND COALS' then 'coa'
+        when comm_set='IND HYDROGEN' then 'hyd'
+        when comm_set='IND MANFUELS' then 'man'
+        when comm_set='IND GAS' then 'gas'
+        when comm_set='IND ELEC' then 'elc'
+        when comm_set='IND BIO' then 'bio'
+        when comm_set='IND OIL' then 'oil'
+        end as comm_set,
+    tablename,period,pv
+    from ind_oi_chp
+    union all
+    select case
+        when comm_set='IND COALS' then 'coa'
+        when comm_set='IND HYDROGEN' then 'hyd'
+        when comm_set='IND MANFUELS' then 'man'
+        when comm_set='IND GAS' then 'gas'
+        when comm_set='IND ELEC' then 'elc'
+        when comm_set='IND BIO' then 'bio'
+        when comm_set='IND OIL' then 'oil'
+        end as comm_set,
+    tablename,period,pv
+    from ind_oi_prd
 ) a
 group by tablename, comm_set
 order by tablename, comm_set
@@ -174,8 +174,9 @@ order by tablename, comm_set
 /*  *Land use and crop / livestock mitigation (MACC) measures* */
 -- Gives  breakdown for "agr-GHG-land","agr-GHG-livestock-mitigation","agr-GHG-crop-mitigation","agr-GHG-afforestation","agr-GHG-energy"
 -- by table.
--- This is GHG emissions and so some measures are not included here (biomass / h2 boilers, reduced cultivation) as they don't produce GHG
+-- This is GHG emissions and so some measures are not included here (biomass / h2 boilers, reduced cultivation, elc/heat energy efficiency options) as they don't produce GHG
 
+COPY ( 
 select 'ag-lulucf-meas-ghg_'|| proc_set || '|' || tablename || '|' || attribute || '|' || 'various' || '|various'::varchar(300) "id",
     'ag-lulucf-meas-ghg_' || proc_set "analysis", tablename, attribute,
     'various'::varchar(50) "commodity",'various'::varchar "process",
@@ -197,19 +198,21 @@ select 'ag-lulucf-meas-ghg_'|| proc_set || '|' || tablename || '|' || attribute 
         select tablename, attribute, period,pv,
         case
             when process in ('ALUFOR01') then 'affor'  --Filter 210
-            when process in ('AGCRP01','AGCRP02','AGCRP03','AGCRP04','AGCRP05','AGCRP06','AGCRP07','AGCRP08','AGCRP09') then 'crops' --Filter 211
-            when process in ('AHTBLRC00','AHTBLRG00','AHTBLRG01','AHTBLRO00','AHTBLRO01','ATRA00','ATRA01') then 'agr-en' --Filter 212
-            when process in ('ALU00','ALU01','MINBSLURRY1') then 'lulucf' --Filter 213
-            when process in ('AGLIV01','AGLIV02','AGLIV03','AGLIV04','AGLIV05','AGLIV06','AGLIV07','AGLIV08','AGLIV09','AGLIV10') then 'livestock' --Filter 214
+            when process in ('AGCRP01','AGCRP02','AGCRP04','AGCRP05','AGCRP06','AGCRP07','AGCRP08','AGCRP09') then 'crops' --Filter 211
+            when process in ('AHTBLRC00','AHTBLRG00','AHTBLRG01','AHTBLRO00','AHTBLRO01','ATRA00','ATRA01','AATRA01') then 'agr-en' --Filter 212
+            when process in ('ALU00','ALU01','MINBSLURRY1','AGSOI01','AGSOI02','AGSOI03','AGSOI04') then 'lulucf' --Filter 213
+            when process in ('AGLIV03','AGLIV04','AGLIV05','AGLIV06','AGLIV07','AGLIV09') then 'livestock' --Filter 214
         end as proc_set
         from vedastore
         where attribute='VAR_FOut' and commodity in ('GHG-LULUCF','GHG-AGR-NO-LULUCF') --Filter 1
        ) a
 where proc_set is not null
-group by tablename, attribute, proc_set;
+group by tablename, attribute, proc_set
+) TO '%~dp0lulucfout.csv' delimiter ',' CSV HEADER;
 
 /* *Afforestation rate* */
 -- This is the amount of afforestation over the BAU level (in current model formulation)
+COPY ( 
 select 'ag-lulucf-meas_aff_level' || '|' || tablename || '|' || attribute || '|' || commodity || '|' || process::varchar(300) "id",
     'ag-lulucf-meas_aff_level'::varchar(50) "analysis",
     tablename, attribute,
@@ -231,6 +234,7 @@ select 'ag-lulucf-meas_aff_level' || '|' || tablename || '|' || attribute || '|'
 from vedastore
 where attribute='VAR_FOut' and commodity='ALAND' and process='ALUFOR01' --Filter 2
 group by tablename, attribute,commodity,process
+) TO '%~dp0afforestout.csv' delimiter ',' CSV HEADER;
 
 /* **For transport batch file: ** */
 /* -------------------------------*/
@@ -345,7 +349,7 @@ with base_cng_emissions as(
                         -- NB Includes the bus mains gas => CNG conversion process 'TFSLCNG01'. This is because emissions are counted at this point here but the demand is counted at "TBCNG01"
                         when process in('TCPET00','TCPET01','TLPET00','TLPET01','TWPET00','TWPET01') then 'petrol'::varchar(50) --Filter 15
                         when process in('TCPHBDST01','TCPHBPET01','TLPHBDST01','TLPHBPET01') then 'plug-in-hybrid'::varchar(50) --Filter 16
-						when process in('TH2CNGDST01','TH3CNGDST01') then 'Dual fuel diesel-CNG'::varchar(50) --Filter 221
+                        when process in('TH2CNGDST01','TH3CNGDST01') then 'Dual fuel diesel-CNG'::varchar(50) --Filter 221
                     end as "analysis"
                     from vedastore
                     where attribute = 'VAR_FOut' and commodity in('GHG-TRA-NON-ETS-NO-IAS','TB','TC','TH1','TH2','TH3','TL','TW')
@@ -496,7 +500,7 @@ with base_cng_emissions as(
                         when process in('TBCNG01','TCCNG01','TCLPG00','TCLPG01','TH1CNG01','TH2CNG01','TH3CNG01','TLCNG01','TLLPG01') then 'lpg-and-cng-fueled'::varchar(50) --Filter 220
                         when process in('TCPET00','TCPET01','TLPET00','TLPET01','TWPET00','TWPET01') then 'petrol'::varchar(50) --Filter 15
                         when process in('TCPHBDST01','TCPHBPET01','TLPHBDST01','TLPHBPET01') then 'plug-in-hybrid'::varchar(50) --Filter 16
-						when process in('TH2CNGDST01','TH3CNGDST01') then 'Dual fuel diesel-CNG'::varchar(50) --Filter 221
+                        when process in('TH2CNGDST01','TH3CNGDST01') then 'Dual fuel diesel-CNG'::varchar(50) --Filter 221
                     end as "analysis"
                     from vedastore
                     where attribute = 'VAR_FOut' and commodity in('TC','TL','TH1','TH2','TH3','TW','TB','GHG-TRA-NON-ETS-NO-IAS')
@@ -589,7 +593,7 @@ from (
         when process in('TBCNG01','TCCNG01','TCLPG00','TCLPG01','TH1CNG01','TH2CNG01','TH3CNG01','TLCNG01','TLLPG01') then 'lpg-and-cng-fueled'::varchar(50) --Filter 220
         when process in('TCPET00','TCPET01','TLPET00','TLPET01','TWPET00','TWPET01') then 'petrol'::varchar(50) --Filter 15
         when process in('TCPHBDST01','TCPHBPET01','TLPHBDST01','TLPHBPET01') then 'plug-in-hybrid'::varchar(50) --Filter 16
-		when process in('TH2CNGDST01','TH3CNGDST01') then 'Dual fuel diesel-CNG'::varchar(50) --Filter 221
+        when process in('TH2CNGDST01','TH3CNGDST01') then 'Dual fuel diesel-CNG'::varchar(50) --Filter 221
     end as "analysis",
     tablename, attribute,commodity
     from vedastore
@@ -640,7 +644,7 @@ from (
         when process in('TBCNG01','TCCNG01','TCLPG00','TCLPG01','TH1CNG01','TH2CNG01','TH3CNG01','TLCNG01','TLLPG01') then 'lpg-and-cng-fueled'::varchar(50) --Filter 220
         when process in('TCPET00','TCPET01','TLPET00','TLPET01','TWPET00','TWPET01') then 'petrol'::varchar(50) --Filter 15
         when process in('TCPHBDST01','TCPHBPET01','TLPHBDST01','TLPHBPET01') then 'plug-in-hybrid'::varchar(50) --Filter 16
-		when process in('TH2CNGDST01','TH3CNGDST01') then 'Dual fuel diesel-CNG'::varchar(50) --Filter 221
+        when process in('TH2CNGDST01','TH3CNGDST01') then 'Dual fuel diesel-CNG'::varchar(50) --Filter 221
     end as "analysis",
     tablename, attribute,commodity
     from vedastore
@@ -656,6 +660,50 @@ order by tablename,  analysis, attribute, commodity
 -- Added as a temporary measure to be able to remove international shipping / aviation from the main final energy and primary energy queries
 
 COPY (
+with fuels_in as (
+-- Add this sub-query for compatibility with the other instances of these fuel filters / processes. Not strictly needed...
+-- These fuels are only those which are used or have been used for these modes (not all fuels)
+    select process,period,pv,
+    case 
+        when process in('TAIJETE00','TAIJETE01','TAIJETN00','TAIJETN01','TAIJET02','TAIHYLE01','TAIHYLN01') then 'TRA-AVI-INT' --Filter 386
+        --last 3 of these might not be real processes
+        when process in('TSIHYG01','TSIOIL00','TSIOIL01') then 'TRA-SHIP-INT' --Filter 364
+    end as proc,
+    case
+        when commodity in('AGRBIODST','AGRBIOLPG','AGRBOM','AGRGRASS','AGRMAINSBOM','AGRPOLWST','BGRASS','BIODST','BIODST-FT','BIOJET-FT','BIOKER-FT','BIOLFO'
+            ,'BIOLPG','BIOOIL','BOG-AD','BOG-G','BOG-LF','BOM','BPELH','BPELL','BRSEED','BSEWSLG','BSLURRY','BSTARCH'
+            ,'BSTWWST','BSUGAR','BTREATSTW','BTREATWOD','BVOIL','BWOD','BWODLOG','BWODWST','ELCBIOCOA','ELCBIOCOA2','ELCBIOLFO','ELCBIOOIL'
+            ,'ELCBOG-AD','ELCBOG-LF','ELCBOG-SW','ELCBOM','ELCMAINSBOM','ELCMSWINO','ELCMSWORG','ELCPELH','ELCPELL','ELCPOLWST','ELCSTWWST','ELCTRANSBOM'
+            ,'ETH','HYGBIOO','HYGBPEL','HYGMSWINO','HYGMSWORG','INDBIOLFO','INDBIOLPG','INDBIOOIL','INDBOG-AD','INDBOG-LF','INDBOM','INDGRASS'
+            ,'INDMAINSBOM','INDMSWINO','INDMSWORG','INDPELH','INDPELL','INDPOLWST','INDWOD','INDWODWST','METH','MSWBIO','MSWINO','MSWORG'
+            ,'PWASTEDUM','RESBIOLFO','RESBOM','RESHOUSEBOM','RESMAINSBOM','RESPELH','RESWOD','RESWODL','SERBIOLFO','SERBOG','SERBOM','SERBUILDBOM'
+            ,'SERMAINSBOM','SERMSWBIO','SERMSWINO','SERMSWORG','SERPELH','SERWOD','TRABIODST','TRABIODST-FT','TRABIODST-FTL','TRABIODST-FTS','TRABIODSTL','TRABIODSTS'
+            ,'TRABIOJET-FTDA','TRABIOJET-FTDAL','TRABIOJET-FTIA','TRABIOJET-FTIAL','TRABIOLFO','TRABIOLFODS','TRABIOLFODSL','TRABIOLFOL','TRABIOOILIS','TRABIOOILISL','TRABOM','TRAETH'
+            ,'TRAETHL','TRAETHS','TRAMAINSBOM','TRAMETH') then 'ALL BIO' --Filter 287
+        when commodity in('AGRDISTELC','AGRELC','ELC','ELC-E-EU','ELC-E-IRE','ELC-I-EU','ELC-I-IRE','ELCGEN','ELCSURPLUS','HYGELC','HYGELCSURP','HYGLELC'
+            ,'HYGSELC','INDDISTELC','INDELC','PRCELC','RESDISTELC','RESELC','RESELCSURPLUS','RESHOUSEELC','SERBUILDELC','SERDISTELC','SERELC','TRACELC'
+            ,'TRACPHB','TRADISTELC','TRAELC','UPSELC') then 'ALL ELECTRICITY' --Filter 235
+        when commodity in('AGRNGA','ELCNGA','HYGLNGA','HYGSNGA','IISNGAB','IISNGAC','IISNGAE','INDNEUNGA','INDNGA','LNG','NGA','NGA-E'
+            ,'NGA-E-EU','NGA-E-IRE','NGA-I-EU','NGA-I-N','NGAPTR','PRCNGA','RESNGA','SERNGA','TRACNGL','TRACNGS','TRALNG','TRALNGDS'
+            ,'TRALNGDSL','TRALNGIS','TRALNGISL','TRANGA','UPSNGA') then 'ALL GAS' --Filter 354
+        when commodity in('AGRCOA','COA','COA-E','COACOK','ELCCOA','HYGCOA','INDCOA','INDCOACOK','INDSYNCOA','PRCCOA','PRCCOACOK','RESCOA'
+            ,'SERCOA','SYNCOA','TRACOA') then 'ALL COALS' --Filter 246
+        when commodity in('SERHFO','SERLFO','TRAPETL','OILLFO','TRAJETDA','TRALFO','TRALPGS','ELCMSC','INDLFO','AGRHFO','TRAHFOIS','TRADSTS'
+            ,'SERKER','TRAJETIANL','RESLFO','RESLPG','TRAHFODSL','TRALFOL','TRAJETIA','TRAJETL','TRAPETS','TRAHFODS','OILJET','OILDST'
+            ,'AGRLPG','OILCRDRAW-E','UPSLFO','ELCLFO','INDNEULFO','ELCHFO','TRAJETDAEL','SYNOIL','TRADSTL','INDLPG','OILMSC','OILPET'
+            ,'PRCHFO','OILCRDRAW','TRALFODSL','INDNEULPG','ELCLPG','TRADST','TRALFODS','OILKER','OILHFO','OILCRD','TRALPGL','SERLPG'
+            ,'INDNEUMSC','PRCOILCRD','INDKER','INDHFO','OILLPG','TRALPG','RESKER','TRAJETIAEL','TRAHFOISL','IISHFOB','TRAPET','INDSYNOIL'
+            ,'TRAHFO','AGRLFO') then 'ALL OIL PRODUCTS' --Filter 302
+        when commodity in('AGRHYG','ELCHYG','ELCHYGIGCC','HYGL','HYGL-IGCC','HYGLHPD','HYGLHPT','HYL','HYLTK','INDHYG','INDMAINSHYG','RESHOUSEHYG'
+            ,'RESHYG','RESHYGREF-EA','RESHYGREF-NA','RESMAINSHYG','SERBUILDHYG','SERHYG','SERMAINSHYG','TRAHYG','TRAHYGDCN','TRAHYGL','TRAHYGS','TRAHYL'
+            ,'UPSHYG','UPSMAINSHYG') then 'ALL HYDROGEN' --Filter 371
+        when commodity in('WNDONS','GEO','ELCWAV','RESSOL','HYDROR','ELCTID','SERSOL','HYDDAM','TID','ELCSOL','WNDOFF','WAV'
+        ,'SOL','ELCWNDOFS','ELCGEO','ELCWNDONS','ELCHYDDAM','SERGEO') then 'ALL OTHER RNW' --Filter 226
+    end as "analysis",
+    tablename, attribute
+    from vedastore
+    where attribute = 'VAR_FIn'
+)
 select analysis || '|' || tablename || '|' || attribute || '|' || 'various' || '|various'::varchar(300) "id", analysis, tablename,'VAR_FIn' "attribute",
     'various'::varchar(50) "commodity",
     'various'::varchar(50) "process",
@@ -675,46 +723,24 @@ select analysis || '|' || tablename || '|' || attribute || '|' || 'various' || '
     sum(case when period='2060' then pv else 0 end)::numeric "2060"
 from (
     select process,period,pv,
-	case 
-        when process in('TAIJETE00','TAIJETE01','TAIJETN00','TAIJETN01','TAIJET02','TAIHYLE01','TAIHYLN01') then 'int-air-fuel_' --last 3 of these might not be real processes
-        when process in('TSIHYG01','TSIOIL00','TSIOIL01') then 'int-ship-fuel_'
-        end ||
     case
-        when commodity in('AGRBIODST','AGRBIOLPG','AGRBOM','AGRGRASS','AGRMAINSBOM','AGRPOLWST','BGRASS','BIODST','BIODST-FT','BIOJET-FT','BIOKER-FT','BIOLFO'
-            ,'BIOLPG','BIOOIL','BOG-AD','BOG-G','BOG-LF','BOM','BPELH','BPELL','BRSEED','BSEWSLG','BSLURRY','BSTARCH'
-            ,'BSTWWST','BSUGAR','BTREATSTW','BTREATWOD','BVOIL','BWOD','BWODLOG','BWODWST','ELCBIOCOA','ELCBIOCOA2','ELCBIOLFO','ELCBIOOIL'
-            ,'ELCBOG-AD','ELCBOG-LF','ELCBOG-SW','ELCBOM','ELCMAINSBOM','ELCMSWINO','ELCMSWORG','ELCPELH','ELCPELL','ELCPOLWST','ELCSTWWST','ELCTRANSBOM'
-            ,'ETH','HYGBIOO','HYGBPEL','HYGMSWINO','HYGMSWORG','INDBIOLFO','INDBIOLPG','INDBIOOIL','INDBOG-AD','INDBOG-LF','INDBOM','INDGRASS'
-            ,'INDMAINSBOM','INDMSWINO','INDMSWORG','INDPELH','INDPELL','INDPOLWST','INDWOD','INDWODWST','METH','MSWBIO','MSWINO','MSWORG'
-            ,'PWASTEDUM','RESBIOLFO','RESBOM','RESHOUSEBOM','RESMAINSBOM','RESPELH','RESWOD','RESWODL','SERBIOLFO','SERBOG','SERBOM','SERBUILDBOM'
-            ,'SERMAINSBOM','SERMSWBIO','SERMSWINO','SERMSWORG','SERPELH','SERWOD','TRABIODST','TRABIODST-FT','TRABIODST-FTL','TRABIODST-FTS','TRABIODSTL','TRABIODSTS'
-            ,'TRABIOJET-FTDA','TRABIOJET-FTDAL','TRABIOJET-FTIA','TRABIOJET-FTIAL','TRABIOLFO','TRABIOLFODS','TRABIOLFODSL','TRABIOLFOL','TRABIOOILIS','TRABIOOILISL','TRABOM','TRAETH'
-            ,'TRAETHL','TRAETHS','TRAMAINSBOM','TRAMETH') then 'bio'
-        when commodity in('AGRDISTELC','AGRELC','ELC','ELC-E-EU','ELC-E-IRE','ELC-I-EU','ELC-I-IRE','ELCGEN','ELCSURPLUS','HYGELC','HYGELCSURP','HYGLELC'
-            ,'HYGSELC','INDDISTELC','INDELC','PRCELC','RESDISTELC','RESELC','RESELCSURPLUS','RESHOUSEELC','SERBUILDELC','SERDISTELC','SERELC','TRACELC'
-            ,'TRACPHB','TRADISTELC','TRAELC','UPSELC') then 'elc'
-        when commodity in('AGRNGA','ELCNGA','HYGLNGA','HYGSNGA','IISNGAB','IISNGAC','IISNGAE','INDNEUNGA','INDNGA','LNG','NGA','NGA-E'
-            ,'NGA-E-EU','NGA-E-IRE','NGA-I-EU','NGA-I-N','NGAPTR','PRCNGA','RESNGA','SERNGA','TRACNGL','TRACNGS','TRALNG','TRALNGDS'
-            ,'TRALNGDSL','TRALNGIS','TRALNGISL','TRANGA','UPSNGA') then 'gas'
-        when commodity in('AGRCOA','COA','COA-E','COACOK','ELCCOA','HYGCOA','INDCOA','INDCOACOK','INDSYNCOA','PRCCOA','PRCCOACOK','RESCOA'
-            ,'SERCOA','SYNCOA','TRACOA') then 'coa'
-        when commodity in('SERHFO','SERLFO','TRAPETL','OILLFO','TRAJETDA','TRALFO','TRALPGS','ELCMSC','INDLFO','AGRHFO','TRAHFOIS','TRADSTS'
-            ,'SERKER','TRAJETIANL','RESLFO','RESLPG','TRAHFODSL','TRALFOL','TRAJETIA','TRAJETL','TRAPETS','TRAHFODS','OILJET','OILDST'
-            ,'AGRLPG','OILCRDRAW-E','UPSLFO','ELCLFO','INDNEULFO','ELCHFO','TRAJETDAEL','SYNOIL','TRADSTL','INDLPG','OILMSC','OILPET'
-            ,'PRCHFO','OILCRDRAW','TRALFODSL','INDNEULPG','ELCLPG','TRADST','TRALFODS','OILKER','OILHFO','OILCRD','TRALPGL','SERLPG'
-            ,'INDNEUMSC','PRCOILCRD','INDKER','INDHFO','OILLPG','TRALPG','RESKER','TRAJETIAEL','TRAHFOISL','IISHFOB','TRAPET','INDSYNOIL'
-            ,'TRAHFO','AGRLFO') then 'oil'
-        when commodity in('AGRHYG','ELCHYG','ELCHYGIGCC','HYGL','HYGL-IGCC','HYGLHPD','HYGLHPT','HYL','HYLTK','INDHYG','INDMAINSHYG','RESHOUSEHYG'
-            ,'RESHYG','RESHYGREF-EA','RESHYGREF-NA','RESMAINSHYG','SERBUILDHYG','SERHYG','SERMAINSHYG','TRAHYG','TRAHYGDCN','TRAHYGL','TRAHYGS','TRAHYL'
-            ,'UPSHYG','UPSMAINSHYG') then 'hyd'
-        when commodity in('WNDONS','GEO','ELCWAV','RESSOL','HYDROR','ELCTID','SERSOL','HYDDAM','TID','ELCSOL','WNDOFF','WAV'
-        ,'SOL','ELCWNDOFS','ELCGEO','ELCWNDONS','ELCHYDDAM','SERGEO') then 'orens'
+        when proc='TRA-AVI-INT' then 'int-air-fuel_'
+        when proc='TRA-SHIP-INT' then 'int-ship-fuel_'
+    end 
+     ||
+    case
+        when analysis='ALL BIO' then 'bio'
+        when analysis='ALL ELECTRICITY' then 'elc'
+        when analysis='ALL GAS' then 'gas'
+        when analysis='ALL COALS' then 'coa'
+        when analysis='ALL OIL PRODUCTS' then 'oil'
+        when analysis='ALL HYDROGEN' then 'hyd'
+        when analysis='ALL OTHER RNW' then 'orens'
     end as "analysis",
     tablename, attribute
-    from vedastore
-    where attribute = 'VAR_FIn'
+    from fuels_in
+    where analysis <>'' and proc <>''
 ) a
-where analysis <>''
 group by id, analysis,tablename
 order by tablename, analysis
 ) TO '%~dp0fuelByModeOut.csv' delimiter ',' CSV;
@@ -987,13 +1013,13 @@ with emissions_chp as (
                 ,'IISCHPFCH01','IISCHPGT01','IISCHPHFO00','IISCHPNGA00','INMCHPBIOG01','INMCHPBIOS01','INMCHPCCGT01','INMCHPCCGTH01','INMCHPCOA01','INMCHPCOG00','INMCHPCOG01','INMCHPFCH01'
                 ,'INMCHPGT01','INMCHPNGA00','IOICHPBIOG01','IOICHPBIOS00','IOICHPBIOS01','IOICHPCCGT01','IOICHPCCGTH01','IOICHPCOA01','IOICHPFCH01','IOICHPGT01','IOICHPHFO00','IOICHPNGA00'
                 ,'IPPCHPBIOG01','IPPCHPBIOS00','IPPCHPBIOS01','IPPCHPCCGT01','IPPCHPCCGTH01','IPPCHPCOA00','IPPCHPCOA01','IPPCHPFCH01','IPPCHPGT01','IPPCHPNGA00','IPPCHPWST00','IPPCHPWST01')
-                then 'CHP IND SECTOR'
-            when process in('PCHP-CCP00','PCHP-CCP01') then 'CHP PRC SECTOR'
+                then 'CHP IND SECTOR'      --Filter 270
+            when process in('PCHP-CCP00','PCHP-CCP01') then 'CHP PRC SECTOR'      --Filter 333
             when process in('SCHP-ADM01','SCHP-CCG00','SCHP-CCG01','SCHP-CCH01','SCHP-FCH01','SCHP-GES00','SCHP-GES01','SCHP-STM01','SCHP-STW00','SCHP-STW01','SHHFCLRH01','SHLCHPRG01'
-                ,'SHLCHPRH01','SHLCHPRW01') then 'CHP SER SECTOR'
-            when process in('UCHP-CCG00','UCHP-CCG01') then 'CHP UPS SECTOR'
+                ,'SHLCHPRH01','SHLCHPRW01') then 'CHP SER SECTOR'      --Filter 230
+            when process in('UCHP-CCG00','UCHP-CCG01') then 'CHP UPS SECTOR'      --Filter 337
             when process in('RHEACHPRG01','RHEACHPRH01','RHEACHPRW01','RHFCCHPRG01','RHFCCHPRH01','RHFCCHPRW01','RHFSCHPRG01','RHFSCHPRH01','RHFSCHPRW01','RHHCCHPRG01','RHHCCHPRH01','RHHCCHPRW01'
-                ,'RHHSCHPRG01','RHHSCHPRH01','RHHSCHPRW01','RHNACHPRG01','RHNACHPRH01','RHNACHPRW01') then 'CHP RES MICRO'
+                ,'RHHSCHPRG01','RHHSCHPRH01','RHHSCHPRW01','RHNACHPRG01','RHNACHPRH01','RHNACHPRW01') then 'CHP RES MICRO'      --Filter 393
         end proc_set
         from vedastore
         where attribute='VAR_FOut' and commodity in('RESCH4N','SERN2ON','INDCO2N','SERCH4N','INDCH4N','INDN2ON','UPSN2ON','UPSCO2N','UPSCH4N','PRCCH4N','PRCCO2N','PRCN2ON'
@@ -1002,11 +1028,11 @@ with emissions_chp as (
         select period, pv,commodity,process,tablename,
         case
             when process in('ICHCHPBIOG01','ICHCHPBIOS00','ICHCHPBIOS01','IFDCHPBIOG01','IFDCHPBIOS00','IFDCHPBIOS01','IISCHPBIOG01','IISCHPBIOS01','INMCHPBIOG01','INMCHPBIOS01','IOICHPBIOG01'
-                ,'IOICHPBIOS00','IOICHPBIOS01','IPPCHPBIOG01','IPPCHPBIOS00','IPPCHPBIOS01','IPPCHPWST00','IPPCHPWST01') then 'CHP IND BIO'
-            when process in('SCHP-ADM01','SCHP-GES00','SCHP-GES01','SCHP-STM01','SCHP-STW00','SCHP-STW01','SHLCHPRW01') then 'CHP SER BIO'
-            when process in('SHHFCLRH01','SHLCHPRG01','SHLCHPRH01','SHLCHPRW01') then 'CHP SER MICRO'
+                ,'IOICHPBIOS00','IOICHPBIOS01','IPPCHPBIOG01','IPPCHPBIOS00','IPPCHPBIOS01','IPPCHPWST00','IPPCHPWST01') then 'CHP IND BIO'      --Filter 336
+            when process in('SCHP-ADM01','SCHP-GES00','SCHP-GES01','SCHP-STM01','SCHP-STW00','SCHP-STW01','SHLCHPRW01') then 'CHP SER BIO'      --Filter 368
+            when process in('SHHFCLRH01','SHLCHPRG01','SHLCHPRH01','SHLCHPRW01') then 'CHP SER MICRO'      --Filter 324
             when process in('RCHPEA-CCG00','RCHPEA-CCG01','RCHPEA-CCH01','RCHPEA-FCH01','RCHPEA-STW01','RCHPNA-CCG01','RCHPNA-CCH01','RCHPNA-FCH01','RCHPNA-STW01','RHEACHPRG01','RHEACHPRH01','RHEACHPRW01'
-                ,'RHNACHPRG01','RHNACHPRH01','RHNACHPRW01') then 'CHP RES SECTOR'
+                ,'RHNACHPRG01','RHNACHPRH01','RHNACHPRW01') then 'CHP RES SECTOR'      --Filter 303
             else null
         end proc_set
         from vedastore
@@ -1022,16 +1048,16 @@ with emissions_chp as (
     commodity,period, pv
     from (
         select case
-            when commodity in('AGRCO2N','AGRCO2P') then 'EMIS CO2 AGR'
-            when commodity in('ELCCO2N') then 'EMIS CO2 ELC'
-            when commodity in('HYGCO2N') then 'EMIS CO2 HYG'
-            when commodity in('INDCO2N','INDCO2P') then 'EMIS CO2 IND'
-            when commodity in('INDNEUCO2N') then 'EMIS CO2 NEU'
-            when commodity in('PRCCO2N','PRCCO2P') then 'EMIS CO2 PRC'
-            when commodity in('RESCO2N') then 'EMIS CO2 RES'
-            when commodity in('SERCO2N') then 'EMIS CO2 SER'
-            when commodity in('TRACO2N') then 'EMIS CO2 TRA'
-            when commodity in('UPSCO2N','UPSCO2P') then 'EMIS CO2 UPS'
+            when commodity in('AGRCO2N','AGRCO2P') then 'EMIS CO2 AGR'      --Filter 365
+            when commodity in('ELCCO2N') then 'EMIS CO2 ELC'      --Filter 331
+            when commodity in('HYGCO2N') then 'EMIS CO2 HYG'      --Filter 370
+            when commodity in('INDCO2N','INDCO2P') then 'EMIS CO2 IND'      --Filter 237
+            when commodity in('INDNEUCO2N') then 'EMIS CO2 NEU'      --Filter 233
+            when commodity in('PRCCO2N','PRCCO2P') then 'EMIS CO2 PRC'      --Filter 264
+            when commodity in('RESCO2N') then 'EMIS CO2 RES'      --Filter 292
+            when commodity in('SERCO2N') then 'EMIS CO2 SER'      --Filter 323
+            when commodity in('TRACO2N') then 'EMIS CO2 TRA'      --Filter 321
+            when commodity in('UPSCO2N','UPSCO2P') then 'EMIS CO2 UPS'      --Filter 281
             end as comm_set,commodity,pv,period,tablename
         from vedastore
         where attribute='VAR_FOut'
@@ -1043,18 +1069,18 @@ with emissions_chp as (
     commodity,period,pv
     from (
         select case
-            when commodity in ('AGRCH4N','AGRCH4P','AGRCO2N','AGRCO2P','AGRHFCN','AGRHFCP','AGRN2ON','AGRN2OP','AGRNH3','AGRNOX','AGRPM10','AGRPM25','AGRSO2','AGRVOC') then 'EMIS GHG AGR'
-            when commodity in ('ELCCH4N','ELCCH4P','ELCCO2N','ELCCO2P','ELCHFCN','ELCHFCP','ELCN2ON','ELCN2OP','ELCNH3','ELCNOX','ELCPM10','ELCPM25','ELCSO2','ELCVOC') then 'EMIS GHG ELC'
-            when commodity in ('HYGCH4N','HYGCH4P','HYGCO2N','HYGCO2P','HYGHFCN','HYGHFCP','HYGN2ON','HYGN2OP','HYGNH3','HYGNOX','HYGPM10','HYGPM25','HYGSO2','HYGVOC') then 'EMIS GHG HYG'
-            when commodity in ('INDCH4N','INDCH4P','INDCO2N','INDCO2P','INDHFCN','INDHFCP','INDN2ON','INDN2OP') then 'EMIS GHG IND'
-            when commodity in ('INDNEUCO2N') then 'EMIS GHG NEU'
+            when commodity in ('AGRCH4N','AGRCH4P','AGRCO2N','AGRCO2P','AGRHFCN','AGRHFCP','AGRN2ON','AGRN2OP','AGRNH3','AGRNOX','AGRPM10','AGRPM25','AGRSO2','AGRVOC') then 'EMIS GHG AGR' --Filter 349
+            when commodity in ('ELCCH4N','ELCCH4P','ELCCO2N','ELCCO2P','ELCHFCN','ELCHFCP','ELCN2ON','ELCN2OP','ELCNH3','ELCNOX','ELCPM10','ELCPM25','ELCSO2','ELCVOC') then 'EMIS GHG ELC' --Filter 284
+            when commodity in ('HYGCH4N','HYGCH4P','HYGCO2N','HYGCO2P','HYGHFCN','HYGHFCP','HYGN2ON','HYGN2OP','HYGNH3','HYGNOX','HYGPM10','HYGPM25','HYGSO2','HYGVOC') then 'EMIS GHG HYG' --Filter 227
+            when commodity in ('INDCH4N','INDCH4P','INDCO2N','INDCO2P','INDHFCN','INDHFCP','INDN2ON','INDN2OP') then 'EMIS GHG IND' --Filter 288
+            when commodity in ('INDNEUCO2N') then 'EMIS GHG NEU' --Filter 319
     -- NB These commodities are not included in the veda set: should they be? 'INDNEUCH4S','INDNEUCO2S','INDNEUN2OS'
-            when commodity in ('PRCCH4N','PRCCH4P','PRCCO2N','PRCCO2P','PRCHFCN','PRCHFCP','PRCN2ON','PRCN2OP','PRCNH3','PRCNOX','PRCPM10','PRCPM25','PRCSO2','PRCVOC') then 'EMIS GHG PRC'
-            when commodity in ('RESCH4N','RESCH4P','RESCO2N','RESCO2P','RESHFCN','RESHFCP','RESN2ON','RESN2OP','RESNH3','RESNOX','RESPM10','RESPM25','RESSO2','RESVOC') then 'EMIS GHG RES'
-            when commodity in ('SERCH4N','SERCH4P','SERCO2N','SERCO2P','SERHFCN','SERHFCP','SERN2ON','SERN2OP','SERNH3','SERNOX','SERPM10','SERPM25','SERSO2','SERVOC') then 'EMIS GHG SER'
+            when commodity in ('PRCCH4N','PRCCH4P','PRCCO2N','PRCCO2P','PRCHFCN','PRCHFCP','PRCN2ON','PRCN2OP','PRCNH3','PRCNOX','PRCPM10','PRCPM25','PRCSO2','PRCVOC') then 'EMIS GHG PRC' --Filter 329
+            when commodity in ('RESCH4N','RESCH4P','RESCO2N','RESCO2P','RESHFCN','RESHFCP','RESN2ON','RESN2OP','RESNH3','RESNOX','RESPM10','RESPM25','RESSO2','RESVOC') then 'EMIS GHG RES' --Filter 363
+            when commodity in ('SERCH4N','SERCH4P','SERCO2N','SERCO2P','SERHFCN','SERHFCP','SERN2ON','SERN2OP','SERNH3','SERNOX','SERPM10','SERPM25','SERSO2','SERVOC') then 'EMIS GHG SER' --Filter 339
             when commodity in ('TRACH4N','TRACH4P','TRACO2N','TRACO2P','Traded-Emission-ETS','Traded-Emission-Non-ETS','TRAHFCN','TRAHFCP','TRAN2ON','TRAN2OP','TRANH3','TRANOX','TRAPM10'
-                ,'TRAPM25','TRASO2','TRAVOC') then 'EMIS GHG TRA'
-            when commodity in ('UPSCH4N','UPSCH4P','UPSCO2N','UPSCO2P','UPSHFCN','UPSHFCP','UPSN2ON','UPSN2OP') then 'EMIS GHG UPS'
+                ,'TRAPM25','TRASO2','TRAVOC') then 'EMIS GHG TRA' --Filter 311
+            when commodity in ('UPSCH4N','UPSCH4P','UPSCO2N','UPSCO2P','UPSHFCN','UPSHFCP','UPSN2ON','UPSN2OP') then 'EMIS GHG UPS' --Filter 285
         end as comm_set,commodity,pv,period, tablename
         from vedastore
         where attribute in('EQ_Combal','VAR_Comnet') --Filter 74
@@ -1083,31 +1109,31 @@ with emissions_chp as (
         tablename,period, pv,
         case
             when process in('EBIO01','EBIOCON00','EBIOS00','EBOG-ADE01','EBOG-LFE00','EBOG-LFE01','EBOG-SWE00','EBOG-SWE01','EMSW00','EMSW01','EPOLWST00','ESTWWST00'
-                ,'ESTWWST01') then 'ELC FROM BIO'
-            when process in('EBIOQ01') then 'ELC FROM BIO CCS'
-            when process in('PCHP-CCP00','PCHP-CCP01','UCHP-CCG00','UCHP-CCG01') then 'ELC FROM CHP'
-            when process='ECOAQR01' then 'ELC FROM COAL CCSRET'
-            when process in('ECOARR01') then 'ELC FROM COAL RR'
-            when process in('ECOA00','ECOABIO00') then 'ELC FROM COAL-COF'
-            when process in('ECOAQ01','ECOAQDEMO01') then 'ELC FROM COALCOF CCS'
-            when process in('ENGACCT00','ENGAOCT00','ENGAOCT01','ENGARCPE00','ENGARCPE01') then 'ELC FROM GAS'
-            when process in('ENGACCTQ01','ENGACCTQDEMO01') then 'ELC FROM GAS CCS'
-            when process='ENGAQR01' then 'ELC FROM GAS CCSRET'
-            when process in('ENGACCTRR01') then 'ELC FROM GAS RR'
-            when process in('EGEO01') then 'ELC FROM GEO'
-            when process in('EHYD00','EHYD01') then 'ELC FROM HYDRO'
-            when process in('EHYGCCT01','EHYGOCT01') then 'ELC FROM HYDROGEN'
-            when process in('ELCIE00','ELCIE01','ELCII00','ELCII01') then 'ELC FROM IMPORTS'
-            when process in('EMANOCT00','EMANOCT01') then 'ELC FROM MANFUELS'
-            when process in('ENUCPWR00','ENUCPWR101','ENUCPWR102') then 'ELC FROM NUCLEAR'
-            when process in('EDSTRCPE00','EDSTRCPE01','EHFOIGCC01','EOILL00','EOILL01','EOILS00','EOILS01') then 'ELC FROM OIL'
-            when process in('EHFOIGCCQ01') then 'ELC FROM OIL CCS'
-            when process in('ESOL00','ESOL01','ESOLPV00','ESOLPV01') then 'ELC FROM SOL-PV'
-            when process in('ETIB101','ETIR101','ETIS101') then 'ELC FROM TIDAL'
-            when process in('EWAV101') then 'ELC FROM WAVE'
-            when process in('EWNDOFF00','EWNDOFF101','EWNDOFF201','EWNDOFF301') then 'ELC FROM WIND-OFFSH'
-            when process in('EWNDONS00','EWNDONS101','EWNDONS201','EWNDONS301','EWNDONS401','EWNDONS501','EWNDONS601','EWNDONS701','EWNDONS801','EWNDONS901') then 'ELC FROM WIND-ONSH'
-            when process in('ELCEE00','ELCEE01','ELCEI00','ELCEI01') then 'ELC TO EXPORTS'
+                ,'ESTWWST01') then 'ELC FROM BIO' --Filter 297
+            when process in('EBIOQ01') then 'ELC FROM BIO CCS' --Filter 306
+            when process in('PCHP-CCP00','PCHP-CCP01','UCHP-CCG00','UCHP-CCG01') then 'ELC FROM CHP' --Filter 358
+            when process='ECOAQR01' then 'ELC FROM COAL CCSRET' --Filter 245
+            when process in('ECOARR01') then 'ELC FROM COAL RR' --Filter 238
+            when process in('ECOA00','ECOABIO00') then 'ELC FROM COAL-COF' --Filter 347
+            when process in('ECOAQ01','ECOAQDEMO01') then 'ELC FROM COALCOF CCS' --Filter 248
+            when process in('ENGACCT00','ENGAOCT00','ENGAOCT01','ENGARCPE00','ENGARCPE01') then 'ELC FROM GAS' --Filter 243
+            when process in('ENGACCTQ01','ENGACCTQDEMO01') then 'ELC FROM GAS CCS' --Filter 301
+            when process='ENGAQR01' then 'ELC FROM GAS CCSRET' --Filter 240
+            when process in('ENGACCTRR01') then 'ELC FROM GAS RR' --Filter 392
+            when process in('EGEO01') then 'ELC FROM GEO' --Filter 338
+            when process in('EHYD00','EHYD01') then 'ELC FROM HYDRO' --Filter 373
+            when process in('EHYGCCT01','EHYGOCT01') then 'ELC FROM HYDROGEN' --Filter 283
+            when process in('ELCIE00','ELCIE01','ELCII00','ELCII01') then 'ELC FROM IMPORTS' --Filter 225
+            when process in('EMANOCT00','EMANOCT01') then 'ELC FROM MANFUELS' --Filter 294
+            when process in('ENUCPWR00','ENUCPWR101','ENUCPWR102') then 'ELC FROM NUCLEAR' --Filter 261
+            when process in('EDSTRCPE00','EDSTRCPE01','EHFOIGCC01','EOILL00','EOILL01','EOILS00','EOILS01') then 'ELC FROM OIL' --Filter 341
+            when process in('EHFOIGCCQ01') then 'ELC FROM OIL CCS' --Filter 290
+            when process in('ESOL00','ESOL01','ESOLPV00','ESOLPV01') then 'ELC FROM SOL-PV' --Filter 366
+            when process in('ETIB101','ETIR101','ETIS101') then 'ELC FROM TIDAL' --Filter 352
+            when process in('EWAV101') then 'ELC FROM WAVE' --Filter 239
+            when process in('EWNDOFF00','EWNDOFF101','EWNDOFF201','EWNDOFF301') then 'ELC FROM WIND-OFFSH' --Filter 299
+            when process in('EWNDONS00','EWNDONS101','EWNDONS201','EWNDONS301','EWNDONS401','EWNDONS501','EWNDONS601','EWNDONS701','EWNDONS801','EWNDONS901') then 'ELC FROM WIND-ONSH' --Filter 236
+            when process in('ELCEE00','ELCEE01','ELCEI00','ELCEI01') then 'ELC TO EXPORTS' --Filter 298
          end as proc_set
         from vedastore
         where attribute='VAR_FOut' and commodity in('ELCDUMMY','ELC','ELC-E-IRE','ELC-E-EU','ELCGEN')  --Filter 78
@@ -1852,43 +1878,43 @@ from (
                     then 'heat-ser_boiler/heater-nga'  --Filter 156
             when process in('SHLBLCRP01','SHLBLRRW01','SHLBLSRP01','SHLBLSRW01','SHHBLRRW00',
                 'SWHBLRRW00','SHHBLRRW01','SWHBLRRW01','SHLBLRRW00','SHH-BLRB01') 
-					then 'heat-ser_boiler-bio' --Filter 157
+                    then 'heat-ser_boiler-bio' --Filter 157
             when process in('SHLBLSRH01','SHHBLRRH01','SWHBLRRH01','SHLBLCRH01','SHH-BLRH01') 
-					then 'heat-ser_boiler-h2' --Filter 158
+                    then 'heat-ser_boiler-h2' --Filter 158
             when process in('SHLBLCRO00','SHLBLRRC00','SHLSHTRO00','SHLBLCRO01','SHLBLSRO01',
                 'SHHBLRRO00','SHHBLRRC00','SWHBLRRO00','SWHBLRRC00','SHHBLRRO01','SHHBLRRC01',
                 'SWHBLRRO01','SWHBLRRC01','SHLBLRRO00','SHH-BLRO01') 
-					then 'heat-ser_boiler-otherFF' --Filter 159
+                    then 'heat-ser_boiler-otherFF' --Filter 159
             when process in('SCSVSHL-METERS01','SCSVSHL-INSULAT01','SCSVSHL-GLAZING01','SCSVSHL-OTH_THM01',
-				'SCSVSHL-VENT_RC01','SCSVSHH-METERS01','SCSVSHH-INSULAT01','SCSVSHH-GLAZING01','SCSVSHH-OTH_THM01',
-				'SCSVSHH-VENT_RC01') 
-					then 'heat-ser_conserv'  --Filter 160
+                'SCSVSHL-VENT_RC01','SCSVSHH-METERS01','SCSVSHH-INSULAT01','SCSVSHH-GLAZING01','SCSVSHH-OTH_THM01',
+                'SCSVSHH-VENT_RC01') 
+                    then 'heat-ser_conserv'  --Filter 160
             when process in('SHLAHBUE01','SHLGHBRE01','SHLGHBUE01','SHLAHBRE01') 
-					then  'heat-ser_hyb-boil+hp-nga' --Filter 161
+                    then  'heat-ser_hyb-boil+hp-nga' --Filter 161
             when process in('SHLAHPRE01','SHLAHPUE01','SHLAHSRE01','SHLAHSUE01','SHLAHPRE00','SHH-ASHP01','SHH-ASHP-R01') 
-					then 'heat-ser_heatpump-air-elec' --Filter 162
-			when process in ('SHLGHPRE01','SHLGHPUE01','SHLGHSRE01','SHLGHSUE01','SHH-GSHP-V01','SHH-GSHP-H01')
-					then 'heat-ser_heatpump-ground-elec' --Filter 222
-			when process in('SHH-WSHP01')
-					then 'heat-ser_heatpump-water-elec' --Filter 223
+                    then 'heat-ser_heatpump-air-elec' --Filter 162
+            when process in ('SHLGHPRE01','SHLGHPUE01','SHLGHSRE01','SHLGHSUE01','SHH-GSHP-V01','SHH-GSHP-H01')
+                    then 'heat-ser_heatpump-ground-elec' --Filter 222
+            when process in('SHH-WSHP01')
+                    then 'heat-ser_heatpump-water-elec' --Filter 223
             when process in('SHHVACAE01','SHHVACAE00') 
-					then 'heat-ser_hvac' --Filter 163
+                    then 'heat-ser_hvac' --Filter 163
             when process in('SHHVACAE02') 
-					then 'heat-ser_hvac-ad' --Filter 164
+                    then 'heat-ser_hvac-ad' --Filter 164
             when process in('SHLAHHUE01','SHLGHHRE01','SHLGHHUE01','SHLAHHRE01') 
-					then 'heat-ser_hyb-boil+hp-h2' --Filter 165
+                    then 'heat-ser_hyb-boil+hp-h2' --Filter 165
             when process in('SHLDHP101','SHHDHP100','SHHDHP101','SHLDHP100') 
-					then 'heat-ser_dh' --Filter 166
+                    then 'heat-ser_dh' --Filter 166
             when process in('SHLCHPRW01') 
-					then 'heat-ser_microchp-bio' --Filter 167
+                    then 'heat-ser_microchp-bio' --Filter 167
             when process in('SHLCHBRH01','SHHFCLRH01','SHLCHPRH01') 
-					then 'heat-ser_microchp-h2' --Filter 168
+                    then 'heat-ser_microchp-h2' --Filter 168
             when process in('SHLCHPRG01') 
-					then 'heat-ser_microchp-nga' --Filter 169
+                    then 'heat-ser_microchp-nga' --Filter 169
             when process in('SHLNSTRE01','SHLNSTRE00') 
-					then 'heat-ser_storheater-elec' --Filter 170
-			when process in('SHH-DUM-PIP01') 
-					then 'heat-ser_dummy-process' --Filter 224
+                    then 'heat-ser_storheater-elec' --Filter 170
+            when process in('SHH-DUM-PIP01') 
+                    then 'heat-ser_dummy-process' --Filter 224
             else 'heat-ser_other'
         end as "analysis",
     tablename, attribute
@@ -1974,12 +2000,12 @@ with hydrogen_chp as (
     from (
         select case
             when process in ('RHEABLCRH01','RHEACHBRH01','RHFCBLCRH01','RHFCCHBRH01','RHFSBLCRH01','RHFSCHBRH01','RHHCBLCRH01'
-                ,'RHHCCHBRH01','RHHSBLCRH01','RHHSCHBRH01','RHNABLCRH01','RHNACHBRH01') then 'RES BOI HYG'
-            when process in ('RHFCCHPRH01','RHFSCHPRH01','RHHCCHPRH01','RHHSCHPRH01','RHNACHPRH01','RHEACHPRH01') then 'RES MCHP HYG'
-            when process in ('RHEAREFCG01','RHFCREFCG01','RHFSREFCG01','RHHCREFCG01','RHHSREFCG01','RHNAREFCG01') then 'RES REFORMER'
-            when process in ('SHHBLRRH01','SHLBLCRH01','SHLCHBRH01') then 'SER BOI HYG'
-            when process in ('SHHFCLRH01','SHLCHPRH01') then 'SER MCHP HYG'
-            when process in ('SHLREFCG01') then 'SER REFORMER'
+                ,'RHHCCHBRH01','RHHSBLCRH01','RHHSCHBRH01','RHNABLCRH01','RHNACHBRH01') then 'RES BOI HYG' --Filter 228
+            when process in ('RHFCCHPRH01','RHFSCHPRH01','RHHCCHPRH01','RHHSCHPRH01','RHNACHPRH01','RHEACHPRH01') then 'RES MCHP HYG' --Filter 328
+            when process in ('RHEAREFCG01','RHFCREFCG01','RHFSREFCG01','RHHCREFCG01','RHHSREFCG01','RHNAREFCG01') then 'RES REFORMER' --Filter 315
+            when process in ('SHHBLRRH01','SHLBLCRH01','SHLCHBRH01') then 'SER BOI HYG' --Filter 275
+            when process in ('SHHFCLRH01','SHLCHPRH01') then 'SER MCHP HYG' --Filter 351
+            when process in ('SHLREFCG01') then 'SER REFORMER' --Filter 342
             else null
         end as chp_hyd,
         tablename, commodity,pv,period from vedastore where attribute='VAR_FIn'
@@ -2030,28 +2056,28 @@ with hydrogen_chp as (
                     ,'INDMAINSBOM','INDMSWINO','INDMSWORG','INDPELH','INDPELL','INDPOLWST','INDWOD','INDWODWST','METH','MSWBIO','MSWINO','MSWORG'
                     ,'PWASTEDUM','RESBIOLFO','RESBOM','RESHOUSEBOM','RESMAINSBOM','RESPELH','RESWOD','RESWODL','SERBIOLFO','SERBOG','SERBOM','SERBUILDBOM'
                     ,'SERMAINSBOM','SERMSWBIO','SERMSWINO','SERMSWORG','SERPELH','SERWOD','TRABIODST','TRABIODST-FT','TRABIODST-FTL','TRABIODST-FTS','TRABIODSTL','TRABIODSTS'
-                    ,'TRABIOJET-FTDA','TRABIOJET-FTDAL','TRABIOJET-FTIA','TRABIOJET-FTIAL','TRABIOLFO','TRABIOLFODS','TRABIOLFODSL','TRABIOLFOL','TRABIOOILIS','TRABIOOILISL','TRABOM','TRAETH','TRAETHL','TRAETHS','TRAMAINSBOM','TRAMETH') then 'ALL BIO'
+                    ,'TRABIOJET-FTDA','TRABIOJET-FTDAL','TRABIOJET-FTIA','TRABIOJET-FTIAL','TRABIOLFO','TRABIOLFODS','TRABIOLFODSL','TRABIOLFOL','TRABIOOILIS','TRABIOOILISL','TRABOM','TRAETH','TRAETHL','TRAETHS','TRAMAINSBOM','TRAMETH') then 'ALL BIO' --Filter 287
                 when commodity in ('AGRCOA','COA','COA-E','COACOK','ELCCOA','HYGCOA','INDCOA','INDCOACOK','INDSYNCOA','PRCCOA','PRCCOACOK','RESCOA'
-                    ,'SERCOA','SYNCOA','TRACOA') then 'ALL COALS'
+                    ,'SERCOA','SYNCOA','TRACOA') then 'ALL COALS' --Filter 246
 -- NB excludes 'IISCOACOKB' for compatibility with VEDA
                 when commodity in('AGRHYG','ELCHYG','ELCHYGIGCC','HYGL','HYGL-IGCC','HYGLHPD','HYGLHPT','HYL','HYLTK','INDHYG','INDMAINSHYG','RESHOUSEHYG'
                     ,'RESHYG','RESHYGREF-EA','RESHYGREF-NA','RESMAINSHYG','SERBUILDHYG','SERHYG','SERMAINSHYG','TRAHYG','TRAHYGDCN','TRAHYGL','TRAHYGS','TRAHYL'
-                    ,'UPSHYG','UPSMAINSHYG') then 'ALL HYDROGEN'
+                    ,'UPSHYG','UPSMAINSHYG') then 'ALL HYDROGEN' --Filter 371
                 when commodity in ('BENZ','BFG','COG','COK','ELCBFG','ELCCOG','IISBFGB','IISBFGC','IISCOGB','IISCOGC','IISCOKB','IISCOKE'
-                    ,'IISCOKS','INDBENZ','INDBFG','INDCOG','INDCOK','RESCOK') then 'ALL MANFUELS'
+                    ,'IISCOKS','INDBENZ','INDBFG','INDCOG','INDCOK','RESCOK') then 'ALL MANFUELS' --Filter 330
                 when commodity in ('AGRHFO','AGRLFO','AGRLPG','ELCHFO','ELCLFO','ELCLPG','ELCMSC','IISHFOB','INDHFO','INDKER','INDLFO','INDLPG'
                     ,'INDNEULFO','INDNEULPG','INDNEUMSC','INDSYNOIL','OILCRD','OILCRDRAW','OILCRDRAW-E','OILDST','OILHFO','OILJET','OILKER','OILLFO'
                     ,'OILLPG','OILMSC','OILPET','PRCHFO','PRCOILCRD','RESKER','RESLFO','RESLPG','SERHFO','SERKER','SERLFO','SERLPG'
                     ,'SYNOIL','TRADST','TRADSTL','TRADSTS','TRAHFO','TRAHFODS','TRAHFODSL','TRAHFOIS','TRAHFOISL','TRAJETDA','TRAJETDAEL','TRAJETIA'
                     ,'TRAJETIAEL','TRAJETIANL','TRAJETL','TRALFO','TRALFODS','TRALFODSL','TRALFOL','TRALPG','TRALPGL','TRALPGS','TRAPET','TRAPETL'
-                    ,'TRAPETS','UPSLFO') then 'ALL OIL PRODUCTS'
-                when commodity in('INDMAINSGAS','INDNGA') then 'IND GAS'
-                when commodity in('ICHPRO') then 'IND PRO'
-                when commodity in('PRCNGA') then 'PRC GAS'
-                when commodity in('PREFGAS') then 'PRC REFGAS'
-                when commodity in('RESMAINSGAS','RESNGA') then 'RES GAS'
-                when commodity in('SERMAINSGAS','SERNGA') then 'SER GAS'
-                when commodity in('UPSNGA') then 'UPS GAS'
+                    ,'TRAPETS','UPSLFO') then 'ALL OIL PRODUCTS' --Filter 302
+                when commodity in('INDMAINSGAS','INDNGA') then 'IND GAS' --Filter 313
+                when commodity in('ICHPRO') then 'IND PRO' --Filter 252
+                when commodity in('PRCNGA') then 'PRC GAS' --Filter 353
+                when commodity in('PREFGAS') then 'PRC REFGAS' --Filter 308
+                when commodity in('RESMAINSGAS','RESNGA') then 'RES GAS' --Filter 320
+                when commodity in('SERMAINSGAS','SERNGA') then 'SER GAS' --Filter 277
+                when commodity in('UPSNGA') then 'UPS GAS' --Filter 289
             else null
         end as chp_fuel,
         case
@@ -2061,13 +2087,13 @@ with hydrogen_chp as (
                 ,'IISCHPFCH01','IISCHPGT01','IISCHPHFO00','IISCHPNGA00','INMCHPBIOG01','INMCHPBIOS01','INMCHPCCGT01','INMCHPCCGTH01','INMCHPCOA01','INMCHPCOG00','INMCHPCOG01','INMCHPFCH01'
                 ,'INMCHPGT01','INMCHPNGA00','IOICHPBIOG01','IOICHPBIOS00','IOICHPBIOS01','IOICHPCCGT01','IOICHPCCGTH01','IOICHPCOA01','IOICHPFCH01','IOICHPGT01','IOICHPHFO00','IOICHPNGA00'
                 ,'IPPCHPBIOG01','IPPCHPBIOS00','IPPCHPBIOS01','IPPCHPCCGT01','IPPCHPCCGTH01','IPPCHPCOA00','IPPCHPCOA01','IPPCHPFCH01','IPPCHPGT01','IPPCHPNGA00','IPPCHPWST00','IPPCHPWST01'
-                ) then 'CHP IND SECTOR'
-            when process in('PCHP-CCP00','PCHP-CCP01') then 'CHP PRC SECTOR'
+                ) then 'CHP IND SECTOR' --Filter 270
+            when process in('PCHP-CCP00','PCHP-CCP01') then 'CHP PRC SECTOR' --Filter 333
             when process in('RCHPEA-CCG00','RCHPEA-CCG01','RCHPEA-CCH01','RCHPEA-FCH01','RCHPEA-STW01','RCHPNA-CCG01','RCHPNA-CCH01','RCHPNA-FCH01','RCHPNA-STW01','RHEACHPRG01','RHEACHPRH01'
-                ,'RHEACHPRW01','RHNACHPRG01','RHNACHPRH01','RHNACHPRW01') then 'CHP RES SECTOR'
+                ,'RHEACHPRW01','RHNACHPRG01','RHNACHPRH01','RHNACHPRW01') then 'CHP RES SECTOR' --Filter 303
             when process in('SCHP-ADM01','SCHP-CCG00','SCHP-CCG01','SCHP-CCH01','SCHP-FCH01','SCHP-GES00','SCHP-GES01','SCHP-STM01','SCHP-STW00','SCHP-STW01','SHHFCLRH01','SHLCHPRG01'
-                ,'SHLCHPRH01','SHLCHPRW01') then 'CHP SER SECTOR'
-            when process in('UCHP-CCG00','UCHP-CCG01') then 'CHP UPS SECTOR'
+                ,'SHLCHPRH01','SHLCHPRW01') then 'CHP SER SECTOR' --Filter 230
+            when process in('UCHP-CCG00','UCHP-CCG01') then 'CHP UPS SECTOR' --Filter 337
             else null
         end as chp_sec,*
         from vedastore
@@ -2147,23 +2173,23 @@ chp_fuels_used as (
             select
                 case
                     when process in('ICHCHPBIOG01','ICHCHPBIOS00','ICHCHPBIOS01','IFDCHPBIOG01','IFDCHPBIOS00','IFDCHPBIOS01','IISCHPBIOG01','IISCHPBIOS01','INMCHPBIOG01','INMCHPBIOS01'
-                        ,'IOICHPBIOG01','IOICHPBIOS00','IOICHPBIOS01','IPPCHPBIOG01','IPPCHPBIOS00','IPPCHPBIOS01','IPPCHPWST00','IPPCHPWST01') then 'CHP IND BIO'
-                    when process in('ICHCHPPRO00','ICHCHPPRO01') then 'CHP IND BY PRODUCTS'
-                    when process in('ICHCHPCOA00','ICHCHPCOA01','IFDCHPCOA00','IFDCHPCOA01','INMCHPCOA01','IOICHPCOA01','IPPCHPCOA00','IPPCHPCOA01') then 'CHP IND COAL'
+                        ,'IOICHPBIOG01','IOICHPBIOS00','IOICHPBIOS01','IPPCHPBIOG01','IPPCHPBIOS00','IPPCHPBIOS01','IPPCHPWST00','IPPCHPWST01') then 'CHP IND BIO' --Filter 336
+                    when process in('ICHCHPPRO00','ICHCHPPRO01') then 'CHP IND BY PRODUCTS' --Filter 260
+                    when process in('ICHCHPCOA00','ICHCHPCOA01','IFDCHPCOA00','IFDCHPCOA01','INMCHPCOA01','IOICHPCOA01','IPPCHPCOA00','IPPCHPCOA01') then 'CHP IND COAL' --Filter 343
                     when process in('ICHCHPCCGT01','ICHCHPGT01','ICHCHPNGA00','IFDCHPCCGT01','IFDCHPGT01','IFDCHPNGA00','IISCHPCCGT01','IISCHPGT01','IISCHPNGA00','INMCHPCCGT01'
-                        ,'INMCHPGT01','INMCHPNGA00','IOICHPCCGT01','IOICHPGT01','IOICHPNGA00','IPPCHPCCGT01','IPPCHPGT01','IPPCHPNGA00') then 'CHP IND GAS'
+                        ,'INMCHPGT01','INMCHPNGA00','IOICHPCCGT01','IOICHPGT01','IOICHPNGA00','IPPCHPCCGT01','IPPCHPGT01','IPPCHPNGA00') then 'CHP IND GAS' --Filter 385
                     when process in('ICHCHPCCGTH01','ICHCHPFCH01','IFDCHPCCGTH01','IFDCHPFCH01','IISCHPCCGTH01','IISCHPFCH01','INMCHPCCGTH01','INMCHPFCH01','IOICHPCCGTH01'
-                        ,'IOICHPFCH01','IPPCHPCCGTH01','IPPCHPFCH01') then 'CHP IND HYDROGEN'
-                    when process in('IISCHPBFG00','IISCHPBFG01','IISCHPCOG00','IISCHPCOG01','INMCHPCOG00','INMCHPCOG01') then 'CHP IND MAN FUELS'
-                    when process in('ICHCHPHFO00','ICHCHPLFO00','ICHCHPLPG00','ICHCHPLPG01','IFDCHPHFO00','IFDCHPLFO00','IISCHPHFO00','IOICHPHFO00') then 'CHP IND OIL PRODUCTS'
-                    when process in('PCHP-CCP00','PCHP-CCP01') then 'CHP PRC SECTOR'
-                    when process in('RCHPEA-STW01','RCHPNA-STW01','RHEACHPRW01','RHNACHPRW01') then 'CHP RES BIO'
-                    when process in('RCHPEA-CCG00','RCHPEA-CCG01','RCHPNA-CCG01','RHEACHPRG01','RHNACHPRG01') then 'CHP RES GAS'
-                    when process in('RCHPEA-CCH01','RCHPEA-FCH01','RCHPNA-CCH01','RCHPNA-FCH01','RHEACHPRH01','RHNACHPRH01') then 'CHP RES HYDROGEN'
-                    when process in('SCHP-ADM01','SCHP-GES00','SCHP-GES01','SCHP-STM01','SCHP-STW00','SCHP-STW01','SHLCHPRW01') then 'CHP SER BIO'
-                    when process in('SCHP-CCG00','SCHP-CCG01','SHLCHPRG01') then 'CHP SER GAS'
-                    when process in('SCHP-CCH01','SCHP-FCH01','SHHFCLRH01','SHLCHPRH01') then 'CHP SER HYDROGEN'
-                    when process in('UCHP-CCG00','UCHP-CCG01') then 'CHP UPS SECTOR'
+                        ,'IOICHPFCH01','IPPCHPCCGTH01','IPPCHPFCH01') then 'CHP IND HYDROGEN' --Filter 279
+                    when process in('IISCHPBFG00','IISCHPBFG01','IISCHPCOG00','IISCHPCOG01','INMCHPCOG00','INMCHPCOG01') then 'CHP IND MAN FUELS' --Filter 265
+                    when process in('ICHCHPHFO00','ICHCHPLFO00','ICHCHPLPG00','ICHCHPLPG01','IFDCHPHFO00','IFDCHPLFO00','IISCHPHFO00','IOICHPHFO00') then 'CHP IND OIL PRODUCTS' --Filter 286
+                    when process in('PCHP-CCP00','PCHP-CCP01') then 'CHP PRC SECTOR' --Filter 333
+                    when process in('RCHPEA-STW01','RCHPNA-STW01','RHEACHPRW01','RHNACHPRW01') then 'CHP RES BIO' --Filter 335
+                    when process in('RCHPEA-CCG00','RCHPEA-CCG01','RCHPNA-CCG01','RHEACHPRG01','RHNACHPRG01') then 'CHP RES GAS' --Filter 271
+                    when process in('RCHPEA-CCH01','RCHPEA-FCH01','RCHPNA-CCH01','RCHPNA-FCH01','RHEACHPRH01','RHNACHPRH01') then 'CHP RES HYDROGEN' --Filter 316
+                    when process in('SCHP-ADM01','SCHP-GES00','SCHP-GES01','SCHP-STM01','SCHP-STW00','SCHP-STW01','SHLCHPRW01') then 'CHP SER BIO' --Filter 368
+                    when process in('SCHP-CCG00','SCHP-CCG01','SHLCHPRG01') then 'CHP SER GAS' --Filter 255
+                    when process in('SCHP-CCH01','SCHP-FCH01','SHHFCLRH01','SHLCHPRH01') then 'CHP SER HYDROGEN' --Filter 344
+                    when process in('UCHP-CCG00','UCHP-CCG01') then 'CHP UPS SECTOR' --Filter 337
             end as chp_sec, * from vedastore
             where attribute='VAR_FOut' and commodity in ('ICHSTM','IFDSTM','IISLTH','INMSTM','IOISTM','IPPLTH','PCHPHEAT','RESLTH-NA','RHEATPIPE-NA',
                 'SERLTH','SHLDELVRAD','SHHDELVRAD','UPSHEAT','RESLTH-FC','RESLTH-FS','RESLTH-HC','RESLTH-HS','RHEATPIPE-FC',
@@ -2228,23 +2254,23 @@ chp_fuels_used as (
         select tablename, period, pv,
         case
             when process in('ICHCHPBIOG01','ICHCHPBIOS00','ICHCHPBIOS01','IFDCHPBIOG01','IFDCHPBIOS00','IFDCHPBIOS01','IISCHPBIOG01','IISCHPBIOS01','INMCHPBIOG01','INMCHPBIOS01','IOICHPBIOG01'
-                ,'IOICHPBIOS00','IOICHPBIOS01','IPPCHPBIOG01','IPPCHPBIOS00','IPPCHPBIOS01','IPPCHPWST00','IPPCHPWST01') then 'CHP IND BIO'
-            when process in('ICHCHPPRO00','ICHCHPPRO01') then 'CHP IND BY PRODUCTS'
-            when process in('ICHCHPCOA00','ICHCHPCOA01','IFDCHPCOA00','IFDCHPCOA01','INMCHPCOA01','IOICHPCOA01','IPPCHPCOA00','IPPCHPCOA01') then 'CHP IND COAL'
+                ,'IOICHPBIOS00','IOICHPBIOS01','IPPCHPBIOG01','IPPCHPBIOS00','IPPCHPBIOS01','IPPCHPWST00','IPPCHPWST01') then 'CHP IND BIO' --Filter 336
+            when process in('ICHCHPPRO00','ICHCHPPRO01') then 'CHP IND BY PRODUCTS' --Filter 260
+            when process in('ICHCHPCOA00','ICHCHPCOA01','IFDCHPCOA00','IFDCHPCOA01','INMCHPCOA01','IOICHPCOA01','IPPCHPCOA00','IPPCHPCOA01') then 'CHP IND COAL' --Filter 343
             when process in('ICHCHPCCGT01','ICHCHPGT01','ICHCHPNGA00','IFDCHPCCGT01','IFDCHPGT01','IFDCHPNGA00','IISCHPCCGT01','IISCHPGT01','IISCHPNGA00','INMCHPCCGT01'
-                ,'INMCHPGT01','INMCHPNGA00','IOICHPCCGT01','IOICHPGT01','IOICHPNGA00','IPPCHPCCGT01','IPPCHPGT01','IPPCHPNGA00') then 'CHP IND GAS'
+                ,'INMCHPGT01','INMCHPNGA00','IOICHPCCGT01','IOICHPGT01','IOICHPNGA00','IPPCHPCCGT01','IPPCHPGT01','IPPCHPNGA00') then 'CHP IND GAS' --Filter 385
             when process in('ICHCHPCCGTH01','ICHCHPFCH01','IFDCHPCCGTH01','IFDCHPFCH01','IISCHPCCGTH01','IISCHPFCH01','INMCHPCCGTH01','INMCHPFCH01','IOICHPCCGTH01','IOICHPFCH01'
-                ,'IPPCHPCCGTH01','IPPCHPFCH01') then 'CHP IND HYDROGEN'
-            when process in('IISCHPBFG00','IISCHPBFG01','IISCHPCOG00','IISCHPCOG01','INMCHPCOG00','INMCHPCOG01') then 'CHP IND MAN FUELS'
-            when process in('ICHCHPHFO00','ICHCHPLFO00','ICHCHPLPG00','ICHCHPLPG01','IFDCHPHFO00','IFDCHPLFO00','IISCHPHFO00','IOICHPHFO00') then 'CHP IND OIL PRODUCTS'
-            when process in('PCHP-CCP00','PCHP-CCP01') then 'CHP PRC SECTOR'
-            when process in('RCHPEA-STW01','RCHPNA-STW01','RHEACHPRW01','RHNACHPRW01') then 'CHP RES BIO'
-            when process in('RCHPEA-CCG00','RCHPEA-CCG01','RCHPNA-CCG01','RHEACHPRG01','RHNACHPRG01') then 'CHP RES GAS'
-            when process in('RCHPEA-CCH01','RCHPEA-FCH01','RCHPNA-CCH01','RCHPNA-FCH01','RHEACHPRH01','RHNACHPRH01') then 'CHP RES HYDROGEN'
-            when process in('SCHP-ADM01','SCHP-GES00','SCHP-GES01','SCHP-STM01','SCHP-STW00','SCHP-STW01','SHLCHPRW01') then 'CHP SER BIO'
-            when process in('SCHP-CCG00','SCHP-CCG01','SHLCHPRG01') then 'CHP SER GAS'
-            when process in('SCHP-CCH01','SCHP-FCH01','SHHFCLRH01','SHLCHPRH01') then 'CHP SER HYDROGEN'
-            when process in('UCHP-CCG00','UCHP-CCG01') then 'CHP UPS SECTOR'
+                ,'IPPCHPCCGTH01','IPPCHPFCH01') then 'CHP IND HYDROGEN' --Filter 279
+            when process in('IISCHPBFG00','IISCHPBFG01','IISCHPCOG00','IISCHPCOG01','INMCHPCOG00','INMCHPCOG01') then 'CHP IND MAN FUELS' --Filter 265
+            when process in('ICHCHPHFO00','ICHCHPLFO00','ICHCHPLPG00','ICHCHPLPG01','IFDCHPHFO00','IFDCHPLFO00','IISCHPHFO00','IOICHPHFO00') then 'CHP IND OIL PRODUCTS' --Filter 286
+            when process in('PCHP-CCP00','PCHP-CCP01') then 'CHP PRC SECTOR' --Filter 333
+            when process in('RCHPEA-STW01','RCHPNA-STW01','RHEACHPRW01','RHNACHPRW01') then 'CHP RES BIO' --Filter 335
+            when process in('RCHPEA-CCG00','RCHPEA-CCG01','RCHPNA-CCG01','RHEACHPRG01','RHNACHPRG01') then 'CHP RES GAS' --Filter 271
+            when process in('RCHPEA-CCH01','RCHPEA-FCH01','RCHPNA-CCH01','RCHPNA-FCH01','RHEACHPRH01','RHNACHPRH01') then 'CHP RES HYDROGEN' --Filter 316
+            when process in('SCHP-ADM01','SCHP-GES00','SCHP-GES01','SCHP-STM01','SCHP-STW00','SCHP-STW01','SHLCHPRW01') then 'CHP SER BIO' --Filter 368
+            when process in('SCHP-CCG00','SCHP-CCG01','SHLCHPRG01') then 'CHP SER GAS' --Filter 255
+            when process in('SCHP-CCH01','SCHP-FCH01','SHHFCLRH01','SHLCHPRH01') then 'CHP SER HYDROGEN' --Filter 344
+            when process in('UCHP-CCG00','UCHP-CCG01') then 'CHP UPS SECTOR' --Filter 337
         end as chp_sec
         from vedastore
         where attribute='VAR_FOut' and commodity in('ELCGEN','INDELC','RESELC','RESHOUSEELC','SERBUILDELC','SERDISTELC','SERELC') --Filter 215
@@ -2334,44 +2360,44 @@ from (
     select tablename, period, pv,
     case
         when process in('AGRBIODST01','AGRBIOLPG01','AGRBOM01','AGRCOA00','AGRELC00','AGRELC01','AGRGRASS00','AGRGRASS01','AGRHFO00','AGRHFO01','AGRHYG01','AGRLAND00'
-            ,'AGRLAND01','AGRLFO00','AGRLFO01','AGRLPG00','AGRLPG01','AGRNGA00','AGRNGA01','AGRPOLWST00','AGRPOLWST01') then 'FUEL TECHS AGR'
+            ,'AGRLAND01','AGRLFO00','AGRLFO01','AGRLPG00','AGRLPG01','AGRNGA00','AGRNGA01','AGRPOLWST00','AGRPOLWST01') then 'FUEL TECHS AGR' --Filter 231
         when process in('ELCBFG00','ELCBFG01','ELCBIOLFO01','ELCBIOOIL01','ELCBOG-AD01','ELCBOG-LF00','ELCBOG-LF01','ELCBOG-SW00','ELCBOG-SW01','ELCBOM01','ELCCOA00','ELCCOA01'
             ,'ELCCOG00','ELCCOG01','ELCGEO01','ELCHFO00','ELCHFO01','ELCHYD00','ELCHYD01','ELCHYG01','ELCHYGD01','ELCHYGI01','ELCLFO00','ELCLFO01'
             ,'ELCLPG00','ELCLPG01','ELCMSC00','ELCMSC01','ELCMSWINO00','ELCMSWINO01','ELCMSWORG00','ELCMSWORG01','ELCNGA00','ELCNGA01','ELCPELH01','ELCPELL00'
             ,'ELCPELL01','ELCPOLWST00','ELCPOLWST01','ELCSOL00','ELCSOL01','ELCSTWWST00','ELCSTWWST01','ELCTID01','ELCURN00','ELCURN01','ELCWAV01','ELCWNDOFS00'
-            ,'ELCWNDOFS01','ELCWNDONS00','ELCWNDONS01') then 'FUEL TECHS ELC'
+            ,'ELCWNDOFS01','ELCWNDONS00','ELCWNDONS01') then 'FUEL TECHS ELC' --Filter 355
         when process in('INDBENZ00','INDBENZ01','INDBFG00','INDBFG01','INDBIOLFO01','INDBIOLPG01','INDBIOOIL01','INDBIOPOL01','INDBOG-AD01','INDBOG-LF00','INDBOG-LF01','INDBOM01'
             ,'INDCOA00','INDCOA01','INDCOACOK00','INDCOACOK01','INDCOG00','INDCOG01','INDCOK00','INDCOK01','INDELC00','INDELC01','INDHFO00','INDHFO01'
             ,'INDHYG01','INDKER00','INDKER01','INDLFO00','INDLFO01','INDLPG01','INDMSWINO00','INDMSWINO01','INDMSWORG00','INDMSWORG01','INDNGA00','INDNGA01'
-            ,'INDOILLPG00','INDPELH01','INDPELL00','INDPELL01','INDPOLWST00','INDSYGCOA01','INDSYGOIL01','INDWHO01','INDWOD01','INDWODWST00','INDWODWST01') then 'FUEL TECHS INDUS'
-        when process in('PHBIOOIL01','PHCOA01','PHELC01','PHELCSURP01','PHMSWINO01','PHMSWORG01','PHNGAL01','PHPELH01','PHPELL01') then 'FUEL TECHS HYG'
+            ,'INDOILLPG00','INDPELH01','INDPELL00','INDPELL01','INDPOLWST00','INDSYGCOA01','INDSYGOIL01','INDWHO01','INDWOD01','INDWODWST00','INDWODWST01') then 'FUEL TECHS INDUS' --Filter 361
+        when process in('PHBIOOIL01','PHCOA01','PHELC01','PHELCSURP01','PHMSWINO01','PHMSWORG01','PHNGAL01','PHPELH01','PHPELL01') then 'FUEL TECHS HYG' --Filter 345
         when process in('PRCCOA00','PRCCOA01','PRCCOACOK00','PRCCOACOK01','PRCELC00','PRCELC01','PRCHFO00','PRCHFO01','PRCNGA00','PRCNGA01','PRCOILCRD00','PRCOILCRD01')
-            then 'FUEL TECHS PRC'
+            then 'FUEL TECHS PRC' --Filter 379
         when process in('RESBIOLFO01','RESBIOM01','RESCOA00','RESCOA01','RESCOK00','RESCOK01','RESELC00','RESELC01','RESHYG01','RESKER00','RESKER01','RESLFO00'
-            ,'RESLFO01','RESLPG00','RESLPG01','RESNGAS00','RESNGAS01','RESPELH01','RESSOL00','RESSOL01','RESWOD00','RESWOD01','RESWODL00','RESWODL01') then 'FUEL TECHS RES'
+            ,'RESLFO01','RESLPG00','RESLPG01','RESNGAS00','RESNGAS01','RESPELH01','RESSOL00','RESSOL01','RESWOD00','RESWOD01','RESWODL00','RESWODL01') then 'FUEL TECHS RES' --Filter 304
         when process in('SERBIOLFO01','SERBOG-SW00','SERBOG-SW01','SERBOM01','SERCOA00','SERCOA01','SERELC00','SERELC01','SERGEO00','SERGEO01','SERHFO00','SERHFO01'
             ,'SERHYG01','SERKER01','SERLFO00','SERLFO01','SERLPG01','SERMSWBIO01','SERMSWINO00','SERMSWINO01','SERMSWORG00','SERMSWORG01','SERNGA00','SERNGA01'
-            ,'SERPELH01','SERSOL01','SERWOD01') then 'FUEL TECHS SERV'
+            ,'SERPELH01','SERSOL01','SERWOD01') then 'FUEL TECHS SERV' --Filter 269
         when process in('TRABIODST00','TRACOA00','TRADST00','TRAELC00','TRAETH00','TRAHFODS00','TRAHFOIS00','TRAJETDA00','TRAJETIA00','TRALFO00','TRALFODS00','TRALPG00','TRAPET00',
-			'TRABIODST01','TRABIODST-FT01','TRABIOJET-FTDA01','TRABIOJET-FTIA01','TRABIOLFO01','TRABIOLFODS01','TRABIOOILIS01','TRABOM01','TRADST01','TRAELC01','TRAETH01',
-			'TRAHFODS01','TRAHFOIS01','TRAHYGP01','TRAHYGPDS01','TRAHYGPIS01','TRAHYL01','TRAHYLDA01','TRAHYLIA01','TRAJETDA01','TRAJETIA01','TRALFO01','TRALFODS01','TRALNGDS01',
-			'TRALNGIS01','TRALPG01','TRANGA01','TRAPET01') then 'FUEL TECHS TRA'
-        when process in('UPSELC00','UPSELC01','UPSHYG01','UPSLFO00','UPSLFO01','UPSNGA00','UPSNGA01') then 'FUEL TECHS UPSTREAM'
+            'TRABIODST01','TRABIODST-FT01','TRABIOJET-FTDA01','TRABIOJET-FTIA01','TRABIOLFO01','TRABIOLFODS01','TRABIOOILIS01','TRABOM01','TRADST01','TRAELC01','TRAETH01',
+            'TRAHFODS01','TRAHFOIS01','TRAHYGP01','TRAHYGPDS01','TRAHYGPIS01','TRAHYL01','TRAHYLDA01','TRAHYLIA01','TRAJETDA01','TRAJETIA01','TRALFO01','TRALFODS01','TRALNGDS01',
+            'TRALNGIS01','TRALPG01','TRANGA01','TRAPET01') then 'FUEL TECHS TRA' --Filter 249
+        when process in('UPSELC00','UPSELC01','UPSHYG01','UPSLFO00','UPSLFO01','UPSNGA00','UPSNGA01') then 'FUEL TECHS UPSTREAM' --Filter 318
     end as proc_set,
     case
         when commodity in('BENZ','BFG','COG','COK','ELCBFG','ELCCOG','IISBFGB','IISBFGC','IISCOGB','IISCOGC','IISCOKB','IISCOKE'
-            ,'IISCOKS','INDBENZ','INDBFG','INDCOG','INDCOK','RESCOK') then 'ALL MANFUELS'
+            ,'IISCOKS','INDBENZ','INDBFG','INDCOG','INDCOK','RESCOK') then 'ALL MANFUELS' --Filter 330
         when commodity in('AGRNGA','ELCNGA','HYGLNGA','HYGSNGA','IISNGAB','IISNGAC','IISNGAE','INDNEUNGA','INDNGA','LNG','NGA','NGA-E'
             ,'NGA-E-EU','NGA-E-IRE','NGA-I-EU','NGA-I-N','NGAPTR','PRCNGA','RESNGA','SERNGA','TRACNGL','TRACNGS','TRALNG','TRALNGDS'
-            ,'TRALNGDSL','TRALNGIS','TRALNGISL','TRANGA','UPSNGA') then 'ALL GAS'
+            ,'TRALNGDSL','TRALNGIS','TRALNGISL','TRANGA','UPSNGA') then 'ALL GAS' --Filter 354
         when commodity in('AGRDISTELC','AGRELC','ELC','ELC-E-EU','ELC-E-IRE','ELC-I-EU','ELC-I-IRE','ELCGEN','ELCSURPLUS','HYGELC','HYGELCSURP','HYGLELC'
             ,'HYGSELC','INDDISTELC','INDELC','PRCELC','RESDISTELC','RESELC','RESELCSURPLUS','RESHOUSEELC','SERBUILDELC','SERDISTELC','SERELC','TRACELC'
-            ,'TRACPHB','TRADISTELC','TRAELC','UPSELC') then 'ALL ELECTRICITY'
-        when commodity in('ICHOTH','ICHSTM','IFDSTM','INDSTM','INMSTM','IOISTM','PCHPHEAT','RHCSV-RHEA','RHEATPIPE-EA','RHEATPIPE-NA','UPSHEAT') then 'ALL HEAT'
+            ,'TRACPHB','TRADISTELC','TRAELC','UPSELC') then 'ALL ELECTRICITY' --Filter 235
+        when commodity in('ICHOTH','ICHSTM','IFDSTM','INDSTM','INMSTM','IOISTM','PCHPHEAT','RHCSV-RHEA','RHEATPIPE-EA','RHEATPIPE-NA','UPSHEAT') then 'ALL HEAT' --Filter 263
         when commodity in('ELCGEO','ELCHYDDAM','ELCSOL','ELCTID','ELCWAV','ELCWNDOFS','ELCWNDONS','GEO','HYDDAM','HYDROR','RESSOL','SERGEO'
-            ,'SERSOL','SOL','TID','WAV','WNDOFF','WNDONS') then 'ALL OTHER RNW'
+            ,'SERSOL','SOL','TID','WAV','WNDOFF','WNDONS') then 'ALL OTHER RNW' --Filter 226
         when commodity in('AGRCOA','COA','COA-E','COACOK','ELCCOA','HYGCOA','INDCOA','INDCOACOK','INDSYNCOA','PRCCOA','PRCCOACOK','RESCOA'
-            ,'SERCOA','SYNCOA','TRACOA') then 'ALL COALS'
+            ,'SERCOA','SYNCOA','TRACOA') then 'ALL COALS' --Filter 246
         when commodity in('AGRBIODST','AGRBIOLPG','AGRBOM','AGRGRASS','AGRMAINSBOM','AGRPOLWST','BGRASS','BIODST','BIODST-FT','BIOJET-FT','BIOKER-FT','BIOLFO'
             ,'BIOLPG','BIOOIL','BOG-AD','BOG-G','BOG-LF','BOM','BPELH','BPELL','BRSEED','BSEWSLG','BSLURRY','BSTARCH'
             ,'BSTWWST','BSUGAR','BTREATSTW','BTREATWOD','BVOIL','BWOD','BWODLOG','BWODWST','ELCBIOCOA','ELCBIOCOA2','ELCBIOLFO','ELCBIOOIL'
@@ -2381,16 +2407,16 @@ from (
             ,'PWASTEDUM','RESBIOLFO','RESBOM','RESHOUSEBOM','RESMAINSBOM','RESPELH','RESWOD','RESWODL','SERBIOLFO','SERBOG','SERBOM','SERBUILDBOM'
             ,'SERMAINSBOM','SERMSWBIO','SERMSWINO','SERMSWORG','SERPELH','SERWOD','TRABIODST','TRABIODST-FT','TRABIODST-FTL','TRABIODST-FTS','TRABIODSTL','TRABIODSTS'
             ,'TRABIOJET-FTDA','TRABIOJET-FTDAL','TRABIOJET-FTIA','TRABIOJET-FTIAL','TRABIOLFO','TRABIOLFODS','TRABIOLFODSL','TRABIOLFOL','TRABIOOILIS','TRABIOOILISL','TRABOM','TRAETH'
-            ,'TRAETHL','TRAETHS','TRAMAINSBOM','TRAMETH') then 'ALL BIO'
+            ,'TRAETHL','TRAETHS','TRAMAINSBOM','TRAMETH') then 'ALL BIO' --Filter 287
         when commodity in('AGRHFO','AGRLFO','AGRLPG','ELCHFO','ELCLFO','ELCLPG','ELCMSC','IISHFOB','INDHFO','INDKER','INDLFO','INDLPG'
             ,'INDNEULFO','INDNEULPG','INDNEUMSC','INDSYNOIL','OILCRD','OILCRDRAW','OILCRDRAW-E','OILDST','OILHFO','OILJET','OILKER','OILLFO'
             ,'OILLPG','OILMSC','OILPET','PRCHFO','PRCOILCRD','RESKER','RESLFO','RESLPG','SERHFO','SERKER','SERLFO','SERLPG'
             ,'SYNOIL','TRADST','TRADSTL','TRADSTS','TRAHFO','TRAHFODS','TRAHFODSL','TRAHFOIS','TRAHFOISL','TRAJETDA','TRAJETDAEL','TRAJETIA'
             ,'TRAJETIAEL','TRAJETIANL','TRAJETL','TRALFO','TRALFODS','TRALFODSL','TRALFOL','TRALPG','TRALPGL','TRALPGS','TRAPET','TRAPETL'
-            ,'TRAPETS','UPSLFO') then 'ALL OIL PRODUCTS'
+            ,'TRAPETS','UPSLFO') then 'ALL OIL PRODUCTS' --Filter 302
         when commodity in('AGRHYG','ELCHYG','ELCHYGIGCC','HYGL','HYGL-IGCC','HYGLHPD','HYGLHPT','HYL','HYLTK','INDHYG','INDMAINSHYG','RESHOUSEHYG'
             ,'RESHYG','RESHYGREF-EA','RESHYGREF-NA','RESMAINSHYG','SERBUILDHYG','SERHYG','SERMAINSHYG','TRAHYG','TRAHYGDCN','TRAHYGL','TRAHYGS','TRAHYL'
-            ,'UPSHYG','UPSMAINSHYG') then 'ALL HYDROGEN'
+            ,'UPSHYG','UPSMAINSHYG') then 'ALL HYDROGEN' --Filter 371
     end as comm_set
     from vedastore
     where attribute='VAR_FIn'
@@ -2428,31 +2454,31 @@ elc_prd_fuel as (
         select tablename,period, pv,
         case
             when process in('EBIO01','EBIOCON00','EBIOS00','EBOG-ADE01','EBOG-LFE00','EBOG-LFE01','EBOG-SWE00','EBOG-SWE01','EMSW00','EMSW01','EPOLWST00','ESTWWST00'
-                ,'ESTWWST01') then 'ELC FROM BIO'
-            when process in('EBIOQ01') then 'ELC FROM BIO CCS'
-            when process in('PCHP-CCP00','PCHP-CCP01','UCHP-CCG00','UCHP-CCG01') then 'ELC FROM CHP'
-            when process='ECOAQR01' then 'ELC FROM COAL CCSRET'
-            when process in('ECOARR01') then 'ELC FROM COAL RR'
-            when process in('ECOA00','ECOABIO00') then 'ELC FROM COAL-COF'
-            when process in('ECOAQ01','ECOAQDEMO01') then 'ELC FROM COALCOF CCS'
-            when process in('ENGACCT00','ENGAOCT00','ENGAOCT01','ENGARCPE00','ENGARCPE01') then 'ELC FROM GAS'
-            when process in('ENGACCTQ01','ENGACCTQDEMO01') then 'ELC FROM GAS CCS'
-            when process='ENGAQR01' then 'ELC FROM GAS CCSRET'
-            when process in('ENGACCTRR01') then 'ELC FROM GAS RR'
-            when process in('EGEO01') then 'ELC FROM GEO'
-            when process in('EHYD00','EHYD01') then 'ELC FROM HYDRO'
-            when process in('EHYGCCT01','EHYGOCT01') then 'ELC FROM HYDROGEN'
-            when process in('ELCIE00','ELCIE01','ELCII00','ELCII01') then 'ELC FROM IMPORTS'
-            when process in('EMANOCT00','EMANOCT01') then 'ELC FROM MANFUELS'
-            when process in('ENUCPWR00','ENUCPWR101','ENUCPWR102') then 'ELC FROM NUCLEAR'
-            when process in('EDSTRCPE00','EDSTRCPE01','EHFOIGCC01','EOILL00','EOILL01','EOILS00','EOILS01') then 'ELC FROM OIL'
-            when process in('EHFOIGCCQ01') then 'ELC FROM OIL CCS'
-            when process in('ESOL00','ESOL01','ESOLPV00','ESOLPV01') then 'ELC FROM SOL-PV'
-            when process in('ETIB101','ETIR101','ETIS101') then 'ELC FROM TIDAL'
-            when process in('EWAV101') then 'ELC FROM WAVE'
-            when process in('EWNDOFF00','EWNDOFF101','EWNDOFF201','EWNDOFF301') then 'ELC FROM WIND-OFFSH'
-            when process in('EWNDONS00','EWNDONS101','EWNDONS201','EWNDONS301','EWNDONS401','EWNDONS501','EWNDONS601','EWNDONS701','EWNDONS801','EWNDONS901') then 'ELC FROM WIND-ONSH'
-            when process in('ELCEE00','ELCEE01','ELCEI00','ELCEI01') then 'ELC TO EXPORTS'
+                ,'ESTWWST01') then 'ELC FROM BIO' --Filter 297
+            when process in('EBIOQ01') then 'ELC FROM BIO CCS' --Filter 306
+            when process in('PCHP-CCP00','PCHP-CCP01','UCHP-CCG00','UCHP-CCG01') then 'ELC FROM CHP' --Filter 358
+            when process='ECOAQR01' then 'ELC FROM COAL CCSRET' --Filter 245
+            when process in('ECOARR01') then 'ELC FROM COAL RR' --Filter 238
+            when process in('ECOA00','ECOABIO00') then 'ELC FROM COAL-COF' --Filter 347
+            when process in('ECOAQ01','ECOAQDEMO01') then 'ELC FROM COALCOF CCS' --Filter 248
+            when process in('ENGACCT00','ENGAOCT00','ENGAOCT01','ENGARCPE00','ENGARCPE01') then 'ELC FROM GAS' --Filter 243
+            when process in('ENGACCTQ01','ENGACCTQDEMO01') then 'ELC FROM GAS CCS' --Filter 301
+            when process='ENGAQR01' then 'ELC FROM GAS CCSRET' --Filter 240
+            when process in('ENGACCTRR01') then 'ELC FROM GAS RR' --Filter 392
+            when process in('EGEO01') then 'ELC FROM GEO' --Filter 338
+            when process in('EHYD00','EHYD01') then 'ELC FROM HYDRO' --Filter 373
+            when process in('EHYGCCT01','EHYGOCT01') then 'ELC FROM HYDROGEN' --Filter 283
+            when process in('ELCIE00','ELCIE01','ELCII00','ELCII01') then 'ELC FROM IMPORTS' --Filter 225
+            when process in('EMANOCT00','EMANOCT01') then 'ELC FROM MANFUELS' --Filter 294
+            when process in('ENUCPWR00','ENUCPWR101','ENUCPWR102') then 'ELC FROM NUCLEAR' --Filter 261
+            when process in('EDSTRCPE00','EDSTRCPE01','EHFOIGCC01','EOILL00','EOILL01','EOILS00','EOILS01') then 'ELC FROM OIL' --Filter 341
+            when process in('EHFOIGCCQ01') then 'ELC FROM OIL CCS' --Filter 290
+            when process in('ESOL00','ESOL01','ESOLPV00','ESOLPV01') then 'ELC FROM SOL-PV' --Filter 366
+            when process in('ETIB101','ETIR101','ETIS101') then 'ELC FROM TIDAL' --Filter 352
+            when process in('EWAV101') then 'ELC FROM WAVE' --Filter 239
+            when process in('EWNDOFF00','EWNDOFF101','EWNDOFF201','EWNDOFF301') then 'ELC FROM WIND-OFFSH' --Filter 299
+            when process in('EWNDONS00','EWNDONS101','EWNDONS201','EWNDONS301','EWNDONS401','EWNDONS501','EWNDONS601','EWNDONS701','EWNDONS801','EWNDONS901') then 'ELC FROM WIND-ONSH' --Filter 236
+            when process in('ELCEE00','ELCEE01','ELCEI00','ELCEI01') then 'ELC TO EXPORTS' --Filter 298
          end as proc_set
         from vedastore
         where attribute='VAR_FOut' and commodity in('ELCDUMMY','ELC','ELC-E-IRE','ELC-E-EU','ELCGEN')  --Filter 78
@@ -2598,20 +2624,20 @@ with rsr_min as(
     from (
         select tablename,period, pv,
             case
-                when  process in('IMPURN') then 'IMPORT URN'
+                when  process in('IMPURN') then 'IMPORT URN' --Filter 325
                 when  process in('MINBGRASS1','MINBGRASS2','MINBGRASS3','MINBIOOILCRP','MINBOG-LF','MINBRSEED','MINBSEWSLG','MINBSLURRY1','MINBSTWWST1','MINBSUGAR','MINBTALLOW','MINBVOFAT'
                     ,'MINBWHT1','MINBWHT2','MINBWHT3','MINBWOD1','MINBWOD2','MINBWOD3','MINBWOD4','MINBWODLOG','MINBWODWST','MINBWODWSTSAW','MINMSWBIO','MINMSWINO'
-                    ,'MINMSWORG') then 'MINING BIOMASS'
-                when  process in('MINCOA1','MINCOA2','MINCOA3','MINCOA4','MINCOA5','MINCOA6','MINCOACOK1','MINCOACOK2') then 'MINING COAL'
-                when  process in('RNWGEO') then 'MINING GEOTHERMAL'
-                when  process in('RNWHYDDAM','RNWHYDROR') then 'MINING HYDRO'
-                when  process in('MINNGA1','MINNGA2','MINNGA3','MINNGA4','MINNGA5','MINNGA6','MINNGA7','MINNGA8','MINNGA9') then 'MINING NGA'
-                when  process in('MINNGASHL1','MINNGASHL2','MINNGASHL3') then 'MINING NGA-SHALE'
-                when  process in('MINOILCRD1','MINOILCRD2','MINOILCRD3','MINOILCRD4','MINOILCRD5','MINOILCRD6','MINOILCRD7','MINOILCRD8','MINOILCRD9') then 'MINING OIL'
-                when  process in('RNWSOL') then 'MINING SOLAR'
-                when  process in('RNWTID') then 'MINING TIDAL'
-                when  process in('RNWWAV') then 'MINING WAVE'
-                when  process in('RNWWNDOFF','RNWWNDONS') then 'MINING WIND'
+                    ,'MINMSWORG') then 'MINING BIOMASS' --Filter 254
+                when  process in('MINCOA1','MINCOA2','MINCOA3','MINCOA4','MINCOA5','MINCOA6','MINCOACOK1','MINCOACOK2') then 'MINING COAL' --Filter 300
+                when  process in('RNWGEO') then 'MINING GEOTHERMAL' --Filter 380
+                when  process in('RNWHYDDAM','RNWHYDROR') then 'MINING HYDRO' --Filter 317
+                when  process in('MINNGA1','MINNGA2','MINNGA3','MINNGA4','MINNGA5','MINNGA6','MINNGA7','MINNGA8','MINNGA9') then 'MINING NGA' --Filter 309
+                when  process in('MINNGASHL1','MINNGASHL2','MINNGASHL3') then 'MINING NGA-SHALE' --Filter 247
+                when  process in('MINOILCRD1','MINOILCRD2','MINOILCRD3','MINOILCRD4','MINOILCRD5','MINOILCRD6','MINOILCRD7','MINOILCRD8','MINOILCRD9') then 'MINING OIL' --Filter 274
+                when  process in('RNWSOL') then 'MINING SOLAR' --Filter 305
+                when  process in('RNWTID') then 'MINING TIDAL' --Filter 378
+                when  process in('RNWWAV') then 'MINING WAVE' --Filter 272
+                when  process in('RNWWNDOFF','RNWWNDONS') then 'MINING WIND' --Filter 310
                 else null
             end as proc_set
         from vedastore
@@ -2670,28 +2696,28 @@ with rsr_min as(
     from (
         select tablename,period, pv,
         case
-            when process in('IMPBIODST') then 'IMPORT BDL'
-            when process in('IMPBIODST-FT') then 'IMPORT FTD'
-            when process in('IMPBIOJET-FT') then 'IMPORT FTK-AVI'
-            when process in('IMPBIOKET-FT') then 'IMPORT FTK-HEA'
-            when process in('IMPBIOOIL','IMPBVOFAT','IMPBVOIL') then 'IMPORT BIOOIL'
-            when process in('IMPAGWST','IMPBGRASS','IMPBSTARCH','IMPBWOD','IMPBWODWST') then 'IMPORT BIOMASS'
-            when process in('IMPCOA','IMPCOA-E','IMPCOACOK') then 'IMPORT COAL'
-            when process in('IMPCOK') then 'IMPORT COKE'
-            when process in('IMPELC-EU','IMPELC-IRE') then 'IMPORT ELC'
-            when process in('IMPETH') then 'IMPORT ETHANOL'
-            when process in('IMPHYL') then 'IMPORT HYL'
-            when process in('IMPNGA-E','IMPNGA-EU','IMPNGA-LNG','IMPNGA-N') then 'IMPORT NGA'
-            when process in('IMPOILCRD1','IMPOILCRD1-E','IMPOILCRD2') then 'IMPORT OIL'
-            when process in('IMPOILDST') then 'IMPORT DST'
-            when process in('IMPOILHFO') then 'IMPORT HFO'
-            when process in('IMPOILJET') then 'IMPORT JET'
-            when process in('IMPOILKER') then 'IMPORT KER'
-            when process in('IMPOILLFO') then 'IMPORT LFO'
-            when process in('IMPOILLPG') then 'IMPORT LPG'
-            when process in('IMPOILMSC') then 'IMPORT MOIL'
-            when process in('IMPOILPET') then 'IMPORT GSL'
-            when process in('IMPURN') then 'IMPORT URN'
+            when process in('IMPBIODST') then 'IMPORT BDL' --Filter 232
+            when process in('IMPBIODST-FT') then 'IMPORT FTD' --Filter 377
+            when process in('IMPBIOJET-FT') then 'IMPORT FTK-AVI' --Filter 383
+            when process in('IMPBIOKET-FT') then 'IMPORT FTK-HEA' --Filter 357
+            when process in('IMPBIOOIL','IMPBVOFAT','IMPBVOIL') then 'IMPORT BIOOIL' --Filter 381
+            when process in('IMPAGWST','IMPBGRASS','IMPBSTARCH','IMPBWOD','IMPBWODWST') then 'IMPORT BIOMASS' --Filter 384
+            when process in('IMPCOA','IMPCOA-E','IMPCOACOK') then 'IMPORT COAL' --Filter 390
+            when process in('IMPCOK') then 'IMPORT COKE' --Filter 369
+            when process in('IMPELC-EU','IMPELC-IRE') then 'IMPORT ELC' --Filter 350
+            when process in('IMPETH') then 'IMPORT ETHANOL' --Filter 362
+            when process in('IMPHYL') then 'IMPORT HYL' --Filter 293
+            when process in('IMPNGA-E','IMPNGA-EU','IMPNGA-LNG','IMPNGA-N') then 'IMPORT NGA' --Filter 280
+            when process in('IMPOILCRD1','IMPOILCRD1-E','IMPOILCRD2') then 'IMPORT OIL' --Filter 241
+            when process in('IMPOILDST') then 'IMPORT DST' --Filter 250
+            when process in('IMPOILHFO') then 'IMPORT HFO' --Filter 359
+            when process in('IMPOILJET') then 'IMPORT JET' --Filter 262
+            when process in('IMPOILKER') then 'IMPORT KER' --Filter 391
+            when process in('IMPOILLFO') then 'IMPORT LFO' --Filter 273
+            when process in('IMPOILLPG') then 'IMPORT LPG' --Filter 348
+            when process in('IMPOILMSC') then 'IMPORT MOIL' --Filter 334
+            when process in('IMPOILPET') then 'IMPORT GSL' --Filter 267
+            when process in('IMPURN') then 'IMPORT URN' --Filter 325
         end as proc_set
         from vedastore
         where attribute='VAR_FOut'
@@ -2747,20 +2773,20 @@ with rsr_min as(
     from (
         select tablename,period, pv,
             case
-                when process in('EXPCOA','EXPCOA-E') then 'EXPORT COAL'
-                when process in('EXPCOK') then 'EXPORT COKE'
-                when process in('EXPELC-EU','EXPELC-IRE') then 'EXPORT ELC'
-                when process in('EXPETH') then 'EXPORT ETH'
-                when process in('EXPNGA-E','EXPNGA-EU','EXPNGA-IRE') then 'EXPORT NGA'
-                when process in('EXPOILCRD1','EXPOILCRD1-E','EXPOILCRD2') then 'EXPORT OIL'
-                when process in('EXPOILDST') then 'EXPORT DST'
-                when process in('EXPOILHFO') then 'EXPORT HFO'
-                when process in('EXPOILJET') then 'EXPORT JET'
-                when process in('EXPOILKER') then 'EXPORT KER'
-                when process in('EXPOILLFO') then 'EXPORT LFO'
-                when process in('EXPOILLPG') then 'EXPORT LPG'
-                when process in('EXPOILMSC') then 'EXPORT MOIL'
-                when process in('EXPOILPET') then 'EXPORT GSL'
+                when process in('EXPCOA','EXPCOA-E') then 'EXPORT COAL' --Filter 282
+                when process in('EXPCOK') then 'EXPORT COKE' --Filter 251
+                when process in('EXPELC-EU','EXPELC-IRE') then 'EXPORT ELC' --Filter 340
+                when process in('EXPETH') then 'EXPORT ETH' --Filter 322
+                when process in('EXPNGA-E','EXPNGA-EU','EXPNGA-IRE') then 'EXPORT NGA' --Filter 389
+                when process in('EXPOILCRD1','EXPOILCRD1-E','EXPOILCRD2') then 'EXPORT OIL' --Filter 276
+                when process in('EXPOILDST') then 'EXPORT DST' --Filter 327
+                when process in('EXPOILHFO') then 'EXPORT HFO' --Filter 266
+                when process in('EXPOILJET') then 'EXPORT JET' --Filter 346
+                when process in('EXPOILKER') then 'EXPORT KER' --Filter 253
+                when process in('EXPOILLFO') then 'EXPORT LFO' --Filter 372
+                when process in('EXPOILLPG') then 'EXPORT LPG' --Filter 387
+                when process in('EXPOILMSC') then 'EXPORT MOIL' --Filter 374
+                when process in('EXPOILPET') then 'EXPORT GSL' --Filter 356
             end as proc_set
         from vedastore
         where attribute='VAR_FIn'
@@ -2987,3 +3013,5 @@ ORDER BY tablename,analysis
     -- [Jon Tecwyn] Addition of HGV disaggregation to filters 8,11,13,14,222.
 -- 5:42 PM 2 December, 2016: 
     -- [Jon Tecwyn] Amended "Whole stock heat output for services" query.
+-- 2:23 PM 12 December, 2016:
+    -- FS Added filter IDs to all remaining filters and refactored the international shipping and aviation table to conform to these filters. corrected gas CCS code.
