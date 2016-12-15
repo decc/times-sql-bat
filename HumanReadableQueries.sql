@@ -1738,8 +1738,8 @@ from (
                 'RHEABLRRG00','RHEABLSRG01','RHEASHTRG00','RHEASHTRG01','RHNABLCRG01',
                 'RHNABLSRG01','RHNASHTRG01','RWEAWHTRG00','RWEAWHTRG01','RWNAWHTRG01') then
                     'heat-res_boiler/heater-nga'::varchar(50) --Filter 130
-            when process in('RHEACSV01','RHEACSVCAV01',
-                'RHEACSVCAV02','RHEACSVFLR01','RHEACSVLOF02','RHEACSVSOL01','RHEACSVSOL02','RHEACSVSOL03') then
+            when process in('RHEACSVCAV01','RHEACSVCAV02','RHEACSVSOL01','RHEACSVLOF01','RHEACSVFLR01',
+				'RHEACSVWIN01','RHEACSVFLU01','RHEACSVDFT01','RHEACSVCON01','RHEACSVCYL01') then
                     'heat-res_conserv'::varchar(50) --Filter 131
             when process in('RHEADHP100','RHEADHP101','RHEADHP201','RHEADHP301','RHEADHP401',
                 'RHNADHP101','RHNADHP201','RHNADHP301','RHNADHP401') then 'heat-res_dh'::varchar(50) --Filter 132
@@ -1802,8 +1802,9 @@ from (
                 'RHNASHTRE01','RWEAWHTRE01','RWNAWHTRE01') then 'new-heat-res_boiler/heater-elec'::varchar(50)  --Filter 144
             when process in('RHEABLCRG01','RHEABLSRG01','RHEASHTRG01','RHNABLCRG01','RHNABLSRG01','RHNASHTRG01'
                 ,'RWEAWHTRG01','RWNAWHTRG01') then 'new-heat-res_boiler/heater-nga'::varchar(50)  --Filter 145
-            when process in('RHEACSV01','RHEACSVCAV01','RHEACSVCAV02','RHEACSVFLR01','RHEACSVLOF02','RHEACSVSOL01','RHEACSVSOL02'
-                ,'RHEACSVSOL03') then 'new-heat-res_conserv'::varchar(50)  --Filter 146
+            when process in('RHEACSVCAV01','RHEACSVCAV02','RHEACSVSOL01','RHEACSVLOF01','RHEACSVFLR01','RHEACSVWIN01',
+				'RHEACSVFLU01','RHEACSVDFT01','RHEACSVCON01','RHEACSVCYL01') 
+				then 'new-heat-res_conserv'::varchar(50)  --Filter 146
             when process in('RHEADHP101','RHEADHP201','RHEADHP301','RHEADHP401',
                 'RHNADHP101','RHNADHP201','RHNADHP301','RHNADHP401') then 'new-heat-res_dh'::varchar(50)  --Filter 147
             when process in('RHEAAHPRE01','RHEAAHPUE01','RHEAAHSRE01',
@@ -3015,3 +3016,10 @@ ORDER BY tablename,analysis
     -- [Jon Tecwyn] Amended "Whole stock heat output for services" query.
 -- 2:23 PM 12 December, 2016:
     -- FS Added filter IDs to all remaining filters and refactored the international shipping and aviation table to conform to these filters. corrected gas CCS code.
+-- 2:55 PM 15 December, 2016:
+	-- BF edited Filter 131, 'heat-res_conserv' 
+		--Added 'RHEACSVWIN01','RHEACSVFLU01','RHEACSVDFT01','RHEACSVCON01','RHEACSVCYL01'
+		--Removed 'RHEACSV01','RHEACSVLOF02','RHEACSVSOL02','RHEACSVSOL03'
+	-- BF edited Filter 146, 'new-heat-res_conserv'
+		--Added 'RHEACSVWIN01','RHEACSVFLU01','RHEACSVDFT01','RHEACSVCON01','RHEACSVCYL01'
+		--Removed 'RHEACSV01','RHEACSVLOF02','RHEACSVSOL02','RHEACSVSOL03'

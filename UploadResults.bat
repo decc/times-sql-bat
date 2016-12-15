@@ -48,6 +48,7 @@ rem 1:48 PM 12 April, 2016: addition of primary energy demand by main fuel
 rem 8:47 PM 11 August, 2016: updated to reflect changes to elec gen techs
 rem 11:53 AM 15 August, 2016: updated to reflect corrected and standardised set definitions
 rem 8:52 PM 15 November, 2016: correction to FUEL TECHS AGR set in final energy query
+rem 2:55 PM 15 December, 2016: BF edited Filter 131, 'heat-res_conserv' and Filter 146, 'new-heat-res_conserv'
 rem ***********
 echo processing vd files...
 @echo off
@@ -944,8 +945,8 @@ echo when process in('RHEABLCRG00','RHEABLCRG01', >> VedaBatchUpload.sql
 echo 'RHEABLRRG00','RHEABLSRG01','RHEASHTRG00','RHEASHTRG01','RHNABLCRG01', >> VedaBatchUpload.sql
 echo 'RHNABLSRG01','RHNASHTRG01','RWEAWHTRG00','RWEAWHTRG01','RWNAWHTRG01') then >> VedaBatchUpload.sql
 echo 'heat-res_boiler/heater-nga'::varchar(50)  >> VedaBatchUpload.sql
-echo when process in('RHEACSV01','RHEACSVCAV01', >> VedaBatchUpload.sql
-echo 'RHEACSVCAV02','RHEACSVFLR01','RHEACSVLOF02','RHEACSVSOL01','RHEACSVSOL02','RHEACSVSOL03') then >> VedaBatchUpload.sql
+echo when process in('RHEACSVCAV01','RHEACSVCAV02','RHEACSVSOL01','RHEACSVLOF01','RHEACSVFLR01', >> VedaBatchUpload.sql
+echo 'RHEACSVWIN01','RHEACSVFLU01','RHEACSVDFT01','RHEACSVCON01','RHEACSVCYL01') then >> VedaBatchUpload.sql
 echo 'heat-res_conserv'::varchar(50)  >> VedaBatchUpload.sql
 echo when process in('RHEADHP100','RHEADHP101','RHEADHP201','RHEADHP301','RHEADHP401', >> VedaBatchUpload.sql
 echo 'RHNADHP101','RHNADHP201','RHNADHP301','RHNADHP401') then 'heat-res_dh'::varchar(50)  >> VedaBatchUpload.sql
@@ -1008,8 +1009,9 @@ echo when process in('RHEABLRRE01','RHEABLSRE01','RHEAGHPUE01','RHEASHTRE01','RH
 echo 'RHNASHTRE01','RWEAWHTRE01','RWNAWHTRE01') then 'new-heat-res_boiler/heater-elec'::varchar(50)   >> VedaBatchUpload.sql
 echo when process in('RHEABLCRG01','RHEABLSRG01','RHEASHTRG01','RHNABLCRG01','RHNABLSRG01','RHNASHTRG01' >> VedaBatchUpload.sql
 echo ,'RWEAWHTRG01','RWNAWHTRG01') then 'new-heat-res_boiler/heater-nga'::varchar(50)   >> VedaBatchUpload.sql
-echo when process in('RHEACSV01','RHEACSVCAV01','RHEACSVCAV02','RHEACSVFLR01','RHEACSVLOF02','RHEACSVSOL01','RHEACSVSOL02' >> VedaBatchUpload.sql
-echo ,'RHEACSVSOL03') then 'new-heat-res_conserv'::varchar(50)   >> VedaBatchUpload.sql
+echo when process in('RHEACSVCAV01','RHEACSVCAV02','RHEACSVSOL01','RHEACSVLOF01','RHEACSVFLR01', >> VedaBatchUpload.sql
+echo 'RHEACSVWIN01','RHEACSVFLU01','RHEACSVDFT01','RHEACSVCON01','RHEACSVCYL01')  >> VedaBatchUpload.sql
+echo then 'new-heat-res_conserv'::varchar(50)   >> VedaBatchUpload.sql
 echo when process in('RHEADHP101','RHEADHP201','RHEADHP301','RHEADHP401', >> VedaBatchUpload.sql
 echo 'RHNADHP101','RHNADHP201','RHNADHP301','RHNADHP401') then 'new-heat-res_dh'::varchar(50)   >> VedaBatchUpload.sql
 echo when process in('RHEAAHPRE01','RHEAAHPUE01','RHEAAHSRE01', >> VedaBatchUpload.sql
