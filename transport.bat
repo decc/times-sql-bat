@@ -13,6 +13,7 @@ rem ***********
 rem 5:40 PM 15 July, 2016: First version: moved from main batch query
 REM 8:36 PM 06 September, 2016: changed to add postgres ver as a variable near top of script for ease of change
 rem 8:42 PM 15 November, 2016: added extract of fuel by transport mode to extract international transport fuel use (temporary measure)
+rem 2:10 PM 16 December, 2016: BF added 'RESMSWINO','RESMSWORG' to Filter 287 to match locations of equivalent service sector commodities 'SERMSWINO','SERMSWORG' 
 rem ***********
 echo processing vd files...
 @echo off
@@ -280,7 +281,7 @@ echo ,'BSTWWST','BSUGAR','BTREATSTW','BTREATWOD','BVOIL','BWOD','BWODLOG','BWODW
 echo ,'ELCBOG-AD','ELCBOG-LF','ELCBOG-SW','ELCBOM','ELCMAINSBOM','ELCMSWINO','ELCMSWORG','ELCPELH','ELCPELL','ELCPOLWST','ELCSTWWST','ELCTRANSBOM' >> TraBatchUpload.sql
 echo ,'ETH','HYGBIOO','HYGBPEL','HYGMSWINO','HYGMSWORG','INDBIOLFO','INDBIOLPG','INDBIOOIL','INDBOG-AD','INDBOG-LF','INDBOM','INDGRASS' >> TraBatchUpload.sql
 echo ,'INDMAINSBOM','INDMSWINO','INDMSWORG','INDPELH','INDPELL','INDPOLWST','INDWOD','INDWODWST','METH','MSWBIO','MSWINO','MSWORG' >> TraBatchUpload.sql
-echo ,'PWASTEDUM','RESBIOLFO','RESBOM','RESHOUSEBOM','RESMAINSBOM','RESPELH','RESWOD','RESWODL','SERBIOLFO','SERBOG','SERBOM','SERBUILDBOM' >> TraBatchUpload.sql
+echo ,'PWASTEDUM','RESBIOLFO','RESBOM','RESHOUSEBOM','RESMAINSBOM','RESMSWINO','RESMSWORG','RESPELH','RESWOD','RESWODL','SERBIOLFO','SERBOG','SERBOM','SERBUILDBOM' >> TraBatchUpload.sql
 echo ,'SERMAINSBOM','SERMSWBIO','SERMSWINO','SERMSWORG','SERPELH','SERWOD','TRABIODST','TRABIODST-FT','TRABIODST-FTL','TRABIODST-FTS','TRABIODSTL','TRABIODSTS' >> TraBatchUpload.sql
 echo ,'TRABIOJET-FTDA','TRABIOJET-FTDAL','TRABIOJET-FTIA','TRABIOJET-FTIAL','TRABIOLFO','TRABIOLFODS','TRABIOLFODSL','TRABIOLFOL','TRABIOOILIS','TRABIOOILISL','TRABOM','TRAETH' >> TraBatchUpload.sql
 echo ,'TRAETHL','TRAETHS','TRAMAINSBOM','TRAMETH') then 'bio' >> TraBatchUpload.sql
