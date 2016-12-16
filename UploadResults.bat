@@ -52,6 +52,9 @@ rem 2:55 PM 15 December, 2016: BF edited Filter 131, 'heat-res_conserv' and Filt
 rem 2:10 PM 16 December, 2016: 
 	rem BF added 'RESMSWINO','RESMSWORG' to Filters 287,206,207,208 to match locations of equivalent service sector commodities 'SERMSWINO','SERMSWORG'
 	rem BF added 'RESMSWINO01','RESMSWORG01' to Filter 304 'Fuel Techs RES' to match equivalent locations of equivalent service sector Fuel Techs 'SERMSWINO01','SERMSWORG01'
+rem 3:00 PM 16 December, 2016:
+	rem BF added residential EFW CHP, 'RCHPEA-EFW01','RCHPNA-EFW01' to Filters 79,114,303,335
+	rem BF added services EFW CHP, 'SCHP-EFW01' to Filters 79,114,230,368
 rem ***********
 echo processing vd files...
 @echo off
@@ -283,7 +286,7 @@ echo ,'IPPCHPBIOG01','IPPCHPBIOS00','IPPCHPBIOS01','IPPCHPCCGT01','IPPCHPCCGTH01
 echo then 'CHP IND SECTOR'       >> VedaBatchUpload.sql
 echo when process in('PCHP-CCP00','PCHP-CCP01') then 'CHP PRC SECTOR'       >> VedaBatchUpload.sql
 echo when process in('SCHP-ADM01','SCHP-CCG00','SCHP-CCG01','SCHP-CCH01','SCHP-FCH01','SCHP-GES00','SCHP-GES01','SCHP-STM01','SCHP-STW00','SCHP-STW01','SHHFCLRH01','SHLCHPRG01' >> VedaBatchUpload.sql
-echo ,'SHLCHPRH01','SHLCHPRW01') then 'CHP SER SECTOR'       >> VedaBatchUpload.sql
+echo ,'SHLCHPRH01','SHLCHPRW01','SCHP-EFW01') then 'CHP SER SECTOR'       >> VedaBatchUpload.sql
 echo when process in('UCHP-CCG00','UCHP-CCG01') then 'CHP UPS SECTOR'       >> VedaBatchUpload.sql
 echo when process in('RHEACHPRG01','RHEACHPRH01','RHEACHPRW01','RHFCCHPRG01','RHFCCHPRH01','RHFCCHPRW01','RHFSCHPRG01','RHFSCHPRH01','RHFSCHPRW01','RHHCCHPRG01','RHHCCHPRH01','RHHCCHPRW01' >> VedaBatchUpload.sql
 echo ,'RHHSCHPRG01','RHHSCHPRH01','RHHSCHPRW01','RHNACHPRG01','RHNACHPRH01','RHNACHPRW01') then 'CHP RES MICRO'       >> VedaBatchUpload.sql
@@ -296,10 +299,10 @@ echo select period, pv,commodity,process,tablename, >> VedaBatchUpload.sql
 echo case >> VedaBatchUpload.sql
 echo when process in('ICHCHPBIOG01','ICHCHPBIOS00','ICHCHPBIOS01','IFDCHPBIOG01','IFDCHPBIOS00','IFDCHPBIOS01','IISCHPBIOG01','IISCHPBIOS01','INMCHPBIOG01','INMCHPBIOS01','IOICHPBIOG01' >> VedaBatchUpload.sql
 echo ,'IOICHPBIOS00','IOICHPBIOS01','IPPCHPBIOG01','IPPCHPBIOS00','IPPCHPBIOS01','IPPCHPWST00','IPPCHPWST01') then 'CHP IND BIO'       >> VedaBatchUpload.sql
-echo when process in('SCHP-ADM01','SCHP-GES00','SCHP-GES01','SCHP-STM01','SCHP-STW00','SCHP-STW01','SHLCHPRW01') then 'CHP SER BIO'       >> VedaBatchUpload.sql
+echo when process in('SCHP-ADM01','SCHP-GES00','SCHP-GES01','SCHP-STM01','SCHP-STW00','SCHP-STW01','SHLCHPRW01','SCHP-EFW01') then 'CHP SER BIO'       >> VedaBatchUpload.sql
 echo when process in('SHHFCLRH01','SHLCHPRG01','SHLCHPRH01','SHLCHPRW01') then 'CHP SER MICRO'       >> VedaBatchUpload.sql
 echo when process in('RCHPEA-CCG00','RCHPEA-CCG01','RCHPEA-CCH01','RCHPEA-FCH01','RCHPEA-STW01','RCHPNA-CCG01','RCHPNA-CCH01','RCHPNA-FCH01','RCHPNA-STW01','RHEACHPRG01','RHEACHPRH01','RHEACHPRW01' >> VedaBatchUpload.sql
-echo ,'RHNACHPRG01','RHNACHPRH01','RHNACHPRW01') then 'CHP RES SECTOR'       >> VedaBatchUpload.sql
+echo ,'RHNACHPRG01','RHNACHPRH01','RHNACHPRW01','RCHPEA-EFW01','RCHPNA-EFW01') then 'CHP RES SECTOR'       >> VedaBatchUpload.sql
 echo else null >> VedaBatchUpload.sql
 echo end proc_set >> VedaBatchUpload.sql
 echo from vedastore >> VedaBatchUpload.sql
@@ -418,8 +421,8 @@ echo 'IOICHPFCH01','IOICHPGT01','IOICHPHFO00','IOICHPNGA00','IPPCHPBIOG01','IPPC
 echo 'IPPCHPCCGTH01','IPPCHPCOA00','IPPCHPCOA01','IPPCHPFCH01','IPPCHPGT01','IPPCHPNGA00','IPPCHPWST00','IPPCHPWST01', >> VedaBatchUpload.sql
 echo 'PCHP-CCP00','PCHP-CCP01','RCHPEA-CCG00','RCHPEA-CCG01','RCHPEA-CCH01','RCHPEA-FCH01','RCHPEA-STW01','RCHPNA-CCG01', >> VedaBatchUpload.sql
 echo 'RCHPNA-CCH01','RCHPNA-FCH01','RCHPNA-STW01','RHEACHPRG01','RHEACHPRH01','RHEACHPRW01','RHNACHPRG01','RHNACHPRH01', >> VedaBatchUpload.sql
-echo 'RHNACHPRW01','SCHP-ADM01','SCHP-CCG00','SCHP-CCG01','SCHP-CCH01','SCHP-FCH01','SCHP-GES00','SCHP-GES01','SCHP-STM01', >> VedaBatchUpload.sql
-echo 'SCHP-STW00','SCHP-STW01','SHHFCLRH01','SHLCHPRG01','SHLCHPRH01','SHLCHPRW01','UCHP-CCG00','UCHP-CCG01') then 'elec-gen_chp' else null  >> VedaBatchUpload.sql
+echo 'RHNACHPRW01','RCHPEA-EFW01','RCHPNA-EFW01','SCHP-ADM01','SCHP-CCG00','SCHP-CCG01','SCHP-CCH01','SCHP-FCH01','SCHP-GES00','SCHP-GES01','SCHP-STM01', >> VedaBatchUpload.sql
+echo 'SCHP-STW00','SCHP-STW01','SHHFCLRH01','SHLCHPRG01','SHLCHPRH01','SHLCHPRW01','SCHP-EFW01','UCHP-CCG00','UCHP-CCG01') then 'elec-gen_chp' else null  >> VedaBatchUpload.sql
 echo end proc_set >> VedaBatchUpload.sql
 echo from vedastore >> VedaBatchUpload.sql
 echo where period in('2010','2011','2012','2015','2020','2025','2030','2035','2040','2045','2050','2055','2060') and attribute='VAR_FOut' >> VedaBatchUpload.sql
@@ -817,9 +820,9 @@ echo 'IPPCHPCOA00','IPPCHPCOA01','IPPCHPFCH01','IPPCHPGT01','IPPCHPNGA00', >> Ve
 echo 'IPPCHPWST00','IPPCHPWST01','PCHP-CCP00','PCHP-CCP01','RCHPEA-CCG00', >> VedaBatchUpload.sql
 echo 'RCHPEA-CCG01','RCHPEA-CCH01','RCHPEA-FCH01','RCHPEA-STW01','RCHPNA-CCG01', >> VedaBatchUpload.sql
 echo 'RCHPNA-CCH01','RCHPNA-FCH01','RCHPNA-STW01','RHEACHPRG01','RHEACHPRH01', >> VedaBatchUpload.sql
-echo 'RHEACHPRW01','RHNACHPRG01','RHNACHPRH01','RHNACHPRW01','SCHP-ADM01', >> VedaBatchUpload.sql
+echo 'RHEACHPRW01','RHNACHPRG01','RHNACHPRH01','RHNACHPRW01','RCHPEA-EFW01','RCHPNA-EFW01','SCHP-ADM01', >> VedaBatchUpload.sql
 echo 'SCHP-CCG00','SCHP-CCG01','SCHP-CCH01','SCHP-FCH01','SCHP-GES00','SCHP-GES01', >> VedaBatchUpload.sql
-echo 'SCHP-STM01','SCHP-STW00','SCHP-STW01','SHHFCLRH01','SHLCHPRG01','SHLCHPRH01','SHLCHPRW01', >> VedaBatchUpload.sql
+echo 'SCHP-STM01','SCHP-STW00','SCHP-STW01','SHHFCLRH01','SHLCHPRG01','SHLCHPRH01','SHLCHPRW01','SCHP-EFW01', >> VedaBatchUpload.sql
 echo 'UCHP-CCG00','UCHP-CCG01') then 'elec-cap_chp'::varchar(50)  >> VedaBatchUpload.sql
 echo when process in('ELCIE00','ELCII00','ELCIE01','ELCII01') then 'elec-cap_intercon'::varchar(50)  >> VedaBatchUpload.sql
 echo end as "analysis", >> VedaBatchUpload.sql
@@ -1258,9 +1261,9 @@ echo ,'IPPCHPBIOG01','IPPCHPBIOS00','IPPCHPBIOS01','IPPCHPCCGT01','IPPCHPCCGTH01
 echo ) then 'CHP IND SECTOR'  >> VedaBatchUpload.sql
 echo when process in('PCHP-CCP00','PCHP-CCP01') then 'CHP PRC SECTOR'  >> VedaBatchUpload.sql
 echo when process in('RCHPEA-CCG00','RCHPEA-CCG01','RCHPEA-CCH01','RCHPEA-FCH01','RCHPEA-STW01','RCHPNA-CCG01','RCHPNA-CCH01','RCHPNA-FCH01','RCHPNA-STW01','RHEACHPRG01','RHEACHPRH01' >> VedaBatchUpload.sql
-echo ,'RHEACHPRW01','RHNACHPRG01','RHNACHPRH01','RHNACHPRW01') then 'CHP RES SECTOR'  >> VedaBatchUpload.sql
+echo ,'RHEACHPRW01','RHNACHPRG01','RHNACHPRH01','RHNACHPRW01','RCHPEA-EFW01','RCHPNA-EFW01') then 'CHP RES SECTOR'  >> VedaBatchUpload.sql
 echo when process in('SCHP-ADM01','SCHP-CCG00','SCHP-CCG01','SCHP-CCH01','SCHP-FCH01','SCHP-GES00','SCHP-GES01','SCHP-STM01','SCHP-STW00','SCHP-STW01','SHHFCLRH01','SHLCHPRG01' >> VedaBatchUpload.sql
-echo ,'SHLCHPRH01','SHLCHPRW01') then 'CHP SER SECTOR'  >> VedaBatchUpload.sql
+echo ,'SHLCHPRH01','SHLCHPRW01','SCHP-EFW01') then 'CHP SER SECTOR'  >> VedaBatchUpload.sql
 echo when process in('UCHP-CCG00','UCHP-CCG01') then 'CHP UPS SECTOR'  >> VedaBatchUpload.sql
 echo else null >> VedaBatchUpload.sql
 echo end as chp_sec,* >> VedaBatchUpload.sql
@@ -1337,10 +1340,10 @@ echo ,'IOICHPFCH01','IPPCHPCCGTH01','IPPCHPFCH01') then 'CHP IND HYDROGEN'  >> V
 echo when process in('IISCHPBFG00','IISCHPBFG01','IISCHPCOG00','IISCHPCOG01','INMCHPCOG00','INMCHPCOG01') then 'CHP IND MAN FUELS'  >> VedaBatchUpload.sql
 echo when process in('ICHCHPHFO00','ICHCHPLFO00','ICHCHPLPG00','ICHCHPLPG01','IFDCHPHFO00','IFDCHPLFO00','IISCHPHFO00','IOICHPHFO00') then 'CHP IND OIL PRODUCTS'  >> VedaBatchUpload.sql
 echo when process in('PCHP-CCP00','PCHP-CCP01') then 'CHP PRC SECTOR'  >> VedaBatchUpload.sql
-echo when process in('RCHPEA-STW01','RCHPNA-STW01','RHEACHPRW01','RHNACHPRW01') then 'CHP RES BIO'  >> VedaBatchUpload.sql
+echo when process in('RCHPEA-STW01','RCHPNA-STW01','RHEACHPRW01','RHNACHPRW01','RCHPEA-EFW01','RCHPNA-EFW01') then 'CHP RES BIO'  >> VedaBatchUpload.sql
 echo when process in('RCHPEA-CCG00','RCHPEA-CCG01','RCHPNA-CCG01','RHEACHPRG01','RHNACHPRG01') then 'CHP RES GAS'  >> VedaBatchUpload.sql
 echo when process in('RCHPEA-CCH01','RCHPEA-FCH01','RCHPNA-CCH01','RCHPNA-FCH01','RHEACHPRH01','RHNACHPRH01') then 'CHP RES HYDROGEN'  >> VedaBatchUpload.sql
-echo when process in('SCHP-ADM01','SCHP-GES00','SCHP-GES01','SCHP-STM01','SCHP-STW00','SCHP-STW01','SHLCHPRW01') then 'CHP SER BIO'  >> VedaBatchUpload.sql
+echo when process in('SCHP-ADM01','SCHP-GES00','SCHP-GES01','SCHP-STM01','SCHP-STW00','SCHP-STW01','SHLCHPRW01','SCHP-EFW01') then 'CHP SER BIO'  >> VedaBatchUpload.sql
 echo when process in('SCHP-CCG00','SCHP-CCG01','SHLCHPRG01') then 'CHP SER GAS'  >> VedaBatchUpload.sql
 echo when process in('SCHP-CCH01','SCHP-FCH01','SHHFCLRH01','SHLCHPRH01') then 'CHP SER HYDROGEN'  >> VedaBatchUpload.sql
 echo when process in('UCHP-CCG00','UCHP-CCG01') then 'CHP UPS SECTOR'  >> VedaBatchUpload.sql
@@ -1413,10 +1416,10 @@ echo ,'IPPCHPCCGTH01','IPPCHPFCH01') then 'CHP IND HYDROGEN'  >> VedaBatchUpload
 echo when process in('IISCHPBFG00','IISCHPBFG01','IISCHPCOG00','IISCHPCOG01','INMCHPCOG00','INMCHPCOG01') then 'CHP IND MAN FUELS'  >> VedaBatchUpload.sql
 echo when process in('ICHCHPHFO00','ICHCHPLFO00','ICHCHPLPG00','ICHCHPLPG01','IFDCHPHFO00','IFDCHPLFO00','IISCHPHFO00','IOICHPHFO00') then 'CHP IND OIL PRODUCTS'  >> VedaBatchUpload.sql
 echo when process in('PCHP-CCP00','PCHP-CCP01') then 'CHP PRC SECTOR'  >> VedaBatchUpload.sql
-echo when process in('RCHPEA-STW01','RCHPNA-STW01','RHEACHPRW01','RHNACHPRW01') then 'CHP RES BIO'  >> VedaBatchUpload.sql
+echo when process in('RCHPEA-STW01','RCHPNA-STW01','RHEACHPRW01','RHNACHPRW01','RCHPEA-EFW01','RCHPNA-EFW01') then 'CHP RES BIO'  >> VedaBatchUpload.sql
 echo when process in('RCHPEA-CCG00','RCHPEA-CCG01','RCHPNA-CCG01','RHEACHPRG01','RHNACHPRG01') then 'CHP RES GAS'  >> VedaBatchUpload.sql
 echo when process in('RCHPEA-CCH01','RCHPEA-FCH01','RCHPNA-CCH01','RCHPNA-FCH01','RHEACHPRH01','RHNACHPRH01') then 'CHP RES HYDROGEN'  >> VedaBatchUpload.sql
-echo when process in('SCHP-ADM01','SCHP-GES00','SCHP-GES01','SCHP-STM01','SCHP-STW00','SCHP-STW01','SHLCHPRW01') then 'CHP SER BIO'  >> VedaBatchUpload.sql
+echo when process in('SCHP-ADM01','SCHP-GES00','SCHP-GES01','SCHP-STM01','SCHP-STW00','SCHP-STW01','SHLCHPRW01','SCHP-EFW01') then 'CHP SER BIO'  >> VedaBatchUpload.sql
 echo when process in('SCHP-CCG00','SCHP-CCG01','SHLCHPRG01') then 'CHP SER GAS'  >> VedaBatchUpload.sql
 echo when process in('SCHP-CCH01','SCHP-FCH01','SHHFCLRH01','SHLCHPRH01') then 'CHP SER HYDROGEN'  >> VedaBatchUpload.sql
 echo when process in('UCHP-CCG00','UCHP-CCG01') then 'CHP UPS SECTOR'  >> VedaBatchUpload.sql
