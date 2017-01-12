@@ -53,4 +53,5 @@ Run manual postgres queries with PostgreSQL by:
 *  UploadResults.bat. The main batch file with high level outputs like GHG by main sector
 *  transport.bat. Road transport-specific queries giving mileage, emissions, capacity etc. for various types of vehicle
 *  Ag_&_LULUCF.bat. Queries relating to agriculture and Land Use and Land Use Change and Forestry (LULUCF)
+*  Elec.bat. More detailed queries relating to electricity generation which are not in the main script
 
