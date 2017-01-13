@@ -68,11 +68,11 @@ Revisions section placed at end of file.
 /* *Costs by sector and type* */ --line 1677
 /* *Marginal prices for emissions* */ --line 1730
 /* *Whole stock heat output by process for residential* */ --line 1760
-/* *New build residential heat output by source* */ --line 1833
-/* *Whole stock heat output for services* */ --line 1891
-/* *New build services heat output by source* */ --line 1990
-/* *End user final energy demand by sector* */ --line 2048
-/* *Primary energy demand and biomass, imports exports and domestic production* */ --line 2666
+/* *New build residential heat output by source* */ --line 1837
+/* *Whole stock heat output for services* */ --line 1903
+/* *New build services heat output by source* */ --line 1991
+/* *End user final energy demand by sector* */ --line 2051
+/* *Primary energy demand and biomass, imports exports and domestic production* */ --line 2669
 
 /* *Total fuel consumption by fuel for other industry (industry sub-sector)* */
 with ind_oi_chp as (
@@ -1780,44 +1780,48 @@ select analysis || '|' || tablename || '|' || attribute || '|' || 'various|vario
 from (
     select process,
         period,pv,
+		'heat-res_' ||
         case
             when process in ('RHEABLCRP01','RHEABLRRW00',
                 'RHEABLRRW01','RHEABLSRP01','RHEABLSRW01','RHNABLCRP01','RHNABLRRW01',
-                'RHNABLSRP01','RHNABLSRW01') then 'heat-res_boiler-bio' --Filter 126
+                'RHNABLSRP01','RHNABLSRW01') then 'boiler-bio' --Filter 126
             when process in('RHEABLCRH01','RHEABLSRH01',
-                'RHNABLCRH01','RHNABLSRH01') then 'heat-res_boiler-h2' --Filter 127
+                'RHNABLCRH01','RHNABLSRH01') then 'boiler-h2' --Filter 127
             when process in('RHEABLCRO00','RHEABLCRO01',
                 'RHEABLRRC00','RHEABLRRO00','RHEABLSRO01','RHNABLCRO01','RHNABLSRO01') then
-                    'heat-res_boiler-otherFF' --Filter 128
+                    'boiler-otherFF' --Filter 128
             when process in('RHEABLRRE00','RHEABLRRE01',
                 'RHEABLSRE01','RHEAGHPUE01','RHEASHTRE00','RHEASHTRE01','RHNABLRRE01',
                 'RHNABLSRE01','RHNAGHPUE01','RHNASHTRE01','RWEAWHTRE00','RWEAWHTRE01','RWNAWHTRE01') then
-                    'heat-res_boiler/heater-elec' --Filter 129
+                    'boiler/heater-elec' --Filter 129
             when process in('RHEABLCRG00','RHEABLCRG01',
                 'RHEABLRRG00','RHEABLSRG01','RHEASHTRG00','RHEASHTRG01','RHNABLCRG01',
                 'RHNABLSRG01','RHNASHTRG01','RWEAWHTRG00','RWEAWHTRG01','RWNAWHTRG01') then
-                    'heat-res_boiler/heater-nga' --Filter 130
-            when process in('RHEACSVCAV01','RHEACSVCAV02','RHEACSVSOL01','RHEACSVLOF01','RHEACSVFLR01',
-				'RHEACSVWIN01','RHEACSVFLU01','RHEACSVDFT01','RHEACSVCON01','RHEACSVCYL01') then
-                    'heat-res_conserv' --Filter 131
+                    'boiler/heater-nga' --Filter 130
+            when process='RHEACSVCAV01' then 'easy-cav' --Filter 397
+            when process='RHEACSVCAV02' then 'hard-cav' --Filter 398
+            when process='RHEACSVSOL01' then 'solid-sysbld' --Filter 399
+            when process in('RHEACSVLOF01','RHEACSVFLR01',
+                'RHEACSVWIN01','RHEACSVFLU01','RHEACSVDFT01','RHEACSVCON01','RHEACSVCYL01') then
+                    'other-conserv' --Filter 131
             when process in('RHEADHP100','RHEADHP101','RHEADHP201','RHEADHP301','RHEADHP401',
-                'RHNADHP101','RHNADHP201','RHNADHP301','RHNADHP401') then 'heat-res_dh' --Filter 132
+                'RHNADHP101','RHNADHP201','RHNADHP301','RHNADHP401') then 'dh' --Filter 132
             when process in('RHEAAHPRE00','RHEAAHPRE01',
                 'RHEAAHPUE01','RHEAAHSRE01', 'RHEAAHSUE01','RHEAGHPRE01','RHEAGHSRE01',
                 'RHEAGHSUE01','RHNAAHPRE01','RHNAAHPUE01','RHNAAHSRE01','RHNAAHSUE01',
-                'RHNAGHPRE01','RHNAGHSRE01','RHNAGHSUE01') then 'heat-res_heatpump-elec' --Filter 133
+                'RHNAGHPRE01','RHNAGHSRE01','RHNAGHSUE01') then 'heatpump-elec' --Filter 133
             when process in('RHEAAHHRE01','RHEAAHHUE01',
                 'RHEAGHHRE01','RHEAGHHUE01','RHNAAHHRE01','RHNAAHHUE01','RHNAGHHRE01','RHNAGHHUE01') then
-                    'heat-res_hyb-boil+hp-h2' --Filter 134
+                    'hyb-boil+hp-h2' --Filter 134
             when process in('RHEAAHBRE01','RHEAAHBUE01',
                 'RHEAGHBRE01','RHEAGHBUE01','RHNAAHBRE01','RHNAAHBUE01','RHNAGHBRE01','RHNAGHBUE01') then
-                'heat-res_hyb-boil+hp-nga'  --Filter 135
-            when process in('RHEACHPRW01','RHNACHPRW01') then 'heat-res_microchp-bio' --Filter 136
+                'hyb-boil+hp-nga'  --Filter 135
+            when process in('RHEACHPRW01','RHNACHPRW01') then 'microchp-bio' --Filter 136
             when process in('RHEACHBRH01','RHEACHPRH01',
-                'RHNACHBRH01','RHNACHPRH01') then 'heat-res_microchp-h2'  --Filter 137
-            when process in('RHEACHPRG01','RHNACHPRG01') then 'heat-res_microchp-nga'  --Filter 138
+                'RHNACHBRH01','RHNACHPRH01') then 'microchp-h2'  --Filter 137
+            when process in('RHEACHPRG01','RHNACHPRG01') then 'microchp-nga'  --Filter 138
             when process in('RHEANSTRE00','RHEANSTRE01','RHEASTGNT00','RHEASTGNT01',
-                'RHNANSTRE01','RHNASTGNT01') then 'heat-res_storheater-elec' --Filter 139
+                'RHNANSTRE01','RHNASTGNT01') then 'storheater-elec' --Filter 139
             else 'heat-res_other'
         end::varchar(50) as "analysis",
     tablename, attribute
@@ -1852,31 +1856,39 @@ select analysis || '|' || tablename || '|' || attribute || '|' || 'various|vario
 from (
     select process,commodity,
         period,pv,
+		'new-heat-res_' ||
         case
             when process in('RHEABLCRP01','RHEABLRRW01','RHEABLSRP01',
-                'RHEABLSRW01','RHNABLCRP01','RHNABLRRW01','RHNABLSRP01','RHNABLSRW01') then 'new-heat-res_boiler-bio'  --Filter 141
-            when process in('RHEABLCRH01','RHEABLSRH01','RHNABLCRH01','RHNABLSRH01') then 'new-heat-res_boiler-h2'  --Filter 142
-            when process in('RHEABLCRO01','RHEABLSRO01','RHNABLCRO01','RHNABLSRO01') then 'new-heat-res_boiler-otherFF'  --Filter 143
+                'RHEABLSRW01','RHNABLCRP01','RHNABLRRW01','RHNABLSRP01','RHNABLSRW01') then 'boiler-bio'  --Filter 141
+            when process in('RHEABLCRH01','RHEABLSRH01','RHNABLCRH01','RHNABLSRH01') then 'boiler-h2' --Filter 127
+			
+            when process in('RHEABLCRO01','RHEABLSRO01','RHNABLCRO01','RHNABLSRO01') then 'boiler-otherFF'  --Filter 143
             when process in('RHEABLRRE01','RHEABLSRE01','RHEAGHPUE01','RHEASHTRE01','RHNABLRRE01','RHNABLSRE01','RHNAGHPUE01',
-                'RHNASHTRE01','RWEAWHTRE01','RWNAWHTRE01') then 'new-heat-res_boiler/heater-elec'  --Filter 144
+                'RHNASHTRE01','RWEAWHTRE01','RWNAWHTRE01') then 'boiler/heater-elec'  --Filter 144
             when process in('RHEABLCRG01','RHEABLSRG01','RHEASHTRG01','RHNABLCRG01','RHNABLSRG01','RHNASHTRG01'
-                ,'RWEAWHTRG01','RWNAWHTRG01') then 'new-heat-res_boiler/heater-nga'  --Filter 145
-            when process in('RHEACSVCAV01','RHEACSVCAV02','RHEACSVSOL01','RHEACSVLOF01','RHEACSVFLR01','RHEACSVWIN01',
-				'RHEACSVFLU01','RHEACSVDFT01','RHEACSVCON01','RHEACSVCYL01') 
-				then 'new-heat-res_conserv'  --Filter 146
+                ,'RWEAWHTRG01','RWNAWHTRG01') then 'boiler/heater-nga'  --Filter 145
+            when process='RHEACSVCAV01' then 'easy-cav' --Filter 397
+            when process='RHEACSVCAV02' then 'hard-cav' --Filter 398
+            when process='RHEACSVSOL01' then 'solid-sysbld' --Filter 399
+            when process in('RHEACSVLOF01','RHEACSVFLR01',
+                'RHEACSVWIN01','RHEACSVFLU01','RHEACSVDFT01','RHEACSVCON01','RHEACSVCYL01') then
+                    'other-conserv' --Filter 131
             when process in('RHEADHP101','RHEADHP201','RHEADHP301','RHEADHP401',
-                'RHNADHP101','RHNADHP201','RHNADHP301','RHNADHP401') then 'new-heat-res_dh'  --Filter 147
+                'RHNADHP101','RHNADHP201','RHNADHP301','RHNADHP401') then 'dh'  --Filter 147
             when process in('RHEAAHPRE01','RHEAAHPUE01','RHEAAHSRE01',
                 'RHEAAHSUE01','RHEAGHPRE01','RHEAGHSRE01','RHEAGHSUE01','RHNAAHPRE01','RHNAAHPUE01','RHNAAHSRE01','RHNAAHSUE01'
-                ,'RHNAGHPRE01','RHNAGHSRE01','RHNAGHSUE01') then 'new-heat-res_heatpump-elec' --Filter 148
-            when process in('RHEAAHHRE01','RHEAAHHUE01','RHEAGHHRE01','RHEAGHHUE01','RHNAAHHRE01','RHNAAHHUE01','RHNAGHHRE01'
-                ,'RHNAGHHUE01') then 'new-heat-res_hyb-boil+hp-h2' --Filter 149
-            when process in('RHEAAHBRE01','RHEAAHBUE01','RHEAGHBRE01','RHEAGHBUE01',
-                'RHNAAHBRE01','RHNAAHBUE01','RHNAGHBRE01','RHNAGHBUE01') then 'new-heat-res_hyb-boil+hp-nga' --Filter 150
-            when process in('RHEACHPRW01','RHNACHPRW01') then 'new-heat-res_microchp-bio' --Filter 218
-            when process in('RHEACHBRH01','RHEACHPRH01','RHNACHBRH01','RHNACHPRH01') then 'new-heat-res_microchp-h2'  --Filter 151
-            when process in('RHEACHPRG01','RHNACHPRG01') then 'new-heat-res_microchp-nga' --Filter 152
-            when process in('RHEANSTRE01','RHEASTGNT01','RHNANSTRE01','RHNASTGNT01') then 'new-heat-res_storheater-elec' --Filter 153
+                ,'RHNAGHPRE01','RHNAGHSRE01','RHNAGHSUE01') then 'heatpump-elec' --Filter 148
+            when process in('RHEAAHHRE01','RHEAAHHUE01',
+                'RHEAGHHRE01','RHEAGHHUE01','RHNAAHHRE01','RHNAAHHUE01','RHNAGHHRE01','RHNAGHHUE01') then
+                    'hyb-boil+hp-h2' --Filter 134
+            when process in('RHEAAHBRE01','RHEAAHBUE01',
+                'RHEAGHBRE01','RHEAGHBUE01','RHNAAHBRE01','RHNAAHBUE01','RHNAGHBRE01','RHNAGHBUE01') then
+                'hyb-boil+hp-nga'  --Filter 135
+			when process in('RHEACHPRW01','RHNACHPRW01') then 'microchp-bio' --Filter 136
+            when process in('RHEACHBRH01','RHEACHPRH01',
+                'RHNACHBRH01','RHNACHPRH01') then 'microchp-h2'  --Filter 137
+            when process in('RHEACHPRG01','RHNACHPRG01') then 'microchp-nga'  --Filter 138
+            when process in('RHEANSTRE01','RHEASTGNT01','RHNANSTRE01','RHNASTGNT01') then 'storheater-elec' --Filter 153
         end as "analysis",
     tablename, attribute
     from vedastore
@@ -1929,53 +1941,42 @@ select analysis || '|' || tablename || '|' || attribute || '|' || 'various|vario
 from (
     select process,
         period,pv,
+		'heat-ser_' ||
         case
             when process in ('SHLSHTRE00','SWLWHTRE00','SHLBLRRE01','SHLSHTRE01',
                 'SWLWHTRE01','SHLBLSRE01','SHHBLRRE00','SWHWHTRE00','SHHBLRRE01','SWHWHTRE01','SHLBLRRE00','SHH-BLRE01')
-                    then 'heat-ser_boiler/heater-elec'  --Filter 155
+                    then 'boiler/heater-elec'  --Filter 155
             when process in('SHLBLCRG00','SHLSHTRG00','SWLWHTRG00','SHLBLCRG01','SWLWHTRG01',
                 'SHLBLSRG01','SHHBLRRG00','SWHBLRRG00','SHHBLRRG01','SWHBLRRG01','SHLBLRRG00','SHH-BLRG01')
-                    then 'heat-ser_boiler/heater-nga'  --Filter 156
+                    then 'boiler/heater-nga'  --Filter 156
             when process in('SHLBLCRP01','SHLBLRRW01','SHLBLSRP01','SHLBLSRW01','SHHBLRRW00',
                 'SWHBLRRW00','SHHBLRRW01','SWHBLRRW01','SHLBLRRW00','SHH-BLRB01') 
-                    then 'heat-ser_boiler-bio' --Filter 157
+                    then 'boiler-bio' --Filter 157
             when process in('SHLBLSRH01','SHHBLRRH01','SWHBLRRH01','SHLBLCRH01','SHH-BLRH01') 
-                    then 'heat-ser_boiler-h2' --Filter 158
+                    then 'boiler-h2' --Filter 158
             when process in('SHLBLCRO00','SHLBLRRC00','SHLSHTRO00','SHLBLCRO01','SHLBLSRO01',
                 'SHHBLRRO00','SHHBLRRC00','SWHBLRRO00','SWHBLRRC00','SHHBLRRO01','SHHBLRRC01',
                 'SWHBLRRO01','SWHBLRRC01','SHLBLRRO00','SHH-BLRO01') 
-                    then 'heat-ser_boiler-otherFF' --Filter 159
+                    then 'boiler-otherFF' --Filter 159
             when process in('SCSVSHL-METERS01','SCSVSHL-INSULAT01','SCSVSHL-GLAZING01','SCSVSHL-OTH_THM01',
                 'SCSVSHL-VENT_RC01','SCSVSHH-METERS01','SCSVSHH-INSULAT01','SCSVSHH-GLAZING01','SCSVSHH-OTH_THM01',
-                'SCSVSHH-VENT_RC01') 
-                    then 'heat-ser_conserv'  --Filter 160
-            when process in('SHLAHBUE01','SHLGHBRE01','SHLGHBUE01','SHLAHBRE01') 
-                    then  'heat-ser_hyb-boil+hp-nga' --Filter 161
+                'SCSVSHH-VENT_RC01') then 'conserv'  --Filter 160
+            when process in('SHLAHBUE01','SHLGHBRE01','SHLGHBUE01','SHLAHBRE01') then  'hyb-boil+hp-nga' --Filter 161
             when process in('SHLAHPRE01','SHLAHPUE01','SHLAHSRE01','SHLAHSUE01','SHLAHPRE00','SHH-ASHP01','SHH-ASHP-R01') 
-                    then 'heat-ser_heatpump-air-elec' --Filter 162
+                    then 'heatpump-air-elec' --Filter 162
             when process in ('SHLGHPRE01','SHLGHPUE01','SHLGHSRE01','SHLGHSUE01','SHH-GSHP-V01','SHH-GSHP-H01')
-                    then 'heat-ser_heatpump-ground-elec' --Filter 222
-            when process in('SHH-WSHP01')
-                    then 'heat-ser_heatpump-water-elec' --Filter 223
-            when process in('SHHVACAE01','SHHVACAE00') 
-                    then 'heat-ser_hvac' --Filter 163
-            when process in('SHHVACAE02') 
-                    then 'heat-ser_hvac-ad' --Filter 164
-            when process in('SHLAHHUE01','SHLGHHRE01','SHLGHHUE01','SHLAHHRE01') 
-                    then 'heat-ser_hyb-boil+hp-h2' --Filter 165
-            when process in('SHLDHP101','SHHDHP100','SHHDHP101','SHLDHP100') 
-                    then 'heat-ser_dh' --Filter 166
-            when process in('SHLCHPRW01') 
-                    then 'heat-ser_microchp-bio' --Filter 167
-            when process in('SHLCHBRH01','SHHFCLRH01','SHLCHPRH01') 
-                    then 'heat-ser_microchp-h2' --Filter 168
-            when process in('SHLCHPRG01') 
-                    then 'heat-ser_microchp-nga' --Filter 169
-            when process in('SHLNSTRE01','SHLNSTRE00') 
-                    then 'heat-ser_storheater-elec' --Filter 170
-            when process in('SHH-DUM-PIP01') 
-                    then 'heat-ser_dummy-process' --Filter 224
-            else 'heat-ser_other'
+                    then 'heatpump-ground-elec' --Filter 222
+            when process in('SHH-WSHP01') then 'heatpump-water-elec' --Filter 223
+            when process in('SHHVACAE01','SHHVACAE00') then 'hvac' --Filter 163
+            when process in('SHHVACAE02') then 'hvac-ad' --Filter 164
+            when process in('SHLAHHUE01','SHLGHHRE01','SHLGHHUE01','SHLAHHRE01') then 'hyb-boil+hp-h2' --Filter 165
+            when process in('SHLDHP101','SHHDHP100','SHHDHP101','SHLDHP100') then 'dh' --Filter 166
+            when process in('SHLCHPRW01') then 'microchp-bio' --Filter 167
+            when process in('SHLCHBRH01','SHHFCLRH01','SHLCHPRH01') then 'microchp-h2' --Filter 168
+            when process in('SHLCHPRG01') then 'microchp-nga' --Filter 169
+            when process in('SHLNSTRE01','SHLNSTRE00') then 'storheater-elec' --Filter 170
+            when process in('SHH-DUM-PIP01') then 'dummy-process' --Filter 224
+            else 'other'
         end as "analysis",
     tablename, attribute
     from vedastore
@@ -2009,30 +2010,32 @@ select analysis || '|' || tablename || '|' || attribute || '|' || 'various|vario
 from (
     select process,
         period,pv,
+		'new-heat-ser_' ||
         case
             when process in ('SHLBLRRE01','SHLSHTRE01','SWLWHTRE01','SHLBLSRE01','SHHBLRRE01','SWHWHTRE01')
-                then 'new-heat-ser_boiler/heater-elec' --Filter 172
+                then 'boiler/heater-elec' --Filter 172
             when process in('SHLBLCRG01','SWLWHTRG01','SHLBLSRG01','SHHBLRRG01','SWHBLRRG01')
-                then 'new-heat-ser_boiler/heater-nga' --Filter 173
+                then 'boiler/heater-nga' --Filter 173
             when process in('SHLBLCRP01','SHLBLRRW01','SHLBLSRP01','SHLBLSRW01','SHHBLRRW01','SWHBLRRW01')
-                then 'new-heat-ser_boiler-bio' --Filter 174
-            when process in('SHLBLSRH01','SHHBLRRH01','SWHBLRRH01','SHLBLCRH01') then 'new-heat-ser_boiler-h2' --Filter 175
+                then 'boiler-bio' --Filter 174
+            when process in('SHLBLSRH01','SHHBLRRH01','SWHBLRRH01','SHLBLCRH01') then 'boiler-h2' --Filter 175
             when process in('SHLBLCRO01','SHLBLSRO01','SHHBLRRO01','SHHBLRRC01','SWHBLRRO01','SWHBLRRC01')
-                then 'new-heat-ser_boiler-otherFF' --Filter 176
+                then 'boiler-otherFF' --Filter 176
             when process in('SCSLROFF01','SCSLROFP01','SCSLCAVW01','SCSHPTHM01','SCSHROFF01',
-                'SCSHROFP01','SCSHCAVW01','SCSLPTHM01') then 'new-heat-ser_conserv' --Filter 177
-            when process in('SHLAHBUE01','SHLGHBRE01','SHLGHBUE01','SHLAHBRE01') then 'new-heat-ser_hyb-boil+hp-nga' --Filter 178
+                'SCSHROFP01','SCSHCAVW01','SCSLPTHM01') then 'conserv' --Filter 177
+            when process in('SHLAHBUE01','SHLGHBRE01','SHLGHBUE01','SHLAHBRE01') 
+                then 'hyb-boil+hp-nga' --Filter 161
             when process in('SHLAHPRE01','SHLAHPUE01','SHLGHPRE01','SHLGHPUE01','SHLAHSRE01',
-                'SHLAHSUE01','SHLGHSRE01','SHLGHSUE01') then 'new-heat-ser_heatpump-elec' --Filter 179
-            when process in('SHHVACAE01') then 'new-heat-ser_hvac' --Filter 180
-            when process in('SHHVACAE02') then 'new-heat-ser_hvac-ad' --Filter 181
-            when process in('SHLAHHUE01','SHLGHHRE01','SHLGHHUE01','SHLAHHRE01') then 'new-heat-ser_hyb-boil+hp-h2' --Filter 182
-            when process in('SHLDHP101','SHHDHP101') then 'new-heat-ser_dh' --Filter 183
-            when process in('SHLCHPRW01') then 'new-heat-ser_microchp-bio' --Filter 184
-            when process in('SHLCHBRH01','SHHFCLRH01','SHLCHPRH01') then 'new-heat-ser_microchp-h2' --Filter 185
-            when process in('SHLCHPRG01') then 'new-heat-ser_microchp-nga' --Filter 186
-            when process in('SHLNSTRE01') then 'new-heat-ser_storheater-elec' --Filter 187
-            else 'new-new-heat-ser_other'
+                'SHLAHSUE01','SHLGHSRE01','SHLGHSUE01') then 'heatpump-elec' --Filter 179
+            when process in('SHHVACAE01') then 'hvac' --Filter 180
+            when process in('SHHVACAE02') then 'hvac-ad' --Filter 164
+            when process in('SHLAHHUE01','SHLGHHRE01','SHLGHHUE01','SHLAHHRE01') then 'hyb-boil+hp-h2' --Filter 165
+            when process in('SHLDHP101','SHHDHP101') then 'dh' --Filter 183
+            when process in('SHLCHPRW01') then 'microchp-bio' --Filter 167
+            when process in('SHLCHBRH01','SHHFCLRH01','SHLCHPRH01') then 'microchp-h2' --Filter 168
+            when process in('SHLCHPRG01') then 'microchp-nga' --Filter 169
+            when process in('SHLNSTRE01') then 'storheater-elec' --Filter 187
+            else 'new-other'
         end as "analysis",
     tablename, attribute
     from vedastore
@@ -3093,3 +3096,4 @@ ORDER BY tablename,analysis
 	-- FS: overall electrical storage capacity query divided into main storage types (water, compressed air, battery)
 	-- Removed all the casts to varchar from filters (applied to column names instead)
 	-- Addition of electricity storage in / out query for electricity batch file
+-- 4:11 PM 13 January, 2017: FS: Broke out easy-/-hard to fill cavity insulation + system build solid from residential heat query and amended the other conservation measures to exclude these. Changed filters to remove redundancy on new/old, res/serv heat qs
