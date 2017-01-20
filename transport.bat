@@ -10,10 +10,36 @@ rem 3) amalgamates the CSVs
 rem 4) deletes the intermediate CSVs leaving a single output file
 rem By Fernley Symons
 rem ***********
+rem *****Instructions for updating from "HumanReadableQueries.sql" in Notepad++*****
+rem Things to bear in mind:
+rem if '%' is part of a sql query (e.g. "like 'x%'), then % needs to be doubled "like 'x%%'"
+rem Other characters (|, <, > etc) need to be escaped in a similar way with ^:- ^| etc
+rem can't have very long lines - need to break statements
+rem filename at end of line, no spaces afterwards
+REM Also note that doesn't like labels (col names or values etc) which break across lines. Inserts a break into them so that they don't match any more
+rem It will be rare that you'll need to change the first, dynamic bit of the script which creates one SQL statement set
+rem for each VD file in the folder. These instructions ignore that and assume that block's unchanged.
+rem 1) Copy the appropriate block of SQL from "Human..." to a blank doc
+rem 2) Remove indentation from the copied text: select it and press shift-tab repeatedly to do this
+rem 3) Comment lines starting "--" should be removed (comments starting "/*" retained). Do this by doing a regex search / replace for 
+rem    "^--.+\r\n" (no quotes) replace with blank. Remove embedded comments [appearing on same line as code] with regex replace "--.+" with blank
+rem    remove extraneous blank lines with regex replace "(\r\n){2,}" with "\r\n"
+rem 4) Change the single "%" to double "%%" but leave filenames for copy statements unchanged. Regex replace "(%[^~])" with "%\1"
+rem 5) Escape other characters: Regex replace "(\||<|>)" with "^\1"
+rem 6) Make replacements for other reserved DOS words. See below for example (set "texta..." etc). In general there will only be a few of these; define more as needed
+REM    NB No need to replace "~" in output file locations since these are DOS commands meaning "put it in the same folder as this BAT file". "~" only needs replacing if part of a query
+REM    (i.e. regex in postgres). ****Note that the first 2 queries contain reserved words****
+rem 7) Regex replace "(.+)" with "echo \1 >> TraBatchUpload.sql"
+rem 8) Regex replace "echo (\/\*.+\/)" with "rem \1\r\necho \1". This duplicates the header in a way which is more obvious to read in the BAT file
+rem 9) Copy the edited text back over the body of the BAT below (below the upload statements and before the run SQL statement) and save file
+rem 10) comment out the run SQL statement, run the BAT and check the SQL appears sensible.
+rem 11) Uncomment the run SQL statement and use the file
+rem ***********
 rem 5:40 PM 15 July, 2016: First version: moved from main batch query
 REM 8:36 PM 06 September, 2016: changed to add postgres ver as a variable near top of script for ease of change
 rem 8:42 PM 15 November, 2016: added extract of fuel by transport mode to extract international transport fuel use (temporary measure)
-rem 2:10 PM 16 December, 2016: BF added 'RESMSWINO','RESMSWORG' to Filter 287 to match locations of equivalent service sector commodities 'SERMSWINO','SERMSWORG' 
+rem 2:10 PM 16 December, 2016: BF added 'RESMSWINO','RESMSWORG' to Filter 287 to match locations of equivalent service sector commodities 'SERMSWINO','SERMSWORG'
+REM 3:53 PM 20 January, 2017: FS: Road transport fuel by mode query added
 rem ***********
 echo processing vd files...
 @echo off
@@ -313,6 +339,54 @@ echo where analysis ^<^>'' >> TraBatchUpload.sql
 echo group by id, analysis,tablename >> TraBatchUpload.sql
 echo order by tablename,  analysis >> TraBatchUpload.sql
 echo ) TO '%~dp0fuelByModeOut.csv' delimiter ',' CSV; >> TraBatchUpload.sql
+rem /* *Road transport fuel by mode and fuel* */
+echo /* *Road transport fuel by mode and fuel* */ >> TraBatchUpload.sql
+echo COPY ( >> TraBatchUpload.sql
+echo select analysis ^|^| '^|' ^|^| tablename ^|^| '^|' ^|^| attribute ^|^| '^|various' ^|^| '^|various'::varchar(300) "id", analysis, tablename,attribute, >> TraBatchUpload.sql
+echo 'various'::varchar(50) "commodity", >> TraBatchUpload.sql
+echo 'various'::varchar(50) "process", >> TraBatchUpload.sql
+echo sum(pv)::numeric "all", >> TraBatchUpload.sql
+echo sum(case when period='2010' then pv else 0 end)::numeric "2010", >> TraBatchUpload.sql
+echo sum(case when period='2011' then pv else 0 end)::numeric "2011", >> TraBatchUpload.sql
+echo sum(case when period='2012' then pv else 0 end)::numeric "2012", >> TraBatchUpload.sql
+echo sum(case when period='2015' then pv else 0 end)::numeric "2015", >> TraBatchUpload.sql
+echo sum(case when period='2020' then pv else 0 end)::numeric "2020", >> TraBatchUpload.sql
+echo sum(case when period='2025' then pv else 0 end)::numeric "2025", >> TraBatchUpload.sql
+echo sum(case when period='2030' then pv else 0 end)::numeric "2030", >> TraBatchUpload.sql
+echo sum(case when period='2035' then pv else 0 end)::numeric "2035", >> TraBatchUpload.sql
+echo sum(case when period='2040' then pv else 0 end)::numeric "2040", >> TraBatchUpload.sql
+echo sum(case when period='2045' then pv else 0 end)::numeric "2045", >> TraBatchUpload.sql
+echo sum(case when period='2050' then pv else 0 end)::numeric "2050", >> TraBatchUpload.sql
+echo sum(case when period='2055' then pv else 0 end)::numeric "2055", >> TraBatchUpload.sql
+echo sum(case when period='2060' then pv else 0 end)::numeric "2060" >> TraBatchUpload.sql
+echo from ( >> TraBatchUpload.sql
+echo select process,period,pv, >> TraBatchUpload.sql
+echo case >> TraBatchUpload.sql
+echo when process like 'TC%%' then 'cars-fuel_' >> TraBatchUpload.sql
+echo when process like 'TL%%' then 'lgv-fuel_' >> TraBatchUpload.sql
+echo when process like 'TH%%' then 'hgv-fuel_' >> TraBatchUpload.sql
+echo when process like 'TB%%' then 'bus-fuel_' >> TraBatchUpload.sql
+echo when process like 'TW%%' then 'bike-fuel_' >> TraBatchUpload.sql
+echo end ^|^| >> TraBatchUpload.sql
+echo case >> TraBatchUpload.sql
+echo when commodity in('TRABIODST-FTL','TRABIODST-FTS') then 'sec-gen-biodiesel' >> TraBatchUpload.sql
+echo when commodity in('TRABIODSTL','TRABIODSTS') then 'biodiesel' >> TraBatchUpload.sql
+echo when commodity in('TRACNGL','TRACNGS') then 'cng' >> TraBatchUpload.sql
+echo when commodity in('TRADSTL','TRADSTS') then 'diesel' >> TraBatchUpload.sql
+echo when commodity in('TRACELC','TRACPHB') then 'elc' >> TraBatchUpload.sql
+echo when commodity in('TRAETHS') then 'ethanol' >> TraBatchUpload.sql
+echo when commodity in('TRAHYGL','TRAHYGS') then 'hydrogen' >> TraBatchUpload.sql
+echo when commodity in('TRALPGS') then 'lpg' >> TraBatchUpload.sql
+echo when commodity in('TRAPETS') then 'petrol' >> TraBatchUpload.sql
+echo end as "analysis", >> TraBatchUpload.sql
+echo tablename, attribute,commodity >> TraBatchUpload.sql
+echo from vedastore >> TraBatchUpload.sql
+echo where attribute = 'VAR_FIn' and process like any(array['TC%%','TL%%','TH%%','TB%%','TW%%'])  >> TraBatchUpload.sql
+echo ) a >> TraBatchUpload.sql
+echo where analysis ^<^>'' >> TraBatchUpload.sql
+echo group by id, analysis,tablename, attribute >> TraBatchUpload.sql
+echo order by tablename,  analysis, attribute >> TraBatchUpload.sql
+echo ) TO '%~dp0rdTransFuel.csv' delimiter ',' CSV; >> TraBatchUpload.sql
 rem following line actually runs the SQL code generated by the above using the postgres command utility "psql".
 rem Comment this line out if you just want the SQL code to create the populated temp tables + the associated analysis queries:
 "C:\Program Files\PostgreSQL\%postgresver%\bin\psql.exe" -h localhost -p 5432 -U postgres -d gams -f %~dp0TraBatchUpload.sql
@@ -321,12 +395,14 @@ type newVehKms.csv >> VehKms.csv
 type VehCapOut.csv >> VehKms.csv
 type nVCapOut.csv >> VehKms.csv
 type fuelByModeOut.csv >> VehKms.csv
+type rdTransFuel.csv >> VehKms.csv
 rem before deleting the individual files and renaming VehKms as TraResultsOut
 IF EXIST TraResultsOut.csv del /F TraResultsOut.csv
 IF EXIST newVehKms.csv del /F newVehKms.csv
 IF EXIST VehCapOut.csv del /F VehCapOut.csv
 IF EXIST nVCapOut.csv del /F nVCapOut.csv
 IF EXIST fuelByModeOut.csv del /F fuelByModeOut.csv
+IF EXIST rdTransFuel.csv del /F rdTransFuel.csv
 rename VehKms.csv TraResultsOut.csv
 rem finally, delete VehKms.csv if it exists
 IF EXIST VehKms.csv del /F VehKms.csv

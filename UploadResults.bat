@@ -25,7 +25,8 @@ rem for each VD file in the folder. These instructions ignore that and assume th
 rem 1) Copy the appropriate block of SQL from "Human..." to a blank doc
 rem 2) Remove indentation from the copied text: select it and press shift-tab repeatedly to do this
 rem 3) Comment lines starting "--" should be removed (comments starting "/*" retained). Do this by doing a regex search / replace for 
-rem    "^--.+\r\n" (no quotes) replace with blank. Remove embedded comments [appearing on same line as code] with regex replace "--.+" with blank
+rem    "^--.+\r\n" (no quotes) replace with blank. 
+REM    Remove embedded comments [appearing on same line as code] with regex replace "--.+" with blank
 rem    remove extraneous blank lines with regex replace "(\r\n){2,}" with "\r\n"
 rem 4) Change the single "%" to double "%%" but leave filenames for copy statements unchanged. Regex replace "(%[^~])" with "%\1"
 rem 5) Escape other characters: Regex replace "(\||<|>)" with "^\1"
@@ -767,7 +768,7 @@ echo order by tablename, analysis >> VedaBatchUpload.sql
 echo ) to '%~dp0ElecStor.csv' delimiter ',' CSV; >> VedaBatchUpload.sql
 rem /* *Electricity capacity by process* */
 echo /* *Electricity capacity by process* */ >> VedaBatchUpload.sql
-echo COPY ( >> VedaBatchUpload.sql
+echo     COPY ( >> VedaBatchUpload.sql
 echo select analysis ^|^| '^|' ^|^| tablename ^|^| '^|' ^|^| attribute ^|^| '^|' ^|^| '-^|various'::varchar(300) "id", analysis, tablename,attribute, >> VedaBatchUpload.sql
 echo '-'::varchar(50) "commodity", >> VedaBatchUpload.sql
 echo 'various'::varchar(50) "process", >> VedaBatchUpload.sql
@@ -788,29 +789,30 @@ echo sum(case when period='2060' then pv else 0 end)::numeric "2060" >> VedaBatc
 echo from ( >> VedaBatchUpload.sql
 echo select process, >> VedaBatchUpload.sql
 echo period,pv, >> VedaBatchUpload.sql
+echo 'elec-cap_' ^|^| >> VedaBatchUpload.sql
 echo case >> VedaBatchUpload.sql
 echo when process in('ESTWWST00','EPOLWST00', 'EBIOS00','EBOG-LFE00','EBOG-SWE00', >> VedaBatchUpload.sql
 echo 'EMSW00','EBIOCON00','ESTWWST01','EBIO01','EBOG-ADE01', >> VedaBatchUpload.sql
-echo 'EBOG-LFE01','EBOG-SWE01','EMSW01') then 'elec-cap_bio' --Filter 100 >> VedaBatchUpload.sql
-echo when process = 'EBIOQ01' then 'elec-cap_bio-ccs' --Filter 101 >> VedaBatchUpload.sql
-echo when process in('ECOA00','ECOABIO00', 'ECOARR01') then 'elec-cap_coal' --Filter 102 >> VedaBatchUpload.sql
-echo when process in('ECOAQ01' ,'ECOAQDEMO01') then 'elec-cap_coal-ccs' --Filter 103 >> VedaBatchUpload.sql
-echo when process in('EHYGCCT01' ,'EHYGOCT01') then 'elec-cap_h2' --Filter 104 >> VedaBatchUpload.sql
+echo 'EBOG-LFE01','EBOG-SWE01','EMSW01') then 'bio'      >> VedaBatchUpload.sql
+echo when process = 'EBIOQ01' then 'bio-ccs'      >> VedaBatchUpload.sql
+echo when process in('ECOA00','ECOABIO00', 'ECOARR01') then 'coal'      >> VedaBatchUpload.sql
+echo when process in('ECOAQ01' ,'ECOAQDEMO01') then 'coal-ccs'      >> VedaBatchUpload.sql
+echo when process in('EHYGCCT01' ,'EHYGOCT01') then 'h2'      >> VedaBatchUpload.sql
 echo when process in('ENGACCT00','ENGACCTRR01','ENGAOCT00','ENGAOCT01','ENGARCPE00','ENGARCPE01') then >> VedaBatchUpload.sql
-echo 'elec-cap_nga' --Filter 105 >> VedaBatchUpload.sql
-echo when process in('ENGACCTQ01','ENGACCTQDEMO01','ENGAQR01') then 'elec-cap_nga-ccs' --Filter 106 >> VedaBatchUpload.sql
+echo 'nga'      >> VedaBatchUpload.sql
+echo when process in('ENGACCTQ01','ENGACCTQDEMO01','ENGAQR01') then 'nga-ccs'      >> VedaBatchUpload.sql
 echo when process in('ENUCPWR00','ENUCPWR101','ENUCPWR102') then >> VedaBatchUpload.sql
-echo 'elec-cap_nuclear'  --Filter 107 >> VedaBatchUpload.sql
+echo 'nuclear'       >> VedaBatchUpload.sql
 echo when process in('EWNDOFF00' ,'EWNDOFF101' ,'EWNDOFF201' ,'EWNDOFF301') then >> VedaBatchUpload.sql
-echo 'elec-cap_offw' --Filter 108 >> VedaBatchUpload.sql
+echo 'offw'      >> VedaBatchUpload.sql
 echo when process in('EWNDONS00','EWNDONS101','EWNDONS201','EWNDONS301','EWNDONS401','EWNDONS501', >> VedaBatchUpload.sql
-echo 'EWNDONS601','EWNDONS701','EWNDONS801','EWNDONS901') then 'elec-cap_onw' --Filter 109 >> VedaBatchUpload.sql
-echo when process ='EHFOIGCCQ01' then 'elec-cap_other-ccs' --Filter 110 >> VedaBatchUpload.sql
+echo 'EWNDONS601','EWNDONS701','EWNDONS801','EWNDONS901') then 'onw'      >> VedaBatchUpload.sql
+echo when process ='EHFOIGCCQ01' then 'other-ccs'      >> VedaBatchUpload.sql
 echo when process in('EOILL00','EOILL01','EMANOCT00','EMANOCT01','EOILS00','EOILS01','EHFOIGCC01','EDSTRCPE00','EDSTRCPE01') then >> VedaBatchUpload.sql
-echo 'elec-cap_other-ff' --Filter 111 >> VedaBatchUpload.sql
+echo 'other-ff'      >> VedaBatchUpload.sql
 echo when process in('EHYD00','EHYD01','EGEO01','ETIR101','ETIB101','ETIS101','EWAV101') then >> VedaBatchUpload.sql
-echo 'elec-cap_other-rens' --Filter 112 >> VedaBatchUpload.sql
-echo when process in('ESOL00','ESOLPV00','ESOL01','ESOLPV01') then 'elec-cap_solar' --Filter 113 >> VedaBatchUpload.sql
+echo 'other-rens'      >> VedaBatchUpload.sql
+echo when process in('ESOL00','ESOLPV00','ESOL01','ESOLPV01') then 'solar'      >> VedaBatchUpload.sql
 echo when process in('ICHCHPBIOG01','ICHCHPBIOS00','ICHCHPBIOS01','ICHCHPCCGT01','ICHCHPCCGTH01', >> VedaBatchUpload.sql
 echo 'ICHCHPCOA00','ICHCHPCOA01','ICHCHPFCH01','ICHCHPGT01','ICHCHPHFO00', >> VedaBatchUpload.sql
 echo 'ICHCHPLFO00','ICHCHPLPG00','ICHCHPLPG01','ICHCHPNGA00','ICHCHPPRO00', >> VedaBatchUpload.sql
@@ -831,8 +833,11 @@ echo 'RCHPNA-CCH01','RCHPNA-FCH01','RCHPNA-STW01','RHEACHPRG01','RHEACHPRH01', >
 echo 'RHEACHPRW01','RHNACHPRG01','RHNACHPRH01','RHNACHPRW01','RCHPEA-EFW01','RCHPNA-EFW01', >> VedaBatchUpload.sql
 echo 'SCHP-ADM01','SCHP-CCG00','SCHP-CCG01','SCHP-CCH01','SCHP-FCH01','SCHP-GES00','SCHP-GES01', >> VedaBatchUpload.sql
 echo 'SCHP-STM01','SCHP-STW00','SCHP-STW01','SHHFCLRH01','SHLCHPRG01','SHLCHPRH01','SHLCHPRW01','SCHP-EFW01', >> VedaBatchUpload.sql
-echo 'UCHP-CCG00','UCHP-CCG01') then 'elec-cap_chp' --Filter 114 >> VedaBatchUpload.sql
-echo when process in('ELCIE00','ELCII00','ELCIE01','ELCII01') then 'elec-cap_intercon' --Filter 115 >> VedaBatchUpload.sql
+echo 'UCHP-CCG00','UCHP-CCG01') then 'chp'      >> VedaBatchUpload.sql
+echo when process in('ELCIE00','ELCII00','ELCIE01','ELCII01') then 'intercon'      >> VedaBatchUpload.sql
+echo when process in('EHYDPMP00','EHYDPMP01') then 'hyd'      >> VedaBatchUpload.sql
+echo when process in ('ECAESCON01','ESTGCAES01','ECAESTUR01','ESTGAACAES01') then 'caes'      >> VedaBatchUpload.sql
+echo when process in ('ESTGBNAS01','ESTGBALA01','ESTGBRF01') then 'batt'      >> VedaBatchUpload.sql
 echo end::varchar(50) as "analysis", >> VedaBatchUpload.sql
 echo tablename, attribute >> VedaBatchUpload.sql
 echo from vedastore >> VedaBatchUpload.sql
