@@ -37,44 +37,44 @@ Revisions section placed at end of file.
 /* ******List of completed queries*******/
 /* **Miscellaneous queries (not included in batch files): ** */
 /* ----------------------------------------------------------*/
-/* *Total fuel consumption by fuel for other industry (industry sub-sector)* */ --line 78
+/* *Total fuel consumption by fuel for other industry (industry sub-sector)* */ --line 79
 
-/* **Electricity Batch File: ** */ --line 179
+/* **Electricity Batch File: ** */ --line 180
 /* ------------------------------------------*/
-/* *Annual timesliced elec storage output (techs grouped)* */ --line 181
+/* *Annual timesliced elec storage output (techs grouped)* */ --line 182
 
-/* **For agriculture / LULUCF batch file: ** */ --line 225
+/* **For agriculture / LULUCF batch file: ** */ --line 226
 /* ------------------------------------------*/
-/* *Landfill CH4 emission mitigation and residual emissions* */
-/* *Land use and crop / livestock mitigation (MACC) measures* */ --line 227
-/* *Afforestation rate* */ --line 266
+/* *Landfill CH4 emission mitigation and residual emissions* */ --line 228
+/* *Land use and crop / livestock mitigation (MACC) measures* */ --line 265
+/* *Afforestation rate* */ --line 306
 
-/* **For transport batch file: ** */ --line 292
+/* **For transport batch file: ** */ --line 333
 /* -------------------------------*/
-/* *Whole stock vehicle kms, emissions and emission intensity for 29 vehicle types* */ --line 295
-/* *New stock vehicle kms, emissions and emission intensity for 29 vehicle types* */ --line 463
-/* *Whole stock capacity for vehicles for 29 vehicle types* */ --line 618
-/* *New build capacity for vehicles for 29 vehicle types* */ --line 672
-/* *TRA_Fuel_by_mode* */ --line 727
-/* *Road transport fuel by mode and fuel* */ --line 817
+/* *Whole stock vehicle kms, emissions and emission intensity for 29 vehicle types* */ --line 336
+/* *New stock vehicle kms, emissions and emission intensity for 29 vehicle types* */ --line 504
+/* *Whole stock capacity for vehicles for 29 vehicle types* */ --line 659
+/* *New build capacity for vehicles for 29 vehicle types* */ --line 713
+/* *TRA_Fuel_by_mode* */ --line 768
+/* *Road transport fuel by mode and fuel* */ --line 858
 
-/* **Main "key outputs" crosstabs** */ --line 867
+/* **Main "key outputs" crosstabs** */ --line 908
 /* -------------------------------*/
-/* *Dummy imports by table* */ --line 869
-/* *All GHG emissions* */ --line 899
-/* *GHG emissions by sector* */ --line 930
-/* *GHG and sequestered emissions by industry sub-sector* */ --line 996
-/* *Electricity generation by source* */ --line 1090
-/* *Electricity storage by type* */ --line 1632
-/* *Electricity capacity by process* */ --line 1666
-/* *Costs by sector and type* */ --line 1748
-/* *Marginal prices for emissions* */ --line 1801
-/* *Whole stock heat output by process for residential* */ --line 1831
-/* *New build residential heat output by source* */ --line 1908
-/* *Whole stock heat output for services* */ --line 1974
-/* *New build services heat output by source* */ --line 2062
-/* *End user final energy demand by sector* */ --line 2122
-/* *Primary energy demand and biomass, imports exports and domestic production* */ --line 2740
+/* *Dummy imports by table* */ --line 910
+/* *All GHG emissions* */ --line 940
+/* *GHG emissions by sector* */ --line 971
+/* *GHG and sequestered emissions by industry sub-sector* */ --line 1035
+/* *Electricity generation by source* */ --line 1129
+/* *Electricity storage by type* */ --line 1673
+/* *Electricity capacity by process* */ --line 1707
+/* *Costs by sector and type* */ --line 1789
+/* *Marginal prices for emissions* */ --line 1842
+/* *Whole stock heat output by process for residential* */ --line 1872
+/* *New build residential heat output by source* */ --line 1945
+/* *Whole stock heat output for services* */ --line 2011
+/* *New build services heat output by source* */ --line 2099
+/* *End user final energy demand by sector* */ --line 2159
+/* *Primary energy demand and biomass, imports exports and domestic production* */ --line 2777
 
 /* *Total fuel consumption by fuel for other industry (industry sub-sector)* */
 with ind_oi_chp as (
