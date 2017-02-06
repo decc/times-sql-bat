@@ -45,6 +45,7 @@ Revisions section placed at end of file.
 
 /* **For agriculture / LULUCF batch file: ** */ --line 225
 /* ------------------------------------------*/
+/* *Landfill CH4 emission mitigation and residual emissions* */
 /* *Land use and crop / livestock mitigation (MACC) measures* */ --line 227
 /* *Afforestation rate* */ --line 266
 
@@ -104,7 +105,7 @@ with ind_oi_chp as (
         select tablename, period,pv,
         case 
             when commodity in('INDBENZ','INDBFG','INDCOK','INDCOG') then 'IND MANFUELS' --Filter 278
-            when commodity in('INDCOACOK','INDCOA') then 'IND COALS' --Filter 257
+            when commodity in('INDCOA','INDCOACOK') then 'IND COALS' --Filter 257
             when commodity in('INDELC','INDDISTELC') then 'IND ELEC' --Filter 242
             when commodity in('INDHFO','INDLFO','INDLPG','INDKER') then 'IND OIL' --Filter 360
             when commodity in('INDMAINSGAS','INDNGA') then 'IND GAS' --Filter 313
@@ -224,6 +225,43 @@ order by tablename, analysis, attribute, commodity
 
 /* **For agriculture / LULUCF batch file: ** */
 /* ------------------------------------------*/
+/* *Landfill CH4 emission mitigation and residual emissions* */
+-- Note that the mitigation measures take CH4 in
+
+COPY ( 
+select 'landfill-ghg_'|| proc_set || '|' || tablename || '|' || attribute || '|' || commodity || '|various'::varchar(300) "id",
+    'landfill-ghg_' || proc_set "analysis", tablename, attribute,
+    commodity,'various'::varchar "process",
+    sum(pv) "all",
+    sum(case when period='2010' then pv else 0 end)::numeric "2010",
+    sum(case when period='2011' then pv else 0 end)::numeric "2011",
+    sum(case when period='2012' then pv else 0 end)::numeric "2012",
+    sum(case when period='2015' then pv else 0 end)::numeric "2015",
+    sum(case when period='2020' then pv else 0 end)::numeric "2020",
+    sum(case when period='2025' then pv else 0 end)::numeric "2025",
+    sum(case when period='2030' then pv else 0 end)::numeric "2030",
+    sum(case when period='2035' then pv else 0 end)::numeric "2035",
+    sum(case when period='2040' then pv else 0 end)::numeric "2040",
+    sum(case when period='2045' then pv else 0 end)::numeric "2045",
+    sum(case when period='2050' then pv else 0 end)::numeric "2050",
+    sum(case when period='2055' then pv else 0 end)::numeric "2055",
+    sum(case when period='2060' then pv else 0 end)::numeric "2060"
+    from (
+        select tablename, attribute, period,pv,
+        case
+            when process='PWLFWM00' and commodity='PRCN2OP' then 'landfill-unab-N2O' --Filter 411
+            when process='PWLFWM00' and commodity='PRCCH4P' then 'landfill-unab-CH4' --Filter 412
+            when process in ('PWLFWMM01','PWLFWMM02','PWLFWMM03','PWLFWMM04') then 'landfill-mit-CH4' --Filter 413
+        end as proc_set
+        ,commodity
+        from vedastore
+        where attribute in('VAR_FIn','VAR_FOut') and commodity in('PRCCH4P','PRCN2OP') --Filter 414
+       ) a
+where proc_set is not null
+group by tablename, attribute, proc_set, commodity
+order by tablename, attribute, proc_set, commodity
+) TO '%~dp0landfillemiss.csv' delimiter ',' CSV HEADER;
+
 /* *Land use and crop / livestock mitigation (MACC) measures* */
 -- Gives  breakdown for "agr-GHG-land","agr-GHG-livestock-mitigation","agr-GHG-crop-mitigation","agr-GHG-afforestation","agr-GHG-energy"
 -- by table.
@@ -250,21 +288,24 @@ select 'ag-lulucf-meas-ghg_'|| proc_set || '|' || tablename || '|' || attribute 
     from (
         select tablename, attribute, period,pv,
         case
-            when process in ('ALUFOR01') then 'affor'  --Filter 210
+            when process in ('ALUFOR01','ALUFOR02','ALUFOR03','ALUFOR04') then 'affor'  --Filter 210
             when process in ('AGCRP01','AGCRP02','AGCRP04','AGCRP05','AGCRP06','AGCRP07','AGCRP08','AGCRP09') then 'crops' --Filter 211
             when process in ('AHTBLRC00','AHTBLRG00','AHTBLRG01','AHTBLRO00','AHTBLRO01','ATRA00','ATRA01','AATRA01') then 'agr-en' --Filter 212
-            when process in ('ALU00','ALU01','MINBSLURRY1','AGSOI01','AGSOI02','AGSOI03','AGSOI04') then 'lulucf' --Filter 213
+            when process in ('ALU00','MINBSLURRY1','AGSOI01','AGSOI02','AGSOI03','AGSOI04') then 'lulucf' --Filter 213
             when process in ('AGLIV03','AGLIV04','AGLIV05','AGLIV06','AGLIV07','AGLIV09') then 'livestock' --Filter 214
+            when process='AGRCUL00' then 'bau-livestock'
         end as proc_set
         from vedastore
         where attribute='VAR_FOut' and commodity in ('GHG-LULUCF','GHG-AGR-NO-LULUCF') --Filter 1
        ) a
 where proc_set is not null
 group by tablename, attribute, proc_set
+order by tablename, attribute, proc_set
 ) TO '%~dp0lulucfout.csv' delimiter ',' CSV HEADER;
 
 /* *Afforestation rate* */
 -- This is the amount of afforestation over the BAU level (in current model formulation)
+
 COPY ( 
 select 'ag-lulucf-meas_aff_level' || '|' || tablename || '|' || attribute || '|' || commodity || '|' || process::varchar(300) "id",
     'ag-lulucf-meas_aff_level'::varchar(50) "analysis",
@@ -285,7 +326,7 @@ select 'ag-lulucf-meas_aff_level' || '|' || tablename || '|' || attribute || '|'
     sum(case when period='2055' then pv else 0 end)::numeric "2055",
     sum(case when period='2060' then pv else 0 end)::numeric "2060"
 from vedastore
-where attribute='VAR_FOut' and commodity='ALAND' and process='ALUFOR01' --Filter 2
+where attribute='VAR_FOut' and commodity='ALAND' and process in('ALUFOR01','ALUFOR02','ALUFOR03','ALUFOR04') --Filter 2
 group by tablename, attribute,commodity,process
 ) TO '%~dp0afforestout.csv' delimiter ',' CSV HEADER;
 
@@ -393,16 +434,16 @@ with base_cng_emissions as(
                     end ||
                     case
                         when process in('TBDST00','TBDST01','TCDST00','TCDST01','TH1DST00','TH2DST00','TH3DST00','TH1DST01',
-							'TH2DST01','TH3DST01','TLDST00','TLDST01') then 'diesel' --Filter 8
+                            'TH2DST01','TH3DST01','TLDST00','TLDST01') then 'diesel' --Filter 8
                         when process in('TCE8501','TLE8501') then 'E85' --Filter 9
                         when process in('TBELC01','TCELC01','TLELC01','TH3ELC01','TWELC01') then 'electric' --Filter 10
                         when process in('TBFCHBHYG01','TCFCHBHYG01','TCFCHYG01','TCHBE8501','TCHBHYL01','TH1FCHBHYG01',
-							'TH2FCHBHYG01','TH3FCHBHYG01','TLFCHBHYG01','TLFCHYG01','TLHBHYL01','TWFCHYG01') then 'h2+hybrid' --Filter 11
+                            'TH2FCHBHYG01','TH3FCHBHYG01','TLFCHBHYG01','TLFCHYG01','TLHBHYL01','TWFCHYG01') then 'h2+hybrid' --Filter 11
                         when process in('TCFCPHBHYG01') then 'h2-plug-in-hybrid' --Filter 12
                         when process in('TBHBDST01','TCHBDST01','TCHBPET00','TCHBPET01','TH1HBDST01','TH2HBDST01',
-							'TH3HBDST01','TLHBDST01','TLHBPET01') then 'hybrid' --Filter 13
+                            'TH3HBDST01','TLHBDST01','TLHBPET01') then 'hybrid' --Filter 13
                         when process in('TBCNG01','TCCNG01','TCLPG00','TCLPG01','TH1CNG01','TH2CNG01',
-							'TH3CNG01','TLCNG01','TLLPG01','TFSLCNG01') then 'lpg-and-cng-fueled' --Filter 14
+                            'TH3CNG01','TLCNG01','TLLPG01','TFSLCNG01') then 'lpg-and-cng-fueled' --Filter 14
                         -- NB Includes the bus mains gas => CNG conversion process 'TFSLCNG01'. This is because emissions are counted at this point here but the demand is counted at "TBCNG01"
                         when process in('TCPET00','TCPET01','TLPET00','TLPET01','TWPET00','TWPET01') then 'petrol' --Filter 15
                         when process in('TCPHBDST01','TCPHBPET01','TLPHBDST01','TLPHBPET01') then 'plug-in-hybrid' --Filter 16
@@ -549,16 +590,16 @@ with base_cng_emissions as(
                     end ||
                     case
                         when process in('TBDST00','TBDST01','TCDST00','TCDST01','TH1DST00','TH2DST00','TH3DST00','TH1DST01','TH2DST01',
-							'TH3DST01','TLDST00','TLDST01') then 'diesel' --Filter 8
+                            'TH3DST01','TLDST00','TLDST01') then 'diesel' --Filter 8
                         when process in('TCE8501','TLE8501') then 'E85' --Filter 9
                         when process in('TBELC01','TCELC01','TLELC01','TH3ELC01','TWELC01') then 'electric' --Filter 10
                         when process in('TBFCHBHYG01','TCFCHBHYG01','TCFCHYG01','TCHBE8501','TCHBHYL01','TH1FCHBHYG01','TH2FCHBHYG01',
-							'TH3FCHBHYG01','TLFCHBHYG01','TLFCHYG01','TLHBHYL01','TWFCHYG01') then 'h2+hybrid' --Filter 11
+                            'TH3FCHBHYG01','TLFCHBHYG01','TLFCHYG01','TLHBHYL01','TWFCHYG01') then 'h2+hybrid' --Filter 11
                         when process in('TCFCPHBHYG01') then 'h2-plug-in-hybrid' --Filter 12
                         when process in('TBHBDST01','TCHBDST01','TCHBPET00','TCHBPET01','TH1HBDST01','TH2HBDST01',
-							'TH3HBDST01','TLHBDST01','TLHBPET01') then 'hybrid'  --Filter 13
+                            'TH3HBDST01','TLHBDST01','TLHBPET01') then 'hybrid'  --Filter 13
                         when process in('TBCNG01','TCCNG01','TCLPG00','TCLPG01','TH1CNG01','TH2CNG01',
-							'TH3CNG01','TLCNG01','TLLPG01') then 'lpg-and-cng-fueled' --Filter 220
+                            'TH3CNG01','TLCNG01','TLLPG01') then 'lpg-and-cng-fueled' --Filter 220
                         when process in('TCPET00','TCPET01','TLPET00','TLPET01','TWPET00','TWPET01') then 'petrol' --Filter 15
                         when process in('TCPHBDST01','TCPHBPET01','TLPHBDST01','TLPHBPET01') then 'plug-in-hybrid' --Filter 16
                         when process in('TH2CNGDST01','TH3CNGDST01') then 'Dual fuel diesel-CNG' --Filter 221
@@ -646,16 +687,16 @@ from (
     end ||
     case
         when process in('TBDST00','TBDST01','TCDST00','TCDST01','TH1DST00','TH2DST00','TH3DST00','TH1DST01',
-			'TH2DST01','TH3DST01','TLDST00','TLDST01') then 'diesel' --Filter 8
+            'TH2DST01','TH3DST01','TLDST00','TLDST01') then 'diesel' --Filter 8
         when process in('TCE8501','TLE8501') then 'E85' --Filter 9
         when process in('TBELC01','TCELC01','TLELC01','TH3ELC01','TWELC01') then 'electric' --Filter 10
         when process in('TBFCHBHYG01','TCFCHBHYG01','TCFCHYG01','TCHBE8501','TCHBHYL01','TH1FCHBHYG01',
-			'TH2FCHBHYG01','TH3FCHBHYG01','TLFCHBHYG01','TLFCHYG01','TLHBHYL01','TWFCHYG01') then 'h2+hybrid' --Filter 11
+            'TH2FCHBHYG01','TH3FCHBHYG01','TLFCHBHYG01','TLFCHYG01','TLHBHYL01','TWFCHYG01') then 'h2+hybrid' --Filter 11
         when process in('TCFCPHBHYG01') then 'h2-plug-in-hybrid' --Filter 12
         when process in('TBHBDST01','TCHBDST01','TCHBPET00','TCHBPET01','TH1HBDST01','TH2HBDST01',
-			'TH3HBDST01','TLHBDST01','TLHBPET01') then 'hybrid'  --Filter 13
+            'TH3HBDST01','TLHBDST01','TLHBPET01') then 'hybrid'  --Filter 13
         when process in('TBCNG01','TCCNG01','TCLPG00','TCLPG01','TH1CNG01','TH2CNG01','TH3CNG01',
-			'TLCNG01','TLLPG01') then 'lpg-and-cng-fueled' --Filter 220
+            'TLCNG01','TLLPG01') then 'lpg-and-cng-fueled' --Filter 220
         when process in('TCPET00','TCPET01','TLPET00','TLPET01','TWPET00','TWPET01') then 'petrol' --Filter 15
         when process in('TCPHBDST01','TCPHBPET01','TLPHBDST01','TLPHBPET01') then 'plug-in-hybrid' --Filter 16
         when process in('TH2CNGDST01','TH3CNGDST01') then 'Dual fuel diesel-CNG' --Filter 221
@@ -701,16 +742,16 @@ from (
     end ||
     case
         when process in('TBDST00','TBDST01','TCDST00','TCDST01','TH1DST00','TH2DST00','TH3DST00','TH1DST01',
-			'TH2DST01','TH3DST01','TLDST00','TLDST01') then 'diesel' --Filter 8
+            'TH2DST01','TH3DST01','TLDST00','TLDST01') then 'diesel' --Filter 8
         when process in('TCE8501','TLE8501') then 'E85' --Filter 9
         when process in('TBELC01','TCELC01','TLELC01','TH3ELC01','TWELC01') then 'electric' --Filter 10
         when process in('TBFCHBHYG01','TCFCHBHYG01','TCFCHYG01','TCHBE8501','TCHBHYL01','TH1FCHBHYG01',
-			'TH2FCHBHYG01','TH3FCHBHYG01','TLFCHBHYG01','TLFCHYG01','TLHBHYL01','TWFCHYG01') then 'h2+hybrid' --Filter 11
+            'TH2FCHBHYG01','TH3FCHBHYG01','TLFCHBHYG01','TLFCHYG01','TLHBHYL01','TWFCHYG01') then 'h2+hybrid' --Filter 11
         when process in('TCFCPHBHYG01') then 'h2-plug-in-hybrid' --Filter 12
         when process in('TBHBDST01','TCHBDST01','TCHBPET00','TCHBPET01','TH1HBDST01','TH2HBDST01',
-			'TH3HBDST01','TLHBDST01','TLHBPET01') then 'hybrid' --Filter 13
+            'TH3HBDST01','TLHBDST01','TLHBPET01') then 'hybrid' --Filter 13
         when process in('TBCNG01','TCCNG01','TCLPG00','TCLPG01','TH1CNG01','TH2CNG01','TH3CNG01',
-			'TLCNG01','TLLPG01') then 'lpg-and-cng-fueled' --Filter 220
+            'TLCNG01','TLLPG01') then 'lpg-and-cng-fueled' --Filter 220
         when process in('TCPET00','TCPET01','TLPET00','TLPET01','TWPET00','TWPET01') then 'petrol' --Filter 15
         when process in('TCPHBDST01','TCPHBPET01','TLPHBDST01','TLPHBPET01') then 'plug-in-hybrid' --Filter 16
         when process in('TH2CNGDST01','TH3CNGDST01') then 'Dual fuel diesel-CNG' --Filter 221
@@ -755,7 +796,7 @@ with fuels_in as (
         when commodity in('AGRNGA','ELCNGA','HYGLNGA','HYGSNGA','IISNGAB','IISNGAC','IISNGAE','INDNEUNGA','INDNGA','LNG','NGA','NGA-E'
             ,'NGA-E-EU','NGA-E-IRE','NGA-I-EU','NGA-I-N','NGAPTR','PRCNGA','RESNGA','SERNGA','TRACNGL','TRACNGS','TRALNG','TRALNGDS'
             ,'TRALNGDSL','TRALNGIS','TRALNGISL','TRANGA','UPSNGA') then 'ALL GAS' --Filter 354
-        when commodity in('AGRCOA','COA','COA-E','COACOK','ELCCOA','HYGCOA','INDCOA','INDCOACOK','INDSYNCOA','PRCCOA','PRCCOACOK','RESCOA'
+        when commodity in('AGRCOA','COA','COACOK','COA-E','ELCCOA','HYGCOA','INDCOA','INDCOACOK','INDSYNCOA','PRCCOA','PRCCOACOK','RESCOA'
             ,'SERCOA','SYNCOA','TRACOA') then 'ALL COALS' --Filter 246
         when commodity in('SERHFO','SERLFO','TRAPETL','OILLFO','TRAJETDA','TRALFO','TRALPGS','ELCMSC','INDLFO','AGRHFO','TRAHFOIS','TRADSTS'
             ,'SERKER','TRAJETIANL','RESLFO','RESLPG','TRAHFODSL','TRALFOL','TRAJETIA','TRAJETL','TRAPETS','TRAHFODS','OILJET','OILDST'
@@ -935,8 +976,6 @@ order by tablename, commodity
 -- 'ghg_sec-prc-non-ets'    Other non-ETS (process-related) emissions like CH4,N2O
 -- 'ghg_sec-traded-emis-ets'    traded ETS emissions
 
--- 2:17 PM 09 June, 2016: Now just reports the net (VAR_FOut - VAR_FIn) emissions from the ETS- These are DECC categories
-
 COPY (
 select analysis || '|' || tablename || '|' || attribute || '|' || commodity || '|' || process::varchar(300) "id", analysis, tablename,attribute,
     commodity, process,
@@ -957,12 +996,12 @@ select analysis || '|' || tablename || '|' || attribute || '|' || commodity || '
 from (
     select 'all'::varchar(50) "process", period,
         case
-            when attribute='VAR_FIn' and commodity='Traded-Emission-ETS' then -pv
+            when attribute='VAR_FIn' and commodity in('Traded-Emission-ETS','PRCCH4P') then -pv
             else pv
         end as pv,
         tablename,
         case
-            when commodity='Traded-Emission-ETS' then 'various'
+            when commodity in('Traded-Emission-ETS','PRCCO2P','PRCCH4P','PRCN2OP') then 'various'
             else attribute
         end as attribute,
         case
@@ -985,7 +1024,7 @@ from (
         'GHG-SER-NON-ETS','GHG-TRA-NON-ETS-NO-IAS','GHG-AGR-NO-LULUCF','GHG-OTHER-NON-ETS','GHG-LULUCF','GHG-HFC-NON-ETS',
         'Traded-Emission-Non-ETS','GHG-ELC-CAPTURED','GHG-IND-ETS-CAPTURED','GHG-IND-NON-ETS-CAPTURED',
         'GHG-OTHER-ETS-CAPTURED','PRCCO2P','PRCCH4N','PRCCH4P','PRCN2ON','PRCN2OP',
-        'PRCCO2N')) or (attribute='VAR_FIn' and commodity='Traded-Emission-ETS')  --Filter 62
+        'PRCCO2N')) or (attribute='VAR_FIn' and commodity in('Traded-Emission-ETS','PRCCH4P')) --Filter 62
     order by period
 ) a
 where analysis <>''
@@ -1138,7 +1177,7 @@ with emissions_chp as (
                 ,'SHLCHPRH01','SHLCHPRW01','SCHP-EFW01') then 'CHP SER SECTOR'      --Filter 230
             when process in('UCHP-CCG00','UCHP-CCG01') then 'CHP UPS SECTOR'      --Filter 337
             when process in('RHEACHPRG01','RHEACHPRH01','RHEACHPRW01','RHFCCHPRG01','RHFCCHPRH01','RHFCCHPRW01','RHFSCHPRG01','RHFSCHPRH01','RHFSCHPRW01','RHHCCHPRG01','RHHCCHPRH01','RHHCCHPRW01'
-                ,'RHHSCHPRG01','RHHSCHPRH01','RHHSCHPRW01','RHNACHPRG01','RHNACHPRH01','RHNACHPRW01') then 'CHP RES MICRO'      --Filter 393
+                ,'RHHSCHPRG01','RHHSCHPRH01','RHHSCHPRW01','RHNACHPRG01','RHNACHPRH01','RHNACHPRW01') then 'CHP RES MICRO' --Filter 393
         end proc_set
         from vedastore
         where attribute='VAR_FOut' and commodity in('RESCH4N','SERN2ON','INDCO2N','SERCH4N','INDCH4N','INDN2ON','UPSN2ON','UPSCO2N','UPSCH4N','PRCCH4N','PRCCO2N','PRCN2ON'
@@ -1212,9 +1251,11 @@ with emissions_chp as (
     from (
         select tablename,pv,period from "emis_co2_sector" where comm_set='EMIS CO2 ELC'
         union all
-        select tablename,pv,period from "emis_ghg_dif" where commodity in('ELCCH4N','ELCN2ON')  --Filter 76
+        select tablename,pv,period from "emis_ghg_dif"
+		where commodity in('ELCCH4N','ELCN2ON')  --Filter 76
         union all
-        select tablename,sum(pv) "pv", period from "emissions_chp" where proc_set in('CHP IND SECTOR','CHP PRC SECTOR','CHP RES SECTOR','CHP SER SECTOR','CHP UPS SECTOR') and
+        select tablename,sum(pv) "pv", period from "emissions_chp"
+		where proc_set in('CHP IND SECTOR','CHP PRC SECTOR','CHP RES SECTOR','CHP SER SECTOR','CHP UPS SECTOR') and
             commodity in('INDCO2N','INDCH4N','INDN2ON','PRCCO2N','PRCCH4N','PRCN2ON','RESCO2N','RESCH4N','RESN2ON','SERCO2N','SERCH4N','SERN2ON','UPSCO2N','UPSCH4N','UPSN2ON') --Filter 77
         group by tablename, period
     ) a group by tablename,period
@@ -1853,18 +1894,14 @@ from (
         period,pv,
         'heat-res_' ||
         case
-            when process in ('RHEABLCRP01','RHEABLRRW00',
-                'RHEABLRRW01','RHEABLSRP01','RHEABLSRW01','RHNABLCRP01','RHNABLRRW01',
-                'RHNABLSRP01','RHNABLSRW01') then 'boiler-bio' --Filter 126
-            when process in('RHEABLCRH01','RHEABLSRH01',
-                'RHNABLCRH01','RHNABLSRH01') then 'boiler-h2' --Filter 127
-            when process in('RHEABLCRO00','RHEABLCRO01',
-                'RHEABLRRC00','RHEABLRRO00','RHEABLSRO01','RHNABLCRO01','RHNABLSRO01') then
-                    'boiler-otherFF' --Filter 128
-            when process in('RHEABLRRE00','RHEABLRRE01',
-                'RHEABLSRE01','RHEAGHPUE01','RHEASHTRE00','RHEASHTRE01','RHNABLRRE01',
-                'RHNABLSRE01','RHNAGHPUE01','RHNASHTRE01','RWEAWHTRE00','RWEAWHTRE01','RWNAWHTRE01') then
-                    'boiler/heater-elec' --Filter 129
+            when process in ('RHEABLCRP01','RHEABLRRW00','RHEABLRRW01','RHEABLSRP01','RHEABLSRW01',
+                'RHNABLCRP01','RHNABLRRW01','RHNABLSRP01','RHNABLSRW01') then 'boiler-bio' --Filter 126
+            when process in('RHEABLCRH01','RHEABLSRH01','RHNABLCRH01','RHNABLSRH01') then 'boiler-h2' --Filter 127
+            when process in('RHEABLCRO00','RHEABLCRO01','RHEABLRRC00','RHEABLRRO00','RHEABLSRO01','RHNABLCRO01'
+                ,'RHNABLSRO01') then 'boiler-otherFF' --Filter 128
+            when process in('RHEABLRRE00','RHEABLRRE01','RHEABLSRE01','RHEASHTRE00',
+                'RHEASHTRE01','RHNABLRRE01','RHNABLSRE01','RHNAGHPUE01','RHNASHTRE01',
+                'RWEAWHTRE00','RWEAWHTRE01','RWNAWHTRE01') then 'boiler/heater-elec' --Filter 415
             when process in('RHEABLCRG00','RHEABLCRG01',
                 'RHEABLRRG00','RHEABLSRG01','RHEASHTRG00','RHEASHTRG01','RHNABLCRG01',
                 'RHNABLSRG01','RHNASHTRG01','RWEAWHTRG00','RWEAWHTRG01','RWNAWHTRG01') then
@@ -1877,10 +1914,10 @@ from (
                     'other-conserv' --Filter 131
             when process in('RHEADHP100','RHEADHP101','RHEADHP201','RHEADHP301','RHEADHP401',
                 'RHNADHP101','RHNADHP201','RHNADHP301','RHNADHP401') then 'dh' --Filter 132
-            when process in('RHEAAHPRE00','RHEAAHPRE01',
-                'RHEAAHPUE01','RHEAAHSRE01', 'RHEAAHSUE01','RHEAGHPRE01','RHEAGHSRE01',
-                'RHEAGHSUE01','RHNAAHPRE01','RHNAAHPUE01','RHNAAHSRE01','RHNAAHSUE01',
-                'RHNAGHPRE01','RHNAGHSRE01','RHNAGHSUE01') then 'heatpump-elec' --Filter 133
+            when process in('RHEAAHPRE00','RHEAAHPRE01','RHEAAHPUE01','RHEAAHSRE01', 'RHEAAHSUE01',
+                'RHEAGHPRE01','RHEAGHPUE01','RHEAGHSRE01','RHEAGHSUE01','RHNAAHPRE01','RHNAAHPUE01',
+                'RHNAAHSRE01','RHNAAHSUE01','RHNAGHPRE01','RHNAGHSRE01','RHNAGHSUE01') then 
+                    'heatpump-elec' --Filter 133
             when process in('RHEAAHHRE01','RHEAAHHUE01',
                 'RHEAGHHRE01','RHEAGHHUE01','RHNAAHHRE01','RHNAAHHUE01','RHNAGHHRE01','RHNAGHHUE01') then
                     'hyb-boil+hp-h2' --Filter 134
@@ -1932,10 +1969,10 @@ from (
             when process in('RHEABLCRP01','RHEABLRRW01','RHEABLSRP01',
                 'RHEABLSRW01','RHNABLCRP01','RHNABLRRW01','RHNABLSRP01','RHNABLSRW01') then 'boiler-bio'  --Filter 141
             when process in('RHEABLCRH01','RHEABLSRH01','RHNABLCRH01','RHNABLSRH01') then 'boiler-h2' --Filter 127
-            
             when process in('RHEABLCRO01','RHEABLSRO01','RHNABLCRO01','RHNABLSRO01') then 'boiler-otherFF'  --Filter 143
-            when process in('RHEABLRRE01','RHEABLSRE01','RHEAGHPUE01','RHEASHTRE01','RHNABLRRE01','RHNABLSRE01','RHNAGHPUE01',
-                'RHNASHTRE01','RWEAWHTRE01','RWNAWHTRE01') then 'boiler/heater-elec'  --Filter 144
+            when process in('RHEABLRRE01','RHEABLSRE01','RHEASHTRE01','RHNABLRRE01',
+                'RHNABLSRE01','RHNAGHPUE01','RHNASHTRE01','RWEAWHTRE01','RWNAWHTRE01') 
+                then 'boiler/heater-elec'    --Filter 144
             when process in('RHEABLCRG01','RHEABLSRG01','RHEASHTRG01','RHNABLCRG01','RHNABLSRG01','RHNASHTRG01'
                 ,'RWEAWHTRG01','RWNAWHTRG01') then 'boiler/heater-nga'  --Filter 145
             when process='RHEACSVCAV01' then 'easy-cav' --Filter 397
@@ -1946,9 +1983,9 @@ from (
                     'other-conserv' --Filter 131
             when process in('RHEADHP101','RHEADHP201','RHEADHP301','RHEADHP401',
                 'RHNADHP101','RHNADHP201','RHNADHP301','RHNADHP401') then 'dh'  --Filter 147
-            when process in('RHEAAHPRE01','RHEAAHPUE01','RHEAAHSRE01',
-                'RHEAAHSUE01','RHEAGHPRE01','RHEAGHSRE01','RHEAGHSUE01','RHNAAHPRE01','RHNAAHPUE01','RHNAAHSRE01','RHNAAHSUE01'
-                ,'RHNAGHPRE01','RHNAGHSRE01','RHNAGHSUE01') then 'heatpump-elec' --Filter 148
+            when process in('RHEAAHPRE01','RHEAAHPUE01','RHEAAHSRE01','RHEAAHSUE01','RHEAGHPRE01',
+                'RHEAGHPUE01','RHEAGHSRE01','RHEAGHSUE01','RHNAAHPRE01','RHNAAHPUE01','RHNAAHSRE01',
+                'RHNAAHSUE01','RHNAGHPRE01','RHNAGHSRE01','RHNAGHSUE01') then 'heatpump-elec' --Filter 148
             when process in('RHEAAHHRE01','RHEAAHHUE01',
                 'RHEAGHHRE01','RHEAGHHUE01','RHNAAHHRE01','RHNAAHHUE01','RHNAGHHRE01','RHNAGHHUE01') then
                     'hyb-boil+hp-h2' --Filter 134
@@ -2739,9 +2776,10 @@ order by tablename,analysis
 
 /* *Primary energy demand and biomass, imports exports and domestic production* */
 -- Includes non-energy use of fuels in the industry chemicals sub-sector
+-- Includes domestically grown biomass from forestry (not clear model is constrained to actually use this)
 COPY (
 with rsr_min as(
--- This is the veda BE table
+-- This is the veda BE table but with MINMSWINO, 'MINING INORGANIC WASTE separated out (was lumped with bio)
     select
         sum(case when proc_set='IMPORT URN' then pv else 0 end) "IMPORT URN"
         ,sum(case when proc_set='MINING BIOMASS' then pv else 0 end) "MINING BIOMASS"
@@ -2754,15 +2792,16 @@ with rsr_min as(
         ,sum(case when proc_set='MINING SOLAR' then pv else 0 end) "MINING SOLAR"
         ,sum(case when proc_set='MINING TIDAL' then pv else 0 end) "MINING TIDAL"
         ,sum(case when proc_set='MINING WIND' then pv else 0 end) "MINING WIND"
-        ,sum(case when proc_set='MINING WAVE' then pv else 0 end) "MINING WAVE",
+        ,sum(case when proc_set='MINING WAVE' then pv else 0 end) "MINING WAVE"
+        ,sum(case when proc_set='MINING INORGANIC WASTE' then pv else 0 end) "MINING INORGANIC WASTE",
         tablename,period
     from (
         select tablename,period, pv,
             case
                 when  process in('IMPURN') then 'IMPORT URN' --Filter 325
                 when  process in('MINBGRASS1','MINBGRASS2','MINBGRASS3','MINBIOOILCRP','MINBOG-LF','MINBRSEED','MINBSEWSLG','MINBSLURRY1','MINBSTWWST1','MINBSUGAR','MINBTALLOW','MINBVOFAT'
-                    ,'MINBWHT1','MINBWHT2','MINBWHT3','MINBWOD1','MINBWOD2','MINBWOD3','MINBWOD4','MINBWODLOG','MINBWODWST','MINBWODWSTSAW','MINMSWBIO','MINMSWINO'
-                    ,'MINMSWORG') then 'MINING BIOMASS' --Filter 254
+                    ,'MINBWHT1','MINBWHT2','MINBWHT3','MINBWOD1','MINBWOD2','MINBWOD3','MINBWOD4','MINBWODLOG','MINBWODWST','MINBWODWSTSAW','MINMSWBIO',
+                    'MINMSWORG') then 'MINING BIOMASS' --Filter 254
                 when  process in('MINCOA1','MINCOA2','MINCOA3','MINCOA4','MINCOA5','MINCOA6','MINCOACOK1','MINCOACOK2') then 'MINING COAL' --Filter 300
                 when  process in('RNWGEO') then 'MINING GEOTHERMAL' --Filter 380
                 when  process in('RNWHYDDAM','RNWHYDROR') then 'MINING HYDRO' --Filter 317
@@ -2773,32 +2812,41 @@ with rsr_min as(
                 when  process in('RNWTID') then 'MINING TIDAL' --Filter 378
                 when  process in('RNWWAV') then 'MINING WAVE' --Filter 272
                 when  process in('RNWWNDOFF','RNWWNDONS') then 'MINING WIND' --Filter 310
+        when process in('MINMSWINO') then 'MINING INORGANIC WASTE' --Filter 409
                 else null
             end as proc_set
         from vedastore
         where attribute='VAR_FOut'
-            and commodity in('AGRBIODST','AGRBIOLPG','AGRBOM','AGRGRASS','AGRMAINSBOM','AGRPOLWST','BGRASS','BIODST','BIODST-FT',
-                'BIOJET-FT','BIOKER-FT','BIOLFO','BIOLPG','BIOOIL','BOG-AD','BOG-G','BOG-LF','BOM','BPELH','BPELL','BRSEED','BSEWSLG',
-                'BSLURRY','BSTARCH','BSTWWST','BSUGAR','BTREATSTW','BTREATWOD','BVOIL','BWOD','BWODLOG','BWODWST','ELCBIOCOA',
-                'ELCBIOCOA2','ELCBIOLFO','ELCBIOOIL','ELCBOG-AD','ELCBOG-LF','ELCBOG-SW','ELCBOM','ELCMAINSBOM','ELCMSWINO','ELCMSWORG',
-                'ELCPELH','ELCPELL','ELCPOLWST','ELCSTWWST','ELCTRANSBOM','ETH','HYGBIOO','HYGBPEL','HYGMSWINO','HYGMSWORG','INDBIOLFO',
-                'INDBIOLPG','INDBIOOIL','INDBOG-AD','INDBOG-LF','INDBOM','INDGRASS','INDMAINSBOM','INDMSWINO','INDMSWORG','INDPELH',
-                'INDPELL','INDPOLWST','INDWOD','INDWODWST','METH','MSWBIO','MSWINO','MSWORG','PWASTEDUM','RESBIOLFO','RESBOM',
-                'RESHOUSEBOM','RESMAINSBOM','RESMSWINO','RESMSWORG','RESPELH','RESWOD','RESWODL','SERBIOLFO','SERBOG','SERBOM','SERBUILDBOM','SERMAINSBOM',
-                'SERMSWBIO','SERMSWINO','SERMSWORG','SERPELH','SERWOD','TRABIODST','TRABIODST-FT','TRABIODST-FTL','TRABIODST-FTS',
-                'TRABIODSTL','TRABIODSTS','TRABIOJET-FTDA','TRABIOJET-FTDAL','TRABIOJET-FTIA','TRABIOJET-FTIAL','TRABIOLFO','TRABIOLFODS',
-                'TRABIOLFODSL','TRABIOLFOL','TRABIOOILIS','TRABIOOILISL','TRABOM','TRAETH','TRAETHL','TRAETHS','TRAMAINSBOM','TRAMETH',
-                'AGRCOA','COA','COACOK','COA-E','ELCCOA','HYGCOA','INDCOA','INDCOACOK','INDSYNCOA','PRCCOA','PRCCOACOK','RESCOA',
-                'SERCOA','SYNCOA','TRACOA','AGRNGA','ELCNGA','HYGLNGA','HYGSNGA','IISNGAB','IISNGAC','IISNGAE','INDNEUNGA','INDNGA',
-                'LNG','NGA','NGA-E','NGA-E-EU','NGA-E-IRE','NGA-I-EU','NGA-I-N','NGAPTR','PRCNGA','RESNGA','SERNGA','TRACNGL','TRACNGS',
-                'TRANGA','UPSNGA','TRALNG','TRALNGDS','TRALNGDSL','TRALNGIS','TRALNGISL','AGRHFO','AGRLFO','AGRLPG','ELCHFO','ELCLFO',
-                'ELCLPG','ELCMSC','IISHFOB','INDHFO','INDKER','INDLFO','INDLPG','INDNEULFO','INDNEULPG','INDNEUMSC','INDSYNOIL',
-                'OILCRD','OILCRDRAW','OILCRDRAW-E','OILDST','OILHFO','OILJET','OILKER','OILLFO','OILLPG','OILMSC','OILPET','PRCHFO',
-                'PRCOILCRD','RESKER','RESLFO','RESLPG','SERHFO','SERKER','SERLFO','SERLPG','SYNOIL','TRADST','TRADSTL','TRADSTS',
-                'TRAHFO','TRAHFODS','TRAHFODSL','TRAHFOIS','TRAHFOISL','TRAJETDA','TRAJETDAEL','TRAJETIA','TRAJETIAEL','TRAJETIANL',
-                'TRAJETL','TRALFO','TRALFODS','TRALFODSL','TRALFOL','TRALPG','TRALPGL','TRALPGS','TRAPET','TRAPETL','TRAPETS','UPSLFO',
-                'ELCGEO','ELCHYDDAM','ELCSOL','ELCTID','ELCWAV','ELCWNDOFS','ELCWNDONS','GEO','HYDDAM','HYDROR','RESSOL','SERGEO',
-                'SERSOL','SOL','TID','WAV','WNDOFF','WNDONS','URN') --Filter 206
+            and commodity in('AGRBIODST','AGRBIOLPG','AGRBOM','AGRCOA','AGRGRASS','AGRHFO','AGRLFO',
+                'AGRLPG','AGRMAINSBOM','AGRNGA','AGRPOLWST','BGRASS','BIODST','BIODST-FT','BIOJET-FT',
+                'BIOKER-FT','BIOLFO','BIOLPG','BIOOIL','BOG-AD','BOG-G','BOG-LF','BOM','BPELH','BPELL',
+                'BRSEED','BSEWSLG','BSLURRY','BSTARCH','BSTWWST','BSUGAR','BTREATSTW','BTREATWOD','BVOIL',
+                'BWOD','BWODLOG','BWODWST','COA','COACOK','COA-E','ELCBIOCOA','ELCBIOCOA2','ELCBIOLFO',
+                'ELCBIOOIL','ELCBOG-AD','ELCBOG-LF','ELCBOG-SW','ELCBOM','ELCCOA','ELCGEO','ELCHFO',
+                'ELCHYDDAM','ELCLFO','ELCLPG','ELCMAINSBOM','ELCMSC','ELCMSWINO','ELCMSWORG','ELCNGA',
+                'ELCPELH','ELCPELL','ELCPOLWST','ELCSOL','ELCSTWWST','ELCTID','ELCTRANSBOM','ELCWAV',
+                'ELCWNDOFS','ELCWNDONS','ETH','GEO','HYDDAM','HYDROR','HYGBIOO','HYGBPEL','HYGCOA',
+                'HYGLNGA','HYGMSWINO','HYGMSWORG','HYGSNGA','IISHFOB','IISNGAB','IISNGAC','IISNGAE',
+                'INDBIOLFO','INDBIOLPG','INDBIOOIL','INDBOG-AD','INDBOG-LF','INDBOM','INDCOA',
+                'INDCOACOK','INDGRASS','INDHFO','INDKER','INDLFO','INDLPG','INDMAINSBOM','INDMSWINO',
+                'INDMSWORG','INDNEULFO','INDNEULPG','INDNEUMSC','INDNEUNGA','INDNGA','INDPELH','INDPELL',
+                'INDPOLWST','INDSYNCOA','INDSYNOIL','INDWOD','INDWODWST','LNG','METH','MSWBIO','MSWINO',
+                'MSWORG','NGA','NGA-E','NGA-E-EU','NGA-E-IRE','NGA-I-EU','NGA-I-N','NGAPTR','OILCRD',
+                'OILCRDRAW','OILCRDRAW-E','OILDST','OILHFO','OILJET','OILKER','OILLFO','OILLPG','OILMSC',
+                'OILPET','PRCCOA','PRCCOACOK','PRCHFO','PRCNGA','PRCOILCRD','PWASTEDUM','RESBIOLFO',
+                'RESBOM','RESCOA','RESHOUSEBOM','RESKER','RESLFO','RESLPG','RESMAINSBOM','RESMSWINO',
+                'RESMSWORG','RESNGA','RESPELH','RESSOL','RESWOD','RESWODL','SERBIOLFO','SERBOG','SERBOM',
+                'SERBUILDBOM','SERCOA','SERGEO','SERHFO','SERKER','SERLFO','SERLPG','SERMAINSBOM',
+                'SERMSWBIO','SERMSWINO','SERMSWORG','SERNGA','SERPELH','SERSOL','SERWOD','SOL','SYNCOA',
+                'SYNOIL','TID','TRABIODST','TRABIODST-FT','TRABIODST-FTL','TRABIODST-FTS','TRABIODSTL',
+                'TRABIODSTS','TRABIOJET-FTDA','TRABIOJET-FTDAL','TRABIOJET-FTIA','TRABIOJET-FTIAL',
+                'TRABIOLFO','TRABIOLFODS','TRABIOLFODSL','TRABIOLFOL','TRABIOOILIS','TRABIOOILISL','TRABOM',
+                'TRACNGL','TRACNGS','TRACOA','TRADST','TRADSTL','TRADSTS','TRAETH','TRAETHL','TRAETHS',
+                'TRAHFO','TRAHFODS','TRAHFODSL','TRAHFOIS','TRAHFOISL','TRAJETDA','TRAJETDAEL','TRAJETIA',
+                'TRAJETIAEL','TRAJETIANL','TRAJETL','TRALFO','TRALFODS','TRALFODSL','TRALFOL','TRALNG',
+                'TRALNGDS','TRALNGDSL','TRALNGIS','TRALNGISL','TRALPG','TRALPGL','TRALPGS','TRAMAINSBOM',
+                'TRAMETH','TRANGA','TRAPET','TRAPETL','TRAPETS','UPSLFO','UPSNGA','URN','WAV','WNDOFF',
+                'WNDONS') --Filter 206
     ) a
     where proc_set is not null group by tablename, period order by tablename,period
 )
@@ -2974,9 +3022,28 @@ with rsr_min as(
         and process in('ENUCPWR101','ENUCPWR102','ENUCPWR00')  --Filter 209
     group by tablename,period order by tablename,period
  )
- ,end_demand as(
+,domestic_bio as (
+-- this is wood and waste wood produced by forestry options in UKTM not clear model is constrained to actually use it
+-- Have to set up a 'pre-populated' table with zeros in each year as extra bioenergy may not be produced in every model year
+    select a.tablename, a.period,sum(a.bio+case when b.bio>0 then b.bio else 0 end) "DOMESTIC BIO PROD"
+    from (
+        select distinct tablename, period, 0::numeric "bio" from vedastore
+        where period in('2010','2011','2012','2015','2020','2025','2030','2035','2040','2045','2050','2055','2060')
+    ) a left join (
+        select sum(pv) "bio",tablename,period
+        from vedastore
+        where attribute='VAR_FOut' and commodity in('BWODWST','BWOD')
+            and process in('ALUFOR02','ALUFOR03','ALUFOR04')  --Filter 410
+        group by tablename,period
+        order by tablename,period
+    ) b on a.tablename=b.tablename and a.period=b.period
+    group by a.tablename,a.period
+    order by a.tablename,a.period
+)
+,end_demand as(
     select
-        sum("MINING BIOMASS")+sum("IMPORT BIOMASS")+sum("IMPORT BDL")+sum("IMPORT BIOOIL")+sum("IMPORT ETHANOL")+sum("IMPORT FTD")+sum("IMPORT FTK-AVI")-SUM("EXPORT ETH")-sum("EXPORT BIOMASS") "bio"
+        sum("MINING BIOMASS")+sum("DOMESTIC BIO PROD")+sum("IMPORT BIOMASS")+sum("IMPORT BDL")+sum("IMPORT BIOOIL")
+            +sum("IMPORT ETHANOL")+sum("IMPORT FTD")+sum("IMPORT FTK-AVI")-SUM("EXPORT ETH")-sum("EXPORT BIOMASS") "bio"
 -- NB is no biomass export in the model
         ,sum("MINING COAL")+sum("IMPORT COAL")-sum("EXPORT COAL")+sum("IMPORT COKE")-sum("EXPORT COKE") "coa"
         ,sum("IMPORT ELC")-sum("EXPORT ELC") "elec"
@@ -2987,9 +3054,13 @@ with rsr_min as(
         -sum("EXPORT HFO")-sum("EXPORT JET")-sum("EXPORT KER")-sum("EXPORT LFO")-sum("EXPORT LPG")-sum("EXPORT MOIL") "oil"
         ,sum("MINING HYDRO")+sum("MINING WIND")+sum("MINING SOLAR")+sum("MINING GEOTHERMAL")+sum("MINING TIDAL")+sum("MINING WAVE") "rens"
         ,sum(d."ELC FROM NUCLEAR") "nuc"
+    ,sum("MINING INORGANIC WASTE") "was"
         ,a.period,a.tablename
     from rsr_min a join rsr_imports b
-    on a.period=b.period and a.tablename=b.tablename join rsr_export c on a.period=c.period and a.tablename=c.tablename join nuclear d on a.period=d.period and a.tablename=d.tablename
+    on a.period=b.period and a.tablename=b.tablename left join rsr_export c 
+    on a.period=c.period and a.tablename=c.tablename left join nuclear d 
+    on a.period=d.period and a.tablename=d.tablename left join domestic_bio e
+    on a.period=e.period and a.tablename=e.tablename
     group by a.tablename,a.period order by a.period
 )
 select 'pri-en_' || cols || '|' || tablename || '|various|various|various'::varchar "id",
@@ -3015,9 +3086,9 @@ select 'pri-en_' || cols || '|' || tablename || '|various|various|various'::varc
     sum(case when a.period='2060' then vals else 0 end) as "2060"
     from
     (
-        SELECT unnest(array['bio','coa','elc','gas','hyd','oil','orens','nuc']) as "cols",
+        SELECT unnest(array['bio','coa','elc','gas','hyd','oil','orens','nuc','was']) as "cols",
            tablename,period,
-           unnest(array[bio,coa,elec,gas,h2,oil,rens,nuc]) AS "vals"
+           unnest(array[bio,coa,elec,gas,h2,oil,rens,nuc,was]) AS "vals"
         FROM end_demand
     ) a
 group by tablename,cols
@@ -3045,7 +3116,8 @@ select 'bio-en_' || cols || '|' || tablename || '|VAR_FOut|various|' || process:
     sum(case when a.period='2060' then vals else 0 end) as "2060"
     from
     (
-        select 'dom-prod' "cols", 'MINING BIOMASS' "process", "MINING BIOMASS" "vals", period, tablename from rsr_min
+        select 'dom-prod' "cols", 'various' "process", "MINING BIOMASS"+"DOMESTIC BIO PROD" "vals", a.period, a.tablename from rsr_min a
+        join domestic_bio b on a.tablename=b.tablename and a.period=b.period
         union all
         select 'imports' "cols", 'various' "process",
             "IMPORT BDL"+"IMPORT BIOOIL"+"IMPORT ETHANOL"+"IMPORT FTD"+"IMPORT FTK-AVI"+"IMPORT BIOMASS" "vals", period, tablename from rsr_imports
@@ -3139,7 +3211,7 @@ ORDER BY tablename,analysis
 -- 5:34 PM 25 August, 2016:
     -- "elc from imports" set wrong (not include ireland); corrected. Filters for new build heat output (res/ser) changed to exclude base year techs
 -- 7:12 PM 31 October, 2016:
-    -- Addition of miscellaneous queries section with q for other industry    fuel use
+    -- Addition of miscellaneous queries section with q for other industry fuel use
 -- 7:49 PM 15 November, 2016:
     -- Correction of error in FUEL TECHS AGR set to remove mains distribution pipes, AMAINPHYG01, AMAINPGAS01. Added TRA_Fuel_by_mode to transport batch file section of code (temporary measure)
 -- 5:25 PM 17 November, 2016:
@@ -3151,12 +3223,8 @@ ORDER BY tablename,analysis
 -- 2:23 PM 12 December, 2016:
     -- FS Added filter IDs to all remaining filters and refactored the international shipping and aviation table to conform to these filters. corrected gas CCS code.
 -- 2:55 PM 15 December, 2016:
-    -- BF edited Filter 131, 'heat-res_conserv' 
-        --Added 'RHEACSVWIN01','RHEACSVFLU01','RHEACSVDFT01','RHEACSVCON01','RHEACSVCYL01'
-        --Removed 'RHEACSV01','RHEACSVLOF02','RHEACSVSOL02','RHEACSVSOL03'
-    -- BF edited Filter 146, 'new-heat-res_conserv'
-        --Added 'RHEACSVWIN01','RHEACSVFLU01','RHEACSVDFT01','RHEACSVCON01','RHEACSVCYL01'
-        --Removed 'RHEACSV01','RHEACSVLOF02','RHEACSVSOL02','RHEACSVSOL03'
+    -- BF edited Filter 131, 'heat-res_conserv'. Added 'RHEACSVWIN01','RHEACSVFLU01','RHEACSVDFT01','RHEACSVCON01','RHEACSVCYL01'. Removed 'RHEACSV01','RHEACSVLOF02','RHEACSVSOL02','RHEACSVSOL03'
+    -- BF edited Filter 146, 'new-heat-res_conserv'. Added 'RHEACSVWIN01','RHEACSVFLU01','RHEACSVDFT01','RHEACSVCON01','RHEACSVCYL01'. Removed 'RHEACSV01','RHEACSVLOF02','RHEACSVSOL02','RHEACSVSOL03'
 -- 1:50 PM 16 December, 2016
     -- BF added 'RESMSWINO','RESMSWORG' to Filters 287,206,207,208 to match locations of equivalent service sector commodities 'SERMSWINO','SERMSWORG' 
     -- BF added 'RESMSWINO01','RESMSWORG01' to Filter 304 'Fuel Techs RES' to match equivalent locations of equivalent service sector Fuel Techs 'SERMSWINO01','SERMSWORG01'
@@ -3170,3 +3238,7 @@ ORDER BY tablename,analysis
 -- 4:11 PM 13 January, 2017: FS: Broke out easy-/-hard to fill cavity insulation + system build solid from residential heat query and amended the other conservation measures to exclude these. Changed filters to remove redundancy on new/old, res/serv heat qs
 -- 2:31 PM 20 January, 2017: FS: added storage techs to the electrical capacity q and simplified the filters there
     -- Added a new transport fuels by road transport query to transport batch
+-- 9:02 PM 26 January, 2017: FS correction to filters for electric heaters and heat pumps in residential
+-- 6:20 PM 30 January, 2017: FS change to primary en q to separate out inorganic waste from bio and associated change to filters; include agri livestock etc emissions baseline in defra measures q
+-- 6:34 PM 31 January, 2017: FS Change to GHG by sector to remove CH4 captured by landfill mitigation measures. Additional q to ag batch to report landfill mitigation. Change to primary energy query to include biomass from forestry, and change of process label from "MINING BIOMASS" to 'various'; for non-ETS waste changed attribute from 'VAR_FOut' to 'various'
+-- 12:49 PM 06 February, 2017: FS removal of prefix from some res heat q prefixes
