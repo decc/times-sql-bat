@@ -125,13 +125,13 @@ echo sum(case when period='2060' then pv else 0 end)::numeric "2060" >> AgBatchU
 echo from ( >> AgBatchUpload.sql
 echo select tablename, attribute, period,pv, >> AgBatchUpload.sql
 echo case >> AgBatchUpload.sql
-echo when process in ('ALUFOR01','ALUFOR02','ALUFOR03','ALUFOR04') then 'affor'  --Filter 210 >> AgBatchUpload.sql
-echo when process in ('AGCRP01','AGCRP02','AGCRP04','AGCRP05','AGCRP06','AGCRP07','AGCRP08','AGCRP09') then 'crops' --Filter 211 >> AgBatchUpload.sql
-echo when process in ('AHTBLRC00','AHTBLRG00','AHTBLRG01','AHTBLRO00','AHTBLRO01','ATRA00','ATRA01','AATRA01') then 'agr-en' --Filter 212 >> AgBatchUpload.sql
-echo when process in ('AGSOI01','AGSOI02','AGSOI03','AGSOI04') then 'soils' --Filter 417 >> AgBatchUpload.sql
-echo when process in ('ALU00') then 'lulucf' --Filter 213 >> AgBatchUpload.sql
-echo when process in ('AGLIV03','AGLIV04','AGLIV05','AGLIV06','AGLIV07','AGLIV09') then 'livestock' --Filter 214 >> AgBatchUpload.sql
-echo when process in('AGRCUL00','MINBSLURRY1') then 'bau-livestock' --Filter 416 >> AgBatchUpload.sql
+echo when process in ('ALUFOR01','ALUFOR02','ALUFOR03','ALUFOR04') then 'affor'   >> AgBatchUpload.sql
+echo when process in ('AGCRP01','AGCRP02','AGCRP04','AGCRP05','AGCRP06','AGCRP07','AGCRP08','AGCRP09') then 'crops'  >> AgBatchUpload.sql
+echo when process in ('AHTBLRC00','AHTBLRG00','AHTBLRG01','AHTBLRO00','AHTBLRO01','ATRA00','ATRA01','AATRA01') then 'agr-en'  >> AgBatchUpload.sql
+echo when process in ('AGSOI01','AGSOI02','AGSOI03','AGSOI04') then 'soils'  >> AgBatchUpload.sql
+echo when process in ('ALU00') then 'lulucf'  >> AgBatchUpload.sql
+echo when process in ('AGLIV03','AGLIV04','AGLIV05','AGLIV06','AGLIV07','AGLIV09') then 'livestock'  >> AgBatchUpload.sql
+echo when process in('AGRCUL00','MINBSLURRY1') then 'bau-livestock'  >> AgBatchUpload.sql
 echo end as proc_set >> AgBatchUpload.sql
 echo from vedastore >> AgBatchUpload.sql
 echo where attribute='VAR_FOut' and commodity in ('GHG-LULUCF','GHG-AGR-NO-LULUCF')  >> AgBatchUpload.sql
