@@ -37,44 +37,44 @@ Revisions section placed at end of file.
 /* ******List of completed queries*******/
 /* **Miscellaneous queries (not included in batch files): ** */
 /* ----------------------------------------------------------*/
-/* *Total fuel consumption by fuel for other industry (industry sub-sector)* */ --line 79
+/* *Total fuel consumption by fuel for other industry (industry sub-sector)* */ --line 80
 
-/* **Electricity Batch File: ** */ --line 180
+/* **Electricity Batch File: ** */ --line 181
 /* ------------------------------------------*/
-/* *Annual timesliced elec storage output (techs grouped)* */ --line 182
+/* *Annual timesliced elec storage output (techs grouped)* */ --line 183
 
-/* **For agriculture / LULUCF batch file: ** */ --line 226
+/* **For agriculture / LULUCF batch file: ** */ --line 227
 /* ------------------------------------------*/
-/* *Landfill CH4 emission mitigation and residual emissions* */ --line 228
-/* *Land use and crop / livestock mitigation (MACC) measures* */ --line 265
-/* *Afforestation rate* */ --line 306
+/* *Landfill CH4 emission mitigation and residual emissions* */ --line 229
+/* *Land use and crop / livestock mitigation (MACC) measures* */ --line 266
+/* *Afforestation rate* */ --line 307
 
-/* **For transport batch file: ** */ --line 333
+/* **For transport batch file: ** */ --line 334
 /* -------------------------------*/
-/* *Whole stock vehicle kms, emissions and emission intensity for 29 vehicle types* */ --line 336
-/* *New stock vehicle kms, emissions and emission intensity for 29 vehicle types* */ --line 504
-/* *Whole stock capacity for vehicles for 29 vehicle types* */ --line 659
-/* *New build capacity for vehicles for 29 vehicle types* */ --line 713
-/* *TRA_Fuel_by_mode* */ --line 768
-/* *Road transport fuel by mode and fuel* */ --line 858
+/* *Whole stock vehicle kms, emissions and emission intensity for 29 vehicle types* */ --line 337
+/* *New stock vehicle kms, emissions and emission intensity for 29 vehicle types* */ --line 505
+/* *Whole stock capacity for vehicles for 29 vehicle types* */ --line 660
+/* *New build capacity for vehicles for 29 vehicle types* */ --line 714
+/* *TRA_Fuel_by_mode* */ --line 769
+/* *Road transport fuel by mode and fuel* */ --line 859
 
-/* **Main "key outputs" crosstabs** */ --line 908
+/* **Main "key outputs" crosstabs** */ --line 909
 /* -------------------------------*/
-/* *Dummy imports by table* */ --line 910
-/* *All GHG emissions* */ --line 940
-/* *GHG emissions by sector* */ --line 971
-/* *GHG and sequestered emissions by industry sub-sector* */ --line 1035
-/* *Electricity generation by source* */ --line 1129
-/* *Electricity storage by type* */ --line 1673
-/* *Electricity capacity by process* */ --line 1707
-/* *Costs by sector and type* */ --line 1789
-/* *Marginal prices for emissions* */ --line 1842
-/* *Whole stock heat output by process for residential* */ --line 1872
-/* *New build residential heat output by source* */ --line 1945
-/* *Whole stock heat output for services* */ --line 2011
-/* *New build services heat output by source* */ --line 2099
-/* *End user final energy demand by sector* */ --line 2159
-/* *Primary energy demand and biomass, imports exports and domestic production* */ --line 2777
+/* *Dummy imports by table* */ --line 911
+/* *All GHG emissions* */ --line 941
+/* *GHG emissions by sector* */ --line 972
+/* *GHG and sequestered emissions by industry sub-sector* */ --line 1036
+/* *Electricity generation by source* */ --line 1130
+/* *Electricity storage by type* */ --line 1674
+/* *Electricity capacity by process* */ --line 1708
+/* *Costs by sector and type* */ --line 1790
+/* *Marginal prices for emissions* */ --line 1843
+/* *Whole stock heat output by process for residential* */ --line 1873
+/* *New build residential heat output by source* */ --line 1946
+/* *Whole stock heat output for services* */ --line 2012
+/* *New build services heat output by source* */ --line 2100
+/* *End user final energy demand by sector* */ --line 2160
+/* *Primary energy demand and biomass, imports exports and domestic production* */ --line 2778
 
 /* *Total fuel consumption by fuel for other industry (industry sub-sector)* */
 with ind_oi_chp as (
@@ -291,9 +291,10 @@ select 'ag-lulucf-meas-ghg_'|| proc_set || '|' || tablename || '|' || attribute 
             when process in ('ALUFOR01','ALUFOR02','ALUFOR03','ALUFOR04') then 'affor'  --Filter 210
             when process in ('AGCRP01','AGCRP02','AGCRP04','AGCRP05','AGCRP06','AGCRP07','AGCRP08','AGCRP09') then 'crops' --Filter 211
             when process in ('AHTBLRC00','AHTBLRG00','AHTBLRG01','AHTBLRO00','AHTBLRO01','ATRA00','ATRA01','AATRA01') then 'agr-en' --Filter 212
-            when process in ('ALU00','MINBSLURRY1','AGSOI01','AGSOI02','AGSOI03','AGSOI04') then 'lulucf' --Filter 213
+            when process in ('AGSOI01','AGSOI02','AGSOI03','AGSOI04') then 'soils' --Filter 417
+            when process in ('ALU00') then 'lulucf' --Filter 213
             when process in ('AGLIV03','AGLIV04','AGLIV05','AGLIV06','AGLIV07','AGLIV09') then 'livestock' --Filter 214
-            when process='AGRCUL00' then 'bau-livestock'
+            when process in('AGRCUL00','MINBSLURRY1') then 'bau-livestock' --Filter 416
         end as proc_set
         from vedastore
         where attribute='VAR_FOut' and commodity in ('GHG-LULUCF','GHG-AGR-NO-LULUCF') --Filter 1
@@ -3242,3 +3243,4 @@ ORDER BY tablename,analysis
 -- 6:20 PM 30 January, 2017: FS change to primary en q to separate out inorganic waste from bio and associated change to filters; include agri livestock etc emissions baseline in defra measures q
 -- 6:34 PM 31 January, 2017: FS Change to GHG by sector to remove CH4 captured by landfill mitigation measures. Additional q to ag batch to report landfill mitigation. Change to primary energy query to include biomass from forestry, and change of process label from "MINING BIOMASS" to 'various'; for non-ETS waste changed attribute from 'VAR_FOut' to 'various'
 -- 12:49 PM 06 February, 2017: FS removal of prefix from some res heat q prefixes
+-- 3:40 PM 07 February, 2017: FS Changed the agriculture mitigation q; LULUCF BAU emissions separated out from soil, slurry emissions added to livestock/crop BAU
