@@ -350,19 +350,19 @@ copy(
 with base_cng_emissions as(
     select tablename, period,'cars-emis_lpg-and-cng-fueled'::varchar(50) "analysis",
         'VAR_FOut'::varchar(50) "attribute",
-        'GHG-TRA-NON-ETS-NO-IAS'::varchar(50) "commodity",
+        'GHG-TRA-NON-ETS-NO-AS'::varchar(50) "commodity",
         0::numeric "pv"
     from vedastore group by tablename, period
     union
     select tablename, period,'hgv-emis_lpg-and-cng-fueled'::varchar(50) "analysis",
         'VAR_FOut'::varchar(50) "attribute",
-        'GHG-TRA-NON-ETS-NO-IAS'::varchar(50) "commodity",
+        'GHG-TRA-NON-ETS-NO-AS'::varchar(50) "commodity",
         0::numeric "pv"
     from vedastore group by tablename, period
     union
     select tablename, period,'lgv-emis_lpg-and-cng-fueled'::varchar(50) "analysis",
         'VAR_FOut'::varchar(50) "attribute",
-        'GHG-TRA-NON-ETS-NO-IAS'::varchar(50) "commodity",
+        'GHG-TRA-NON-ETS-NO-AS'::varchar(50) "commodity",
         0::numeric "pv"
     from vedastore group by tablename, period
 )
@@ -377,7 +377,7 @@ with base_cng_emissions as(
         select
             tablename,process,period,pv,
         case
-            when process = 'TFSSCNG01' and attribute ='VAR_FOut' and commodity in('GHG-TRA-NON-ETS-NO-IAS') then 'cng-conv-emis' --Filter 18
+            when process = 'TFSSCNG01' and attribute ='VAR_FOut' and commodity in('GHG-TRA-NON-ETS-NO-AS') then 'cng-conv-emis' --Filter 18
             when attribute = 'VAR_FIn' and commodity in('TRACNGS','TRACNGL') then
                 case
                     when process like 'TC%' then 'cars-cng-in' --Filter 4
@@ -396,7 +396,7 @@ with base_cng_emissions as(
             'GHG-NON-ETS-NO-LULUCF-NET','GHG-NON-ETS-NO-LULUCF-TER',
             'GHG-NON-ETS-YES-LULUCF-NET','GHG-NON-ETS-YES-LULUCF-TER','GHG-OTHER-ETS',
             'GHG-OTHER-ETS-CAPTURED','GHG-OTHER-NON-ETS','GHG-RES-ETS','GHG-RES-NON-ETS',
-            'GHG-SER-ETS','GHG-SER-NON-ETS','GHG-TRA-ETS-NO-IAS','GHG-TRA-NON-ETS-NO-IAS',
+            'GHG-SER-ETS','GHG-SER-NON-ETS','GHG-TRA-NON-ETS-NO-AS',
             'GHG-YES-IAS-NO-LULUCF-NET','GHG-YES-IAS-NO-LULUCF-TER',
             'GHG-YES-IAS-YES-LULUCF-NET','GHG-YES-IAS-YES-LULUCF-TER') and
             (process = 'TFSSCNG01' or process like any(array['TC%','TL%','TH%','TB%'])) --Filter 7
@@ -431,7 +431,7 @@ with base_cng_emissions as(
                     end ||
                     case
                         when commodity in('TC','TL','TH1','TH2','TH3','TB','TW') then 'km_'
-                        when commodity in('GHG-TRA-NON-ETS-NO-IAS') then 'emis_'
+                        when commodity in('GHG-TRA-NON-ETS-NO-AS') then 'emis_'
                     end ||
                     case
                         when process in('TBDST00','TBDST01','TCDST00','TCDST01','TH1DST00','TH2DST00','TH3DST00','TH1DST01',
@@ -451,7 +451,7 @@ with base_cng_emissions as(
                         when process in('TH2CNGDST01','TH3CNGDST01') then 'Dual fuel diesel-CNG' --Filter 221
                     end as "analysis"
                     from vedastore
-                    where attribute = 'VAR_FOut' and commodity in('GHG-TRA-NON-ETS-NO-IAS','TB','TC','TH1','TH2','TH3','TL','TW')
+                    where attribute = 'VAR_FOut' and commodity in('GHG-TRA-NON-ETS-NO-AS','TB','TC','TH1','TH2','TH3','TL','TW')
                         and (process like any(array['TC%','TL%','TB%','TW%']) or process ~'^TH[^Y]' or process='TFSLCNG01')  --Filter 17
                     ) a
             where analysis <>''
@@ -509,22 +509,22 @@ order by tablename, analysis
 COPY (
 with base_cng_emissions as(
     select tablename, period,'cars-new-emis_lpg-and-cng-fueled'::varchar "analysis",
-        'VAR_FOut'::varchar "atttribute", 'GHG-TRA-NON-ETS-NO-IAS'::varchar "commodity",
+        'VAR_FOut'::varchar "atttribute", 'GHG-TRA-NON-ETS-NO-AS'::varchar "commodity",
         0::numeric "pv"
     from vedastore group by tablename, period
     union
     select tablename, period,'hgv-new-emis_lpg-and-cng-fueled'::varchar "analysis",
-        'VAR_FOut'::varchar "atttribute", 'GHG-TRA-NON-ETS-NO-IAS'::varchar "commodity",
+        'VAR_FOut'::varchar "atttribute", 'GHG-TRA-NON-ETS-NO-AS'::varchar "commodity",
         0::numeric "pv"
     from vedastore group by tablename, period
     union
     select tablename, period,'lgv-new-emis_lpg-and-cng-fueled'::varchar "analysis",
-        'VAR_FOut'::varchar "atttribute", 'GHG-TRA-NON-ETS-NO-IAS'::varchar "commodity",
+        'VAR_FOut'::varchar "atttribute", 'GHG-TRA-NON-ETS-NO-AS'::varchar "commodity",
         0::numeric "pv"
     from vedastore group by tablename, period
     union
     select tablename, period,'bus-new-emis_lpg-and-cng-fueled'::varchar "analysis",
-        'VAR_FOut'::varchar "atttribute", 'GHG-TRA-NON-ETS-NO-IAS'::varchar "commodity",
+        'VAR_FOut'::varchar "atttribute", 'GHG-TRA-NON-ETS-NO-AS'::varchar "commodity",
         0::numeric "pv"
    from vedastore group by tablename, period
 )
@@ -542,8 +542,8 @@ with base_cng_emissions as(
         select tablename,process,period,pv,
         case
             when process = 'TFSSCNG01' and attribute ='VAR_FOut' and
-                commodity in('GHG-TRA-NON-ETS-NO-IAS') then 'cng-conv-emis' --Filter 18
-            when process = 'TFSLCNG01' and attribute ='VAR_FOut' and commodity='GHG-TRA-NON-ETS-NO-IAS' then 'bus-cng-conv-emis' --Filter 19
+                commodity in('GHG-TRA-NON-ETS-NO-AS') then 'cng-conv-emis' --Filter 18
+            when process = 'TFSLCNG01' and attribute ='VAR_FOut' and commodity='GHG-TRA-NON-ETS-NO-AS' then 'bus-cng-conv-emis' --Filter 19
             when attribute = 'VAR_FIn' and commodity in('TRACNGS','TRACNGL') then
                 case
                     when process like 'TC%' and vintage=period then 'cars-new-cng-in' --Filter 20
@@ -587,7 +587,7 @@ with base_cng_emissions as(
                     end ||
                     case
                         when commodity in('TC','TL','TH1','TH2','TH3','TB','TW') then 'km_'
-                        when commodity in('GHG-TRA-NON-ETS-NO-IAS') then 'emis_'
+                        when commodity in('GHG-TRA-NON-ETS-NO-AS') then 'emis_'
                     end ||
                     case
                         when process in('TBDST00','TBDST01','TCDST00','TCDST01','TH1DST00','TH2DST00','TH3DST00','TH1DST01','TH2DST01',
@@ -606,7 +606,7 @@ with base_cng_emissions as(
                         when process in('TH2CNGDST01','TH3CNGDST01') then 'Dual fuel diesel-CNG' --Filter 221
                     end as "analysis"
                     from vedastore
-                    where attribute = 'VAR_FOut' and commodity in('TC','TL','TH1','TH2','TH3','TW','TB','GHG-TRA-NON-ETS-NO-IAS')
+                    where attribute = 'VAR_FOut' and commodity in('TC','TL','TH1','TH2','TH3','TW','TB','GHG-TRA-NON-ETS-NO-AS')
                         and (process like any(array['TC%','TL%','TB%','TW%']) or process ~'^TH[^Y]') and vintage=period and process like '%01' --Filter 35
                     ) a
                 where analysis <>''
@@ -964,7 +964,7 @@ select 'ghg_all|' || tablename || '|Var_FOut|' || commodity || '|all'::varchar(3
 from vedastore
 where attribute='VAR_FOut' and commodity in('GHG-ETS-NO-IAS-NET','GHG-ETS-NO-IAS-TER','GHG-ETS-YES-IAS-NET','GHG-ETS-YES-IAS-TER',
     'GHG-NO-IAS-YES-LULUCF-NET','GHG-NO-IAS-YES-LULUCF-TER','GHG-NON-ETS-YES-LULUCF-NET','GHG-NON-ETS-YES-LULUCF-TER',
-    'GHG-YES-IAS-YES-LULUCF-NET','GHG-YES-IAS-YES-LULUCF-TER') --Filter 57
+    'GHG-YES-IAS-YES-LULUCF-NET','GHG-YES-IAS-YES-LULUCF-TER','GHG-NO-AS-YES-LULUCF-NET') --Filter 57
 group by tablename, commodity
 order by tablename, commodity
  ) TO '%~dp0GHGOut.csv' delimiter ',' CSV;
@@ -1011,21 +1011,21 @@ from (
         end as "commodity",
         case
             when commodity='Traded-Emission-ETS' then 'ghg_sec-traded-emis-ets' --Filter 58
-            when commodity in('GHG-ELC','GHG-IND-ETS','GHG-RES-ETS','GHG-SER-ETS','GHG-OTHER-ETS','GHG-TRA-ETS-NO-IAS','GHG-IAS-ETS',
-                'GHG-IAS-NON-ETS','GHG-IND-NON-ETS','GHG-RES-NON-ETS','GHG-SER-NON-ETS','GHG-TRA-NON-ETS-NO-IAS',
+            when commodity in('GHG-ELC','GHG-IND-ETS','GHG-RES-ETS','GHG-SER-ETS','GHG-OTHER-ETS','GHG-IAS-ETS',
+                'GHG-IAS-NON-ETS','GHG-IND-NON-ETS','GHG-RES-NON-ETS','GHG-SER-NON-ETS','GHG-TRA-NON-ETS-NO-AS',
                 'GHG-AGR-NO-LULUCF','GHG-OTHER-NON-ETS','GHG-LULUCF','GHG-HFC-NON-ETS','Traded-Emission-Non-ETS','GHG-ELC-CAPTURED','GHG-IND-ETS-CAPTURED',
-                'GHG-IND-NON-ETS-CAPTURED','GHG-OTHER-ETS-CAPTURED') then 'ghg_sec-main-secs' --Filter 59
+                'GHG-IND-NON-ETS-CAPTURED','GHG-OTHER-ETS-CAPTURED','GHG-DAS-ETS','GHG-DAS-NON-ETS') then 'ghg_sec-main-secs' --Filter 59
             when commodity in('PRCCH4N','PRCN2ON') then 'ghg_sec-prc-non-waste-non-ets' --Filter 60
             when commodity in('PRCCO2P','PRCCH4P','PRCN2OP') then 'ghg_sec-prc-waste-non-ets' --Filter 3
             when commodity ='PRCCO2N' then 'ghg_sec-prc-ets'  --Filter 61
         end as "analysis"
     from vedastore
     where (attribute='VAR_FOut' and commodity in('GHG-ELC','GHG-IND-ETS','GHG-RES-ETS','GHG-SER-ETS','GHG-OTHER-ETS',
-        'GHG-TRA-ETS-NO-IAS','GHG-IAS-ETS','GHG-IAS-NON-ETS','Traded-Emission-ETS','GHG-IND-NON-ETS','GHG-RES-NON-ETS',
-        'GHG-SER-NON-ETS','GHG-TRA-NON-ETS-NO-IAS','GHG-AGR-NO-LULUCF','GHG-OTHER-NON-ETS','GHG-LULUCF','GHG-HFC-NON-ETS',
+        'GHG-IAS-ETS','GHG-IAS-NON-ETS','Traded-Emission-ETS','GHG-IND-NON-ETS','GHG-RES-NON-ETS',
+        'GHG-SER-NON-ETS','GHG-TRA-NON-ETS-NO-AS','GHG-AGR-NO-LULUCF','GHG-OTHER-NON-ETS','GHG-LULUCF','GHG-HFC-NON-ETS',
         'Traded-Emission-Non-ETS','GHG-ELC-CAPTURED','GHG-IND-ETS-CAPTURED','GHG-IND-NON-ETS-CAPTURED',
         'GHG-OTHER-ETS-CAPTURED','PRCCO2P','PRCCH4N','PRCCH4P','PRCN2ON','PRCN2OP',
-        'PRCCO2N')) or (attribute='VAR_FIn' and commodity in('Traded-Emission-ETS','PRCCH4P')) --Filter 62
+        'PRCCO2N','GHG-DAS-ETS','GHG-DAS-NON-ETS')) or (attribute='VAR_FIn' and commodity in('Traded-Emission-ETS','PRCCH4P')) --Filter 62
     order by period
 ) a
 where analysis <>''
@@ -3244,3 +3244,4 @@ ORDER BY tablename,analysis
 -- 6:34 PM 31 January, 2017: FS Change to GHG by sector to remove CH4 captured by landfill mitigation measures. Additional q to ag batch to report landfill mitigation. Change to primary energy query to include biomass from forestry, and change of process label from "MINING BIOMASS" to 'various'; for non-ETS waste changed attribute from 'VAR_FOut' to 'various'
 -- 12:49 PM 06 February, 2017: FS removal of prefix from some res heat q prefixes
 -- 3:40 PM 07 February, 2017: FS Changed the agriculture mitigation q; LULUCF BAU emissions separated out from soil, slurry emissions added to livestock/crop BAU
+-- 4:29 PM 23 February, 2017: FS: change to filter 7,57 (add GHG-NO-AS-YES-LULUCF-NET),59,62 (add 'GHG-DAS-ETS','GHG-DAS-NON-ETS' to both); REMOVE GHG-TRA-ETS-NO-IAS (all). GHG-TRA-NON-ETS-NO-IAS replaced with GHG-TRA-NON-ETS-NO-AS

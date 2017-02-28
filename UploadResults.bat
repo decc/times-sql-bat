@@ -25,19 +25,19 @@ rem for each VD file in the folder. These instructions ignore that and assume th
 rem 1) Copy the appropriate block of SQL from "Human..." to a blank doc
 rem 2) Remove indentation from the copied text: select it and press shift-tab repeatedly to do this
 rem 3) Comment lines starting "--" should be removed (comments starting "/*" retained). Do this by doing a regex search / replace for 
-rem    "^--.+\r\n" (no quotes) replace with blank. 
-REM    Remove embedded comments [appearing on same line as code] with regex replace "--.+" with blank
-rem    remove extraneous blank lines with regex replace "(\r\n){2,}" with "\r\n"
-rem 4) Change the single "%" to double "%%" but leave filenames for copy statements unchanged. Regex replace "(%[^~])" with "%\1"
-rem 5) Escape other characters: Regex replace "(\||<|>)" with "^\1"
+rem    "^--.+\r\n" (no quotes) replace with blank.
+rem 4) Remove embedded comments [appearing on same line as code] with regex replace "--.+" with blank
+rem 5) Remove extraneous blank lines with regex replace "(\r\n){2,}" with "\r\n"
 rem 6) Make replacements for other reserved DOS words. See below for example (set "texta..." etc). In general there will only be a few of these; define more as needed
-REM    NB No need to replace "~" in output file locations since these are DOS commands meaning "put it in the same folder as this BAT file". "~" only needs replacing if part of a query
-REM    (i.e. regex in postgres)
-rem 7) Regex replace "(.+)" with "echo \1 >> VedaBatchUpload.sql"
-rem 8) Regex replace "echo (\/\*.+\/)" with "rem \1\r\necho \1". This duplicates the header in a way which is more obvious to read in the BAT file
-rem 9) Copy the edited text back over the body of the BAT below (below the upload statements and before the run SQL statement) and save file
-rem 10) comment out the run SQL statement, run the BAT and check the SQL appears sensible.
-rem 11) Uncomment the run SQL statement and use the file
+rem    NB No need to replace "~" in output file locations since these are DOS commands meaning "put it in the same folder as this BAT file". "~" only needs replacing if part of a query
+rem    (i.e. regex in postgres). ****Note that the first 2 queries contain reserved words****
+rem 7) Change the single "%" to double "%%" but leave filenames for copy statements unchanged. Regex replace "(%[^~])" with "%\1"
+rem 8) Escape other characters: Regex replace "(\||<|>)" with "^\1"
+rem 9) Regex replace "(.+)" with "echo \1 >> VedaBatchUpload.sql"
+rem 10) Regex replace "echo (\/\*.+\/)" with "rem \1\r\necho \1". This duplicates the header in a way which is more obvious to read in the BAT file
+rem 11) Copy the edited text back over the body of the BAT below (below the upload statements and before the run SQL statement) and save file
+rem 12) comment out the run SQL statement, run the BAT and check the SQL appears sensible.
+rem 13) Uncomment the run SQL statement and use the file
 rem ***********
 rem 9:34 PM 19 January, 2016 Correction of error in new vehicles capacity script
 rem 2:04 PM 01 February, 2016; addition of whole vehicle stock capacity
@@ -58,6 +58,7 @@ rem BF added residential EFW CHP, 'RCHPEA-EFW01','RCHPNA-EFW01' to Filters 79,11
 rem BF added services EFW CHP, 'SCHP-EFW01' to Filters 79,114,230,368
 REM 8:54 PM 12 January, 2017 FS: change to electrical storage query, other small changes to filter definitions (removal of cast to varchar)
 REM 1:26 PM 06 February, 2017 FS: various updates to reflect revised human readable
+REM 6:19 PM 23 February, 2017 FS: various updates to reflect human readable, change to instructions for how to produce this file (above)
 rem ***********
 echo processing vd files...
 @echo off
@@ -76,6 +77,8 @@ rem queries are run.
 echo CREATE temp TABLE !textb! EXISTS vedastore( tablename varchar(100), id serial, attribute varchar(50), commodity varchar(50), process varchar(50), period varchar(50), region varchar(50), vintage varchar(50), timeslice varchar(50), userconstraint varchar(50), pv numeric ); drop table !texta! exists veda; create temp table veda( id serial, stuff varchar(1000) ); >> VedaBatchUpload.sql
 rem the following creates a block of sql for each VD file to upload it, delete the header rows and break the entries into fields
 for /f "delims=|" %%i in ('dir /b *.vd') do echo delete from veda; ALTER SEQUENCE veda_id_seq RESTART WITH 1; copy veda (stuff) from '%%~fi'; insert into vedastore (tablename, attribute ,commodity ,process ,period ,region ,vintage ,timeslice ,userconstraint ,pv) select '%%~ni', trim(both '"' from a[1]), trim(both '"' from a[2]), trim(both '"' from a[3]), trim(both '"' from a[4]), trim(both '"' from a[5]), trim(both '"' from a[6]), trim(both '"' from a[7]), trim(both '"' from a[8]), cast(a[9] as numeric) from ( select string_to_array(stuff, ',') from veda order by id offset 13 ) as dt(a); >> VedaBatchUpload.sql
+rem /* *Dummy imports by table* */
+echo /* *Dummy imports by table* */ >> VedaBatchUpload.sql
 echo COPY ( >> VedaBatchUpload.sql
 echo select 'dummies' ^|^| '^|' ^|^| tablename ^|^| '^|' ^|^| 'Cost_Act' ^|^| '^|' ^|^| 'various' ^|^| '^|various'::varchar(300) "id", >> VedaBatchUpload.sql
 echo 'dummies'::varchar(300) "analysis", tablename, 'Cost_Act'::varchar(50) "attribute", >> VedaBatchUpload.sql
@@ -126,7 +129,7 @@ echo sum(case when period='2060' then pv else 0 end)::numeric "2060" >> VedaBatc
 echo from vedastore >> VedaBatchUpload.sql
 echo where attribute='VAR_FOut' and commodity in('GHG-ETS-NO-IAS-NET','GHG-ETS-NO-IAS-TER','GHG-ETS-YES-IAS-NET','GHG-ETS-YES-IAS-TER', >> VedaBatchUpload.sql
 echo 'GHG-NO-IAS-YES-LULUCF-NET','GHG-NO-IAS-YES-LULUCF-TER','GHG-NON-ETS-YES-LULUCF-NET','GHG-NON-ETS-YES-LULUCF-TER', >> VedaBatchUpload.sql
-echo 'GHG-YES-IAS-YES-LULUCF-NET','GHG-YES-IAS-YES-LULUCF-TER')  >> VedaBatchUpload.sql
+echo 'GHG-YES-IAS-YES-LULUCF-NET','GHG-YES-IAS-YES-LULUCF-TER','GHG-NO-AS-YES-LULUCF-NET')  >> VedaBatchUpload.sql
 echo group by tablename, commodity >> VedaBatchUpload.sql
 echo order by tablename, commodity >> VedaBatchUpload.sql
 echo ) TO '%~dp0GHGOut.csv' delimiter ',' CSV; >> VedaBatchUpload.sql
@@ -166,21 +169,21 @@ echo else commodity >> VedaBatchUpload.sql
 echo end as "commodity", >> VedaBatchUpload.sql
 echo case >> VedaBatchUpload.sql
 echo when commodity='Traded-Emission-ETS' then 'ghg_sec-traded-emis-ets'  >> VedaBatchUpload.sql
-echo when commodity in('GHG-ELC','GHG-IND-ETS','GHG-RES-ETS','GHG-SER-ETS','GHG-OTHER-ETS','GHG-TRA-ETS-NO-IAS','GHG-IAS-ETS', >> VedaBatchUpload.sql
-echo 'GHG-IAS-NON-ETS','GHG-IND-NON-ETS','GHG-RES-NON-ETS','GHG-SER-NON-ETS','GHG-TRA-NON-ETS-NO-IAS', >> VedaBatchUpload.sql
+echo when commodity in('GHG-ELC','GHG-IND-ETS','GHG-RES-ETS','GHG-SER-ETS','GHG-OTHER-ETS','GHG-IAS-ETS', >> VedaBatchUpload.sql
+echo 'GHG-IAS-NON-ETS','GHG-IND-NON-ETS','GHG-RES-NON-ETS','GHG-SER-NON-ETS','GHG-TRA-NON-ETS-NO-AS', >> VedaBatchUpload.sql
 echo 'GHG-AGR-NO-LULUCF','GHG-OTHER-NON-ETS','GHG-LULUCF','GHG-HFC-NON-ETS','Traded-Emission-Non-ETS','GHG-ELC-CAPTURED','GHG-IND-ETS-CAPTURED', >> VedaBatchUpload.sql
-echo 'GHG-IND-NON-ETS-CAPTURED','GHG-OTHER-ETS-CAPTURED') then 'ghg_sec-main-secs'  >> VedaBatchUpload.sql
+echo 'GHG-IND-NON-ETS-CAPTURED','GHG-OTHER-ETS-CAPTURED','GHG-DAS-ETS','GHG-DAS-NON-ETS') then 'ghg_sec-main-secs'  >> VedaBatchUpload.sql
 echo when commodity in('PRCCH4N','PRCN2ON') then 'ghg_sec-prc-non-waste-non-ets'  >> VedaBatchUpload.sql
 echo when commodity in('PRCCO2P','PRCCH4P','PRCN2OP') then 'ghg_sec-prc-waste-non-ets'  >> VedaBatchUpload.sql
 echo when commodity ='PRCCO2N' then 'ghg_sec-prc-ets'   >> VedaBatchUpload.sql
 echo end as "analysis" >> VedaBatchUpload.sql
 echo from vedastore >> VedaBatchUpload.sql
 echo where (attribute='VAR_FOut' and commodity in('GHG-ELC','GHG-IND-ETS','GHG-RES-ETS','GHG-SER-ETS','GHG-OTHER-ETS', >> VedaBatchUpload.sql
-echo 'GHG-TRA-ETS-NO-IAS','GHG-IAS-ETS','GHG-IAS-NON-ETS','Traded-Emission-ETS','GHG-IND-NON-ETS','GHG-RES-NON-ETS', >> VedaBatchUpload.sql
-echo 'GHG-SER-NON-ETS','GHG-TRA-NON-ETS-NO-IAS','GHG-AGR-NO-LULUCF','GHG-OTHER-NON-ETS','GHG-LULUCF','GHG-HFC-NON-ETS', >> VedaBatchUpload.sql
+echo 'GHG-IAS-ETS','GHG-IAS-NON-ETS','Traded-Emission-ETS','GHG-IND-NON-ETS','GHG-RES-NON-ETS', >> VedaBatchUpload.sql
+echo 'GHG-SER-NON-ETS','GHG-TRA-NON-ETS-NO-AS','GHG-AGR-NO-LULUCF','GHG-OTHER-NON-ETS','GHG-LULUCF','GHG-HFC-NON-ETS', >> VedaBatchUpload.sql
 echo 'Traded-Emission-Non-ETS','GHG-ELC-CAPTURED','GHG-IND-ETS-CAPTURED','GHG-IND-NON-ETS-CAPTURED', >> VedaBatchUpload.sql
 echo 'GHG-OTHER-ETS-CAPTURED','PRCCO2P','PRCCH4N','PRCCH4P','PRCN2ON','PRCN2OP', >> VedaBatchUpload.sql
-echo 'PRCCO2N')) or (attribute='VAR_FIn' and commodity in('Traded-Emission-ETS','PRCCH4P'))  >> VedaBatchUpload.sql
+echo 'PRCCO2N','GHG-DAS-ETS','GHG-DAS-NON-ETS')) or (attribute='VAR_FIn' and commodity in('Traded-Emission-ETS','PRCCH4P'))  >> VedaBatchUpload.sql
 echo order by period >> VedaBatchUpload.sql
 echo ) a >> VedaBatchUpload.sql
 echo where analysis ^<^>'' >> VedaBatchUpload.sql
@@ -1344,13 +1347,13 @@ echo from ( >> VedaBatchUpload.sql
 echo select >> VedaBatchUpload.sql
 echo case >> VedaBatchUpload.sql
 echo when process in('ICHCHPBIOG01','ICHCHPBIOS00','ICHCHPBIOS01','IFDCHPBIOG01','IFDCHPBIOS00','IFDCHPBIOS01','IISCHPBIOG01','IISCHPBIOS01','INMCHPBIOG01','INMCHPBIOS01' >> VedaBatchUpload.sql
-echo ,'IOICHPBIOG01','IOICHPBIOS00','IOICHPBIOS01','IPPCHPBIOG01','IPPCHPBIOS00','IPPCHPBIOS01','IPPCHPWST00','IPPCHPWST01') then 'CHP IND BIO'  >> VedaBatchUpload.sql
+echo     ,'IOICHPBIOG01','IOICHPBIOS00','IOICHPBIOS01','IPPCHPBIOG01','IPPCHPBIOS00','IPPCHPBIOS01','IPPCHPWST00','IPPCHPWST01') then 'CHP IND BIO'  >> VedaBatchUpload.sql
 echo when process in('ICHCHPPRO00','ICHCHPPRO01') then 'CHP IND BY PRODUCTS'  >> VedaBatchUpload.sql
 echo when process in('ICHCHPCOA00','ICHCHPCOA01','IFDCHPCOA00','IFDCHPCOA01','INMCHPCOA01','IOICHPCOA01','IPPCHPCOA00','IPPCHPCOA01') then 'CHP IND COAL'  >> VedaBatchUpload.sql
 echo when process in('ICHCHPCCGT01','ICHCHPGT01','ICHCHPNGA00','IFDCHPCCGT01','IFDCHPGT01','IFDCHPNGA00','IISCHPCCGT01','IISCHPGT01','IISCHPNGA00','INMCHPCCGT01' >> VedaBatchUpload.sql
-echo ,'INMCHPGT01','INMCHPNGA00','IOICHPCCGT01','IOICHPGT01','IOICHPNGA00','IPPCHPCCGT01','IPPCHPGT01','IPPCHPNGA00') then 'CHP IND GAS'  >> VedaBatchUpload.sql
+echo     ,'INMCHPGT01','INMCHPNGA00','IOICHPCCGT01','IOICHPGT01','IOICHPNGA00','IPPCHPCCGT01','IPPCHPGT01','IPPCHPNGA00') then 'CHP IND GAS'  >> VedaBatchUpload.sql
 echo when process in('ICHCHPCCGTH01','ICHCHPFCH01','IFDCHPCCGTH01','IFDCHPFCH01','IISCHPCCGTH01','IISCHPFCH01','INMCHPCCGTH01','INMCHPFCH01','IOICHPCCGTH01' >> VedaBatchUpload.sql
-echo ,'IOICHPFCH01','IPPCHPCCGTH01','IPPCHPFCH01') then 'CHP IND HYDROGEN'  >> VedaBatchUpload.sql
+echo     ,'IOICHPFCH01','IPPCHPCCGTH01','IPPCHPFCH01') then 'CHP IND HYDROGEN'  >> VedaBatchUpload.sql
 echo when process in('IISCHPBFG00','IISCHPBFG01','IISCHPCOG00','IISCHPCOG01','INMCHPCOG00','INMCHPCOG01') then 'CHP IND MAN FUELS'  >> VedaBatchUpload.sql
 echo when process in('ICHCHPHFO00','ICHCHPLFO00','ICHCHPLPG00','ICHCHPLPG01','IFDCHPHFO00','IFDCHPLFO00','IISCHPHFO00','IOICHPHFO00') then 'CHP IND OIL PRODUCTS'  >> VedaBatchUpload.sql
 echo when process in('PCHP-CCP00','PCHP-CCP01') then 'CHP PRC SECTOR'  >> VedaBatchUpload.sql

@@ -23,23 +23,25 @@ rem for each VD file in the folder. These instructions ignore that and assume th
 rem 1) Copy the appropriate block of SQL from "Human..." to a blank doc
 rem 2) Remove indentation from the copied text: select it and press shift-tab repeatedly to do this
 rem 3) Comment lines starting "--" should be removed (comments starting "/*" retained). Do this by doing a regex search / replace for 
-rem    "^--.+\r\n" (no quotes) replace with blank. Remove embedded comments [appearing on same line as code] with regex replace "--.+" with blank
-rem    remove extraneous blank lines with regex replace "(\r\n){2,}" with "\r\n"
-rem 4) Change the single "%" to double "%%" but leave filenames for copy statements unchanged. Regex replace "(%[^~])" with "%\1"
-rem 5) Escape other characters: Regex replace "(\||<|>)" with "^\1"
+rem    "^--.+\r\n" (no quotes) replace with blank.
+rem 4) Remove embedded comments [appearing on same line as code] with regex replace "--.+" with blank
+rem 5) Remove extraneous blank lines with regex replace "(\r\n){2,}" with "\r\n"
 rem 6) Make replacements for other reserved DOS words. See below for example (set "texta..." etc). In general there will only be a few of these; define more as needed
-REM    NB No need to replace "~" in output file locations since these are DOS commands meaning "put it in the same folder as this BAT file". "~" only needs replacing if part of a query
-REM    (i.e. regex in postgres)
-rem 7) Regex replace "(.+)" with "echo \1 >> AgBatchUpload.sql"
-rem 8) Regex replace "echo (\/\*.+\/)" with "rem \1\r\necho \1". This duplicates the header in a way which is more obvious to read in the BAT file
-rem 9) Copy the edited text back over the body of the BAT below (below the upload statements and before the run SQL statement) and save file
-rem 10) comment out the run SQL statement, run the BAT and check the SQL appears sensible.
-rem 11) Uncomment the run SQL statement and use the file
+rem    NB No need to replace "~" in output file locations since these are DOS commands meaning "put it in the same folder as this BAT file". "~" only needs replacing if part of a query
+rem    (i.e. regex in postgres). ****Note that the first 2 queries contain reserved words****
+rem 7) Change the single "%" to double "%%" but leave filenames for copy statements unchanged. Regex replace "(%[^~])" with "%\1"
+rem 8) Escape other characters: Regex replace "(\||<|>)" with "^\1"
+rem 9) Regex replace "(.+)" with "echo \1 >> AgBatchUpload.sql"
+rem 10) Regex replace "echo (\/\*.+\/)" with "rem \1\r\necho \1". This duplicates the header in a way which is more obvious to read in the BAT file
+rem 11) Copy the edited text back over the body of the BAT below (below the upload statements and before the run SQL statement) and save file
+rem 12) comment out the run SQL statement, run the BAT and check the SQL appears sensible.
+rem 13) Uncomment the run SQL statement and use the file
 rem ***********
 rem 3:53 PM 05 July, 2016: First version: MACC measures for agriculture / LULUCF; and afforestation rate over and above BAU
 REM 8:36 PM 06 September, 2016: changed to add postgres ver as a variable near top of script for ease of change
 REM 6:54 PM 12 December, 2016: FS Changed to add update instructions: body of script has changed in line with "Human Readable Queries"
 REM 4:13 PM 06 February, 2017: FS addition of landfill mitigation measures, change to reflect new forestry and emissions
+REM 7:08 PM 23 February, 2017: FS changes to instructions above
 rem ***********
 echo processing vd files...
 @echo off
