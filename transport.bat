@@ -180,7 +180,7 @@ echo when process in('TH2CNGDST01','TH3CNGDST01') then 'Dual fuel diesel-CNG'  >
 echo end as "analysis" >> TraBatchUpload.sql
 echo from vedastore >> TraBatchUpload.sql
 echo where attribute = 'VAR_FOut' and commodity in('GHG-TRA-NON-ETS-NO-AS','TB','TC','TH1','TH2','TH3','TL','TW') >> TraBatchUpload.sql
-echo and (process like any(array['TC%%','TL%%','TB%%','TW%%']) or process !textc!'!textd!TH[!textd!Y]' or process='TFSLCNG01') >> TraBatchUpload.sq
+echo and (process like any(array['TC%%','TL%%','TB%%','TW%%']) or process !textc!'!textd!TH[!textd!Y]' or process='TFSLCNG01') >> TraBatchUpload.sql
 echo ) a >> TraBatchUpload.sql
 echo where analysis ^<^>'' >> TraBatchUpload.sql
 echo group by tablename, period, analysis, attribute, commodity >> TraBatchUpload.sql
@@ -330,7 +330,7 @@ echo when process in('TH2CNGDST01','TH3CNGDST01') then 'Dual fuel diesel-CNG'  >
 echo end as "analysis" >> TraBatchUpload.sql
 echo from vedastore >> TraBatchUpload.sql
 echo where attribute = 'VAR_FOut' and commodity in('TC','TL','TH1','TH2','TH3','TW','TB','GHG-TRA-NON-ETS-NO-AS') >> TraBatchUpload.sql
-echo and (process like any(array['TC%%%','TL%%%','TB%%%','TW%%%']) or process !textc!'!textd!TH[!textd!Y]') and vintage=period and process like '%%01' >> TraBatchUpload.sql
+echo and (process like any(array['TC%%','TL%%','TB%%','TW%%']) or process !textc!'!textd!TH[!textd!Y]') and vintage=period and process like '%%01' >> TraBatchUpload.sql
 echo ) a >> TraBatchUpload.sql
 echo where analysis ^<^>'' >> TraBatchUpload.sql
 echo group by tablename, period, analysis, attribute, commodity >> TraBatchUpload.sql
