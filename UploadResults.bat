@@ -1994,7 +1994,7 @@ echo ) a left join ( >> VedaBatchUpload.sql
 echo select sum(pv) "bio",tablename,period >> VedaBatchUpload.sql
 echo from vedastore >> VedaBatchUpload.sql
 echo where attribute='VAR_FOut' and commodity in('BWODWST','BWOD') >> VedaBatchUpload.sql
-echo and process in('ALUFOR02','ALUFOR03','ALUFOR04')   >> VedaBatchUpload.sql
+echo and process in('ALUFOR02','ALUFOR03','ALUFOR04A')   >> VedaBatchUpload.sql
 echo group by tablename,period >> VedaBatchUpload.sql
 echo order by tablename,period >> VedaBatchUpload.sql
 echo ) b on a.tablename=b.tablename and a.period=b.period >> VedaBatchUpload.sql
