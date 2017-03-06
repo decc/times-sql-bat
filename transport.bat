@@ -25,9 +25,11 @@ rem 3) Comment lines starting "--" should be removed (comments starting "/*" ret
 rem    "^--.+\r\n" (no quotes) replace with blank.
 rem 4) Remove embedded comments [appearing on same line as code] with regex replace "--.+" with blank
 rem 5) Remove extraneous blank lines with regex replace "(\r\n){2,}" with "\r\n"
-rem 6) Make replacements for other reserved DOS words. See below for example (set "texta..." etc). In general there will only be a few of these; define more as needed
-rem    NB No need to replace "~" in output file locations since these are DOS commands meaning "put it in the same folder as this BAT file". "~" only needs replacing if part of a query
-rem    (i.e. regex in postgres). ****Note that the first 2 queries contain reserved words****
+rem 6) Make replacements for other reserved DOS words. See below for example (set "texta..." etc).
+rem    In general there will only be a few of these; define more as needed
+rem    ****Note that the first 2 queries contain reserved words****
+rem    NB No need to replace "~" in output file locations since these are DOS commands meaning "put it in the same folder as this BAT file".
+rem    "~" only needs replacing if part of a query (i.e. regex in postgres).
 rem 7) Change the single "%" to double "%%" but leave filenames for copy statements unchanged. Regex replace "(%[^~])" with "%\1"
 rem 8) Escape other characters: Regex replace "(\||<|>)" with "^\1"
 rem 9) Regex replace "(.+)" with "echo \1 >> TraBatchUpload.sql"
@@ -178,7 +180,7 @@ echo when process in('TH2CNGDST01','TH3CNGDST01') then 'Dual fuel diesel-CNG'  >
 echo end as "analysis" >> TraBatchUpload.sql
 echo from vedastore >> TraBatchUpload.sql
 echo where attribute = 'VAR_FOut' and commodity in('GHG-TRA-NON-ETS-NO-AS','TB','TC','TH1','TH2','TH3','TL','TW') >> TraBatchUpload.sql
-echo and (process like any(array['TC%%','TL%%','TB%%','TW%%']) or process !textc!'!textd!TH[!textd!Y]' or process='TFSLCNG01')   >> TraBatchUpload.sql
+echo and (process like any(array['TC%%','TL%%','TB%%','TW%%']) or process !textc!'!textd!TH[!textd!Y]' or process='TFSLCNG01') >> TraBatchUpload.sq
 echo ) a >> TraBatchUpload.sql
 echo where analysis ^<^>'' >> TraBatchUpload.sql
 echo group by tablename, period, analysis, attribute, commodity >> TraBatchUpload.sql
@@ -209,16 +211,16 @@ echo sum(case when period='2055' then pv else 0 end)::numeric "2055", >> TraBatc
 echo sum(case when period='2060' then pv else 0 end)::numeric "2060" >> TraBatchUpload.sql
 echo from ( >> TraBatchUpload.sql
 echo select a.* from main_crosstab a >> TraBatchUpload.sql
-echo where period!='-' >> TraBatchUpload.sql
+echo where period^<^>'-' >> TraBatchUpload.sql
 echo union >> TraBatchUpload.sql
 echo select left(analysis, position('_' in analysis)) ^|^|'all' "analysis", tablename, 'VAR_FOut' "attribute", commodity, period,sum(pv) "pv" from main_crosstab >> TraBatchUpload.sql
-echo where period!='-' >> TraBatchUpload.sql
+echo where period^<^>'-' >> TraBatchUpload.sql
 echo group by left(analysis, position('_' in analysis)), tablename,commodity,period >> TraBatchUpload.sql
 echo union >> TraBatchUpload.sql
 echo select left(analysis, position('-' in analysis))^|^|'emis-inten_all' "analysis", tablename, 'VAR_FOut' "attribute", '-' "commodity", period, >> TraBatchUpload.sql
 echo sum(pv) filter(where analysis like '%%-emis%%')/sum(pv) filter(where analysis like '%%-km%%') "pv" >> TraBatchUpload.sql
 echo from main_crosstab >> TraBatchUpload.sql
-echo where period!='-' and period!='2200' >> TraBatchUpload.sql
+echo where period^<^>'-' and period^<^>'2200' >> TraBatchUpload.sql
 echo group by left(analysis, position('-' in analysis)), tablename,period >> TraBatchUpload.sql
 echo order by tablename, period, analysis >> TraBatchUpload.sql
 echo ) a >> TraBatchUpload.sql
@@ -270,9 +272,9 @@ echo case >> TraBatchUpload.sql
 echo when process like 'TC%%' and vintage=period then 'cars-new-cng-in'  >> TraBatchUpload.sql
 echo when process like 'TL%%' and vintage=period then 'lgv-new-cng-in'  >> TraBatchUpload.sql
 echo when process like 'TH%%' and vintage=period then 'hgv-new-cng-in'  >> TraBatchUpload.sql
-echo when process like any(array['TC%%','TL%%','TH%%']) and vintage!=period then 'older-veh-cng-in'  >> TraBatchUpload.sql
+echo when process like any(array['TC%%','TL%%','TH%%']) and vintage^<^>period then 'older-veh-cng-in'  >> TraBatchUpload.sql
 echo when process like 'TB%%' and vintage=period then 'bus-new-cng-in'  >> TraBatchUpload.sql
-echo when process like 'TB%%' and vintage!=period then 'older-bus-cng-in'  >> TraBatchUpload.sql
+echo when process like 'TB%%' and vintage^<^>period then 'older-bus-cng-in'  >> TraBatchUpload.sql
 echo end >> TraBatchUpload.sql
 echo end as "proc_set" >> TraBatchUpload.sql
 echo from vedastore >> TraBatchUpload.sql
@@ -328,7 +330,7 @@ echo when process in('TH2CNGDST01','TH3CNGDST01') then 'Dual fuel diesel-CNG'  >
 echo end as "analysis" >> TraBatchUpload.sql
 echo from vedastore >> TraBatchUpload.sql
 echo where attribute = 'VAR_FOut' and commodity in('TC','TL','TH1','TH2','TH3','TW','TB','GHG-TRA-NON-ETS-NO-AS') >> TraBatchUpload.sql
-echo and (process like any(array['TC%%','TL%%','TB%%','TW%%']) or process !textc!'!textd!TH[!textd!Y]') and vintage=period and process like '%%01'  >> TraBatchUpload.sql
+echo and (process like any(array['TC%%%','TL%%%','TB%%%','TW%%%']) or process !textc!'!textd!TH[!textd!Y]') and vintage=period and process like '%%01' >> TraBatchUpload.sql
 echo ) a >> TraBatchUpload.sql
 echo where analysis ^<^>'' >> TraBatchUpload.sql
 echo group by tablename, period, analysis, attribute, commodity >> TraBatchUpload.sql
@@ -359,16 +361,16 @@ echo sum(case when period='2055' then pv else 0 end)::numeric "2055", >> TraBatc
 echo sum(case when period='2060' then pv else 0 end)::numeric "2060" >> TraBatchUpload.sql
 echo from ( >> TraBatchUpload.sql
 echo select a.* from main_crosstab a >> TraBatchUpload.sql
-echo where period!='-' >> TraBatchUpload.sql
+echo where period^<^>'-' >> TraBatchUpload.sql
 echo union >> TraBatchUpload.sql
 echo select left(analysis, position('_' in analysis)) ^|^|'all' "analysis", tablename, 'VAR_FOut' "attribute", commodity, period,sum(pv) "pv" from main_crosstab >> TraBatchUpload.sql
-echo where period!='-' >> TraBatchUpload.sql
+echo where period^<^>'-' >> TraBatchUpload.sql
 echo group by left(analysis, position('_' in analysis)), tablename,commodity,period >> TraBatchUpload.sql
 echo union >> TraBatchUpload.sql
 echo select left(analysis, position('-' in analysis))^|^|'new-emis-inten_all' "analysis", tablename, 'VAR_FOut' "attribute", '-' "commodity", period, >> TraBatchUpload.sql
 echo sum(pv) filter(where analysis like '%%-emis%%')/sum(pv) filter(where analysis like '%%-km%%') "pv" >> TraBatchUpload.sql
 echo from main_crosstab >> TraBatchUpload.sql
-echo where period!='-' and period!='2200' >> TraBatchUpload.sql
+echo where period^<^>'-' and period^<^>'2200' >> TraBatchUpload.sql
 echo group by left(analysis, position('-' in analysis)), tablename,period >> TraBatchUpload.sql
 echo order by tablename, period, analysis >> TraBatchUpload.sql
 echo ) a >> TraBatchUpload.sql
@@ -626,7 +628,7 @@ rem before deleting the individual files and renaming VehKms as TraResultsOut
 IF EXIST TraResultsOut.csv del /F TraResultsOut.csv
 IF EXIST newVehKms.csv del /F newVehKms.csv
 IF EXIST VehCapOut.csv del /F VehCapOut.csv
-IF EXIST nVCapOut.csv del /F nVCapOut.csv
+IF EXIST newVehCapOut.csv del /F newVehCapOut.csv
 IF EXIST fuelByModeOut.csv del /F fuelByModeOut.csv
 IF EXIST rdTransFuel.csv del /F rdTransFuel.csv
 rename VehKms.csv TraResultsOut.csv

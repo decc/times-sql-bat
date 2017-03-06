@@ -263,8 +263,7 @@ order by tablename, attribute, proc_set, commodity
 ) TO '%~dp0landfillemiss.csv' delimiter ',' CSV HEADER;
 
 /* *Land use and crop / livestock mitigation (MACC) measures* */
--- Gives  breakdown for "agr-GHG-land","agr-GHG-livestock-mitigation","agr-GHG-crop-mitigation","agr-GHG-afforestation","agr-GHG-energy"
--- by table.
+-- Gives  breakdown for "agr-GHG-land","agr-GHG-livestock-mitigation","agr-GHG-crop-mitigation","agr-GHG-afforestation","agr-GHG-energy" by table.
 -- This is GHG emissions and so some measures are not included here (biomass / h2 boilers, reduced cultivation, elc/heat energy efficiency options) as they don't produce GHG
 
 COPY ( 
@@ -288,7 +287,7 @@ select 'ag-lulucf-meas-ghg_'|| proc_set || '|' || tablename || '|' || attribute 
     from (
         select tablename, attribute, period,pv,
         case
-            when process in ('ALUFOR01','ALUFOR02','ALUFOR03','ALUFOR04') then 'affor'  --Filter 210
+            when process in ('ALUFOR01','ALUFOR02','ALUFOR03','ALUFOR04A','ALUFOR04B') then 'affor'  --Filter 210
             when process in ('AGCRP01','AGCRP02','AGCRP04','AGCRP05','AGCRP06','AGCRP07','AGCRP08','AGCRP09') then 'crops' --Filter 211
             when process in ('AHTBLRC00','AHTBLRG00','AHTBLRG01','AHTBLRO00','AHTBLRO01','ATRA00','ATRA01','AATRA01') then 'agr-en' --Filter 212
             when process in ('AGSOI01','AGSOI02','AGSOI03','AGSOI04') then 'soils' --Filter 417
@@ -306,6 +305,7 @@ order by tablename, attribute, proc_set
 
 /* *Afforestation rate* */
 -- This is the amount of afforestation over the BAU level (in current model formulation)
+-- Note that only ALUFOR04A "creates" ALAND
 
 COPY ( 
 select 'ag-lulucf-meas_aff_level' || '|' || tablename || '|' || attribute || '|' || commodity || '|' || process::varchar(300) "id",
@@ -327,7 +327,7 @@ select 'ag-lulucf-meas_aff_level' || '|' || tablename || '|' || attribute || '|'
     sum(case when period='2055' then pv else 0 end)::numeric "2055",
     sum(case when period='2060' then pv else 0 end)::numeric "2060"
 from vedastore
-where attribute='VAR_FOut' and commodity='ALAND' and process in('ALUFOR01','ALUFOR02','ALUFOR03','ALUFOR04') --Filter 2
+where attribute='VAR_FOut' and commodity='ALAND' and process in('ALUFOR01','ALUFOR02','ALUFOR03','ALUFOR04A') --Filter 2
 group by tablename, attribute,commodity,process
 ) TO '%~dp0afforestout.csv' delimiter ',' CSV HEADER;
 
@@ -485,16 +485,16 @@ select analysis || '|' || tablename || '|' || attribute || '|' || commodity || '
 from (
 -- NB This following uses a postgres 9-4 specific syntax ( filter(where--- ) and won't work with earlier vers
     select a.* from main_crosstab a
-    where period!='-'
+    where period<>'-'
     union
     select left(analysis, position('_' in analysis)) ||'all' "analysis", tablename, 'VAR_FOut' "attribute", commodity, period,sum(pv) "pv" from main_crosstab
-    where period!='-'
+    where period<>'-'
     group by left(analysis, position('_' in analysis)), tablename,commodity,period
     union
     select left(analysis, position('-' in analysis))||'emis-inten_all' "analysis", tablename, 'VAR_FOut' "attribute", '-' "commodity", period,
         sum(pv) filter(where analysis like '%-emis%')/sum(pv) filter(where analysis like '%-km%') "pv"
     from main_crosstab
-    where period!='-' and period!='2200'
+    where period<>'-' and period<>'2200'
     group by left(analysis, position('-' in analysis)), tablename,period
     order by tablename, period, analysis
 ) a
@@ -549,9 +549,9 @@ with base_cng_emissions as(
                     when process like 'TC%' and vintage=period then 'cars-new-cng-in' --Filter 20
                     when process like 'TL%' and vintage=period then 'lgv-new-cng-in' --Filter 21
                     when process like 'TH%' and vintage=period then 'hgv-new-cng-in' --Filter 22
-                    when process like any(array['TC%','TL%','TH%']) and vintage!=period then 'older-veh-cng-in' --Filter 23
+                    when process like any(array['TC%','TL%','TH%']) and vintage<>period then 'older-veh-cng-in' --Filter 23
                     when process like 'TB%' and vintage=period then 'bus-new-cng-in' --Filter 24
-                    when process like 'TB%' and vintage!=period then 'older-bus-cng-in' --Filter 25
+                    when process like 'TB%' and vintage<>period then 'older-bus-cng-in' --Filter 25
                 end
         end as "proc_set"
         from vedastore
@@ -640,16 +640,16 @@ select analysis || '|' || tablename || '|' || attribute || '|' || commodity || '
 from (
 -- NB This following uses a postgres 9-4 specific syntax ( filter(where... ) and won't work with earlier vers
     select a.* from main_crosstab a
-    where period!='-'
+    where period<>'-'
     union
     select left(analysis, position('_' in analysis)) ||'all' "analysis", tablename, 'VAR_FOut' "attribute", commodity, period,sum(pv) "pv" from main_crosstab
-    where period!='-'
+    where period<>'-'
     group by left(analysis, position('_' in analysis)), tablename,commodity,period
     union
     select left(analysis, position('-' in analysis))||'new-emis-inten_all' "analysis", tablename, 'VAR_FOut' "attribute", '-' "commodity", period,
         sum(pv) filter(where analysis like '%-emis%')/sum(pv) filter(where analysis like '%-km%') "pv"
     from main_crosstab
-    where period!='-' and period!='2200'
+    where period<>'-' and period<>'2200'
     group by left(analysis, position('-' in analysis)), tablename,period
     order by tablename, period, analysis
 ) a
@@ -3026,6 +3026,7 @@ with rsr_min as(
 ,domestic_bio as (
 -- this is wood and waste wood produced by forestry options in UKTM not clear model is constrained to actually use it
 -- Have to set up a 'pre-populated' table with zeros in each year as extra bioenergy may not be produced in every model year
+-- Only the ALUFOR04A part of energy forestry produces wood
     select a.tablename, a.period,sum(a.bio+case when b.bio>0 then b.bio else 0 end) "DOMESTIC BIO PROD"
     from (
         select distinct tablename, period, 0::numeric "bio" from vedastore
@@ -3034,7 +3035,7 @@ with rsr_min as(
         select sum(pv) "bio",tablename,period
         from vedastore
         where attribute='VAR_FOut' and commodity in('BWODWST','BWOD')
-            and process in('ALUFOR02','ALUFOR03','ALUFOR04')  --Filter 410
+            and process in('ALUFOR02','ALUFOR03','ALUFOR04A')  --Filter 410
         group by tablename,period
         order by tablename,period
     ) b on a.tablename=b.tablename and a.period=b.period
@@ -3245,3 +3246,6 @@ ORDER BY tablename,analysis
 -- 12:49 PM 06 February, 2017: FS removal of prefix from some res heat q prefixes
 -- 3:40 PM 07 February, 2017: FS Changed the agriculture mitigation q; LULUCF BAU emissions separated out from soil, slurry emissions added to livestock/crop BAU
 -- 4:29 PM 23 February, 2017: FS: change to filter 7,57 (add GHG-NO-AS-YES-LULUCF-NET),59,62 (add 'GHG-DAS-ETS','GHG-DAS-NON-ETS' to both); REMOVE GHG-TRA-ETS-NO-IAS (all). GHG-TRA-NON-ETS-NO-IAS replaced with GHG-TRA-NON-ETS-NO-AS
+-- 15:28 3 March, 2017: FS change to forestry filters due to energy forestry being split over 2 tied techs
+-- 07:27 6 March, 2017: FS changed "!=" to "<>" in transport query as former difficult to escape in DOS
+ 
