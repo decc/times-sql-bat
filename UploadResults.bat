@@ -59,6 +59,7 @@ rem BF added services EFW CHP, 'SCHP-EFW01' to Filters 79,114,230,368
 REM 8:54 PM 12 January, 2017 FS: change to electrical storage query, other small changes to filter definitions (removal of cast to varchar)
 REM 1:26 PM 06 February, 2017 FS: various updates to reflect revised human readable
 REM 6:19 PM 23 February, 2017 FS: various updates to reflect human readable, change to instructions for how to produce this file (above)
+rem 9:01 PM 09 March, 2017 FS: update to human readable
 rem ***********
 echo processing vd files...
 @echo off
@@ -923,8 +924,8 @@ echo sum(case when period='2050' then pv else 0 end)::numeric "2050", >> VedaBat
 echo sum(case when period='2055' then pv else 0 end)::numeric "2055", >> VedaBatchUpload.sql
 echo sum(case when period='2060' then pv else 0 end)::numeric "2060" >> VedaBatchUpload.sql
 echo from vedastore >> VedaBatchUpload.sql
-echo where attribute='EQ_CombalM' and commodity in('GHG-NO-IAS-YES-LULUCF-NET','GHG-ETS-NO-IAS-NET', >> VedaBatchUpload.sql
-echo 'GHG-YES-IAS-YES-LULUCF-NET','GHG-ETS-YES-IAS-NET')  >> VedaBatchUpload.sql
+echo where attribute='EQ_CombalM' and commodity in('GHG-NO-IAS-YES-LULUCF-NET','GHG-NO-AS-YES-LULUCF-NET', >> VedaBatchUpload.sql
+echo 'GHG-ETS-NO-IAS-NET','GHG-YES-IAS-YES-LULUCF-NET','GHG-ETS-YES-IAS-NET')  >> VedaBatchUpload.sql
 echo group by tablename, commodity >> VedaBatchUpload.sql
 echo order by tablename, commodity >> VedaBatchUpload.sql
 echo ) TO '%~dp0MarginalPricesOut.csv' delimiter ',' CSV; >> VedaBatchUpload.sql

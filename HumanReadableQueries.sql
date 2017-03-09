@@ -1869,8 +1869,8 @@ select 'marg-price|' || tablename || '|EQ_CombalM|' || commodity || '|-'::varcha
         sum(case when period='2055' then pv else 0 end)::numeric "2055",
         sum(case when period='2060' then pv else 0 end)::numeric "2060"
 from vedastore
-where attribute='EQ_CombalM' and commodity in('GHG-NO-IAS-YES-LULUCF-NET','GHG-ETS-NO-IAS-NET',
-    'GHG-YES-IAS-YES-LULUCF-NET','GHG-ETS-YES-IAS-NET') --Filter 125
+where attribute='EQ_CombalM' and commodity in('GHG-NO-IAS-YES-LULUCF-NET','GHG-NO-AS-YES-LULUCF-NET',
+    'GHG-ETS-NO-IAS-NET','GHG-YES-IAS-YES-LULUCF-NET','GHG-ETS-YES-IAS-NET') --Filter 125
 group by tablename, commodity
 order by tablename, commodity
  ) TO '%~dp0MarginalPricesOut.csv' delimiter ',' CSV;
@@ -3255,4 +3255,5 @@ ORDER BY tablename,analysis
 -- 4:29 PM 23 February, 2017: FS: change to filter 7,57 (add GHG-NO-AS-YES-LULUCF-NET),59,62 (add 'GHG-DAS-ETS','GHG-DAS-NON-ETS' to both); REMOVE GHG-TRA-ETS-NO-IAS (all). GHG-TRA-NON-ETS-NO-IAS replaced with GHG-TRA-NON-ETS-NO-AS
 -- 15:28 3 March, 2017: FS change to forestry filters due to energy forestry being split over 2 tied techs
 -- 07:27 6 March, 2017: FS changed "!=" to "<>" in transport query as former difficult to escape in DOS
+-- 8:59 PM 09 March, 2017: FS change to marginal prices to reflect change in filter
  
