@@ -226,7 +226,7 @@ echo order by tablename, period, analysis >> TraBatchUpload.sql
 echo ) a >> TraBatchUpload.sql
 echo group by analysis, tablename,attribute,commodity >> TraBatchUpload.sql
 echo order by tablename, analysis >> TraBatchUpload.sql
-echo ) TO '%~dp0vehKms.csv' delimiter ',' CSV; >> TraBatchUpload.sql
+echo ) TO '%~dp0vehKms.csv' delimiter ',' CSV HEADER; >> TraBatchUpload.sql
 rem /* *New stock vehicle kms, emissions and emission intensity for 29 vehicle types* */
 echo /* *New stock vehicle kms, emissions and emission intensity for 29 vehicle types* */ >> TraBatchUpload.sql
 echo COPY ( >> TraBatchUpload.sql
@@ -621,7 +621,7 @@ rem Comment this line out if you just want the SQL code to create the populated 
 rem following concatenates individual results to the lulucfout.csv
 type newVehKms.csv >> VehKms.csv
 type VehCapOut.csv >> VehKms.csv
-type nVCapOut.csv >> VehKms.csv
+type newVehCapOut.csv >> VehKms.csv
 type fuelByModeOut.csv >> VehKms.csv
 type rdTransFuel.csv >> VehKms.csv
 rem before deleting the individual files and renaming VehKms as TraResultsOut

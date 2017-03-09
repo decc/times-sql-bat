@@ -17,6 +17,8 @@ NB  *   If a particular model run doesn't build it, then there will be no entry 
         "copy (... ) TO " statement. If taking this approach, may require a terminating ';' (When a q is wrapped with "copy", the last SQL statement _should_not_ be terminated
         with a ";".)
     *   Filters are as specific as possible with wildcards removed. This means that the qs will have to be carefully revised if the structure of the model changes.
+    *   There is Ruby code to build batch files from this file. It recognises what goes in which batch by looking for headings with 2 asterisks together and
+        "BAT" in capitals, + no "End of". It looks for these things + "End of" to figure out where a set of batch queries ends. Be careful not to change these and to set up any other batch entries in the same way. 
 
 General comment: order of headings in output is:
     id [= concatenation of all other fields]
@@ -177,7 +179,7 @@ from (
 group by tablename, comm_set
 order by tablename, comm_set
 
-/* **Electricity Batch File: ** */
+/* **Electricity BAT (Elec.bat): ** */
 /* ------------------------------------------*/
 /* *Annual timesliced elec storage output (techs grouped)* */
 
@@ -222,9 +224,10 @@ where analysis is not null
 group by id, analysis,tablename, attribute, TimeSlice
 order by tablename, analysis, attribute, commodity
 ) TO '%~dp0elecstortime.csv' delimiter ',' CSV HEADER;
+/* **End of Electricity BAT (Elec.bat): ** */
 
-/* **For agriculture / LULUCF batch file: ** */
-/* ------------------------------------------*/
+/* **For agriculture / LULUCF BAT (Ag_&_LULUCF.bat): ** */
+/* ------------------------------------------------------*/
 /* *Landfill CH4 emission mitigation and residual emissions* */
 -- Note that the mitigation measures take CH4 in
 
@@ -330,9 +333,10 @@ from vedastore
 where attribute='VAR_FOut' and commodity='ALAND' and process in('ALUFOR01','ALUFOR02','ALUFOR03','ALUFOR04A') --Filter 2
 group by tablename, attribute,commodity,process
 ) TO '%~dp0afforestout.csv' delimiter ',' CSV HEADER;
+/* **End of For agriculture / LULUCF BAT (Ag_&_LULUCF.bat): ** */
 
-/* **For transport batch file: ** */
-/* -------------------------------*/
+/* **Transport BAT (transport.bat): ** */
+/* -------------------------------------*/
 
 /* *Whole stock vehicle kms, emissions and emission intensity for 29 vehicle types* */
 -- Includes estimates of CNG-in by vehicle types and associated emissions- This requires apportioning
@@ -500,7 +504,7 @@ from (
 ) a
 group by analysis, tablename,attribute,commodity
 order by tablename, analysis
-) TO '%~dp0vehKms.csv' delimiter ',' CSV;
+) TO '%~dp0vehKms.csv' delimiter ',' CSV HEADER;
 
 /* *New stock vehicle kms, emissions and emission intensity for 29 vehicle types* */
 -- This script only includes new vehicles in the year of introduction- Apportions emissions from conversion of mains gas to CNG according to CNG-in for each vehicle type
@@ -905,9 +909,10 @@ where analysis <>''
 group by id, analysis,tablename, attribute
 order by tablename,  analysis, attribute
 ) TO '%~dp0rdTransFuel.csv' delimiter ',' CSV;
+/* **End of Transport BAT (transport.bat): ** */
 
-/* **Main "key outputs" crosstabs** */
-/* -------------------------------*/
+/* **Main "key outputs" BAT (UploadResults.bat)** */
+/* ------------------------------------------------*/
 /* *Dummy imports by table* */
 -- NB this only sums Cost_Act to see impact on the objective function- Filter was previously:
 -- "where process like 'IMP%Z'" [not clear how these processes are created
@@ -3131,6 +3136,8 @@ select 'bio-en_' || cols || '|' || tablename || '|VAR_FOut|various|' || process:
 group by tablename,cols,process
 ORDER BY tablename,analysis
  ) TO '%~dp0PriEnOut.csv' delimiter ',' CSV;
+  /* **End of Main "key outputs" BAT (UploadResults.bat)** */
+  
 -- Change log follows:
  -- 3:07 PM 12 January, 2016. Changes include:
     -- revisions to code (more compact, faster; substituting subqueries for unions.)
