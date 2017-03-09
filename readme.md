@@ -16,9 +16,11 @@ Since each postgres session is independent, the fact that the same table names a
 *	Requires a postgres (database) installation on the same machine as the one where you're processing the results. This must have been set up to have a superuser called "postgres" and to have the password stored. Must also have a database called "gams" [or change the batch file below to reflect some other database name: note that there is always a postgres database so you could use that].
 *	You may need to set authentification to "trust" for local connections and to create a pgpass.conf file to prevent the batch process from asking for a password at every step. See the postgres help docs for more info.
 *	Put your VD files in a separate folder. The script currently has the limitation that the path to this must not contain spaces. For example, put here:
-C:\VTI_Local_4\Veda_FE\GAMS_WrkTIMES\upload_results
-*	Put the batch file(s) in the folder and double-click on each to run it/them. The batch file(s) will be called something like "UploadResults.BAT".
+C:\VEDA\Veda_FE\GAMS_WrkTIMES\upload_results
+*	Put the batch file(s) in the folder and double-click on each to run. The batch file(s) will be called something like "UploadResults.BAT" - these are available at https://github.com/decc/times-sql-bat. 
 *	Each batch file processes all the VD files in the folder. It creates a CSV called "ResultsOut.csv" (or similar) in the same folder. This contains the standardised results for the cross-tabs. If the batch process doesn't work check that the command line which invokes psql is pointing to the correct location. This will vary with the postgres installation and will be something like "C:\Program Files\PostgreSQL\9.4\bin"
+
+Within BEIS, we have an Excel template which can be populated to summarise these outputs (DECCFCSJ-99-463).
 
 *2)	To run manual (bespoke) queries:*
 SQL script generated as part of above is called "VedaBatchUpload.sql" (or similar) in the same folder
