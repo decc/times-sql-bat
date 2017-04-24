@@ -179,7 +179,7 @@ from (
 group by tablename, comm_set
 order by tablename, comm_set
 
-/* **Electricity BAT (Elec.bat): ** */
+/* **Electricity BAT (ElecBatchUpload.bat): ** */
 /* ------------------------------------------*/
 /* *Annual timesliced elec storage output (techs grouped)* */
 
@@ -224,9 +224,9 @@ where analysis is not null
 group by id, analysis,tablename, attribute, TimeSlice
 order by tablename, analysis, attribute, commodity
 ) TO '%~dp0elecstortime.csv' delimiter ',' CSV HEADER;
-/* **End of Electricity BAT (Elec.bat): ** */
+/* **End of Electricity BAT (ElecBatchUpload.bat): ** */
 
-/* **For agriculture / LULUCF BAT (Ag_&_LULUCF.bat): ** */
+/* **For agriculture / LULUCF BAT (AgBatchUpload.bat): ** */
 /* ------------------------------------------------------*/
 /* *Landfill CH4 emission mitigation and residual emissions* */
 -- Note that the mitigation measures take CH4 in
@@ -304,7 +304,7 @@ select 'ag-lulucf-meas-ghg_'|| proc_set || '|' || tablename || '|' || attribute 
 where proc_set is not null
 group by tablename, attribute, proc_set
 order by tablename, attribute, proc_set
-) TO '%~dp0lulucfout.csv' delimiter ',' CSV HEADER;
+) TO '%~dp0lulucfout.csv' delimiter ',' CSV;
 
 /* *Afforestation rate* */
 -- This is the amount of afforestation over the BAU level (in current model formulation)
@@ -332,10 +332,10 @@ select 'ag-lulucf-meas_aff_level' || '|' || tablename || '|' || attribute || '|'
 from vedastore
 where attribute='VAR_FOut' and commodity='ALAND' and process in('ALUFOR01','ALUFOR02','ALUFOR03','ALUFOR04A') --Filter 2
 group by tablename, attribute,commodity,process
-) TO '%~dp0afforestout.csv' delimiter ',' CSV HEADER;
-/* **End of For agriculture / LULUCF BAT (Ag_&_LULUCF.bat): ** */
+) TO '%~dp0afforestout.csv' delimiter ',' CSV;
+/* **End of For agriculture / LULUCF BAT (AgBatchUpload.bat): ** */
 
-/* **Transport BAT (transport.bat): ** */
+/* **Transport BAT (TraBatchUpload.bat): ** */
 /* -------------------------------------*/
 
 /* *Whole stock vehicle kms, emissions and emission intensity for 29 vehicle types* */
@@ -909,9 +909,9 @@ where analysis <>''
 group by id, analysis,tablename, attribute
 order by tablename,  analysis, attribute
 ) TO '%~dp0rdTransFuel.csv' delimiter ',' CSV;
-/* **End of Transport BAT (transport.bat): ** */
+/* **End of Transport BAT (TraBatchUpload.bat): ** */
 
-/* **Main "key outputs" BAT (UploadResults.bat)** */
+/* **Main "key outputs" BAT (MainBatchUpload.bat)** */
 /* ------------------------------------------------*/
 /* *Dummy imports by table* */
 -- NB this only sums Cost_Act to see impact on the objective function- Filter was previously:
@@ -3136,7 +3136,7 @@ select 'bio-en_' || cols || '|' || tablename || '|VAR_FOut|various|' || process:
 group by tablename,cols,process
 ORDER BY tablename,analysis
  ) TO '%~dp0PriEnOut.csv' delimiter ',' CSV;
-  /* **End of Main "key outputs" BAT (UploadResults.bat)** */
+  /* **End of Main "key outputs" BAT (MainBatchUpload.bat)** */
   
 -- Change log follows:
  -- 3:07 PM 12 January, 2016. Changes include:
@@ -3256,4 +3256,4 @@ ORDER BY tablename,analysis
 -- 15:28 3 March, 2017: FS change to forestry filters due to energy forestry being split over 2 tied techs
 -- 07:27 6 March, 2017: FS changed "!=" to "<>" in transport query as former difficult to escape in DOS
 -- 8:59 PM 09 March, 2017: FS change to marginal prices to reflect change in filter
- 
+-- 7:34 PM 24 April, 2017: FS change to reflect automated production of BAT files from this master (see ruby code)

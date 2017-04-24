@@ -1,0 +1,119 @@
+@echo off
+rem *****UK TIMES standard outputs tool*****
+rem version of TIMES model = uktm_model_v1.2.3_d0.1.2_DNP
+rem DOS Batch file to construct SQL queries, run the code, amalgamate the results and tidy up (delete) the intermediate stages
+rem version as filename. By Fernley Symons 8:02 PM 12 January, 2016
+rem works by:
+rem
+rem 1) constructing SQL code file to create temp files from TIMES runs (creates one script entry for each file)
+rem 2) adding analysis SQL to generate summaries which are output to CSVs
+rem 3) amalgamates the CSVs
+rem 4) deletes the intermediate CSVs leaving a single output file
+rem
+rem *** _Important note_: this will not work if the folder path has spaces (or other chars like '&' in it ***
+rem 
+rem By Fernley Symons
+rem *****Instructions for updating from "HumanReadableQueries.sql" in Notepad++*****
+rem Things to bear in mind:
+rem if '%' is part of a sql query (e.g. "like 'x%'), then % needs to be doubled "like 'x%%'"
+rem Other characters (|, <, > etc) need to be escaped in a similar way with ^:- ^| etc
+rem can't have very long lines - need to break statements
+rem filename at end of line, no spaces afterwards
+REM Also note that doesn't like labels (col names or values etc) which break across lines. Inserts a break into them so that they don't match any more
+rem It will be rare that you'll need to change the first, dynamic bit of the script which creates one SQL statement set
+rem for each VD file in the folder. These instructions ignore that and assume that block's unchanged.
+rem 1) Copy the appropriate block of SQL from "Human..." to a blank doc
+rem 2) Remove indentation from the copied text: select it and press shift-tab repeatedly to do this
+rem 3) Comment lines starting "--" should be removed (comments starting "/*" retained). Do this by doing a regex search / replace for 
+rem    "^--.+\r\n" (no quotes) replace with blank.
+rem 4) Remove embedded comments [appearing on same line as code] with regex replace "--.+" with blank
+rem 5) Remove extraneous blank lines with regex replace "(\r\n){2,}" with "\r\n"
+rem 6) Make replacements for other reserved DOS words. See below for example (set "texta..." etc). In general there will only be a few of these; define more as needed
+rem    NB No need to replace "~" in output file locations since these are DOS commands meaning "put it in the same folder as this BAT file". "~" only needs replacing if part of a query
+rem    (i.e. regex in postgres). ****Note that the first 2 queries contain reserved words****
+rem 7) Change the single "%" to double "%%" but leave filenames for copy statements unchanged. Regex replace "(%[^~])" with "%\1"
+rem 8) Escape other characters: Regex replace "(\||<|>)" with "^\1"
+rem 9) Regex replace "(.+)" with "echo \1 >> MainBatchUpload.sql"
+rem 10) Regex replace "echo (\/\*.+\/)" with "rem \1\r\necho \1". This duplicates the header in a way which is more obvious to read in the BAT file
+rem 11) Copy the edited text back over the body of the BAT below (below the upload statements and before the run SQL statement) and save file
+rem 12) comment out the run SQL statement, run the BAT and check the SQL appears sensible.
+rem 13) Uncomment the run SQL statement and use the file
+rem ***********
+rem 9:34 PM 19 January, 2016 Correction of error in new vehicles capacity script
+rem 2:04 PM 01 February, 2016; addition of whole vehicle stock capacity
+rem 2:58 PM 04 February, 2016; addition of new vehicle emissions intensity
+rem 1:39 PM 08 February, 2016; correction of new vehicle emissions intensity
+rem 3:30 PM 16 February, 2016; a slew of new queries, refactored code, re-ordered queries. Baseline version for git:-replaces v18
+rem 7:50 PM 04 April, 2016: addition of final end use energy demand by main sector; renamed some analysis entities
+rem 1:48 PM 12 April, 2016: addition of primary energy demand by main fuel
+rem 8:47 PM 11 August, 2016: updated to reflect changes to elec gen techs
+rem 11:53 AM 15 August, 2016: updated to reflect corrected and standardised set definitions
+rem 8:52 PM 15 November, 2016: correction to FUEL TECHS AGR set in final energy query
+rem 2:55 PM 15 December, 2016: BF edited Filter 131, 'heat-res_conserv' and Filter 146, 'new-heat-res_conserv'
+rem 2:10 PM 16 December, 2016: 
+rem BF added 'RESMSWINO','RESMSWORG' to Filters 287,206,207,208 to match locations of equivalent service sector commodities 'SERMSWINO','SERMSWORG'
+rem BF added 'RESMSWINO01','RESMSWORG01' to Filter 304 'Fuel Techs RES' to match equivalent locations of equivalent service sector Fuel Techs 'SERMSWINO01','SERMSWORG01'
+rem 3:00 PM 16 December, 2016:
+rem BF added residential EFW CHP, 'RCHPEA-EFW01','RCHPNA-EFW01' to Filters 79,114,303,335
+rem BF added services EFW CHP, 'SCHP-EFW01' to Filters 79,114,230,368
+REM 8:54 PM 12 January, 2017 FS: change to electrical storage query, other small changes to filter definitions (removal of cast to varchar)
+REM 1:26 PM 06 February, 2017 FS: various updates to reflect revised human readable
+REM 6:19 PM 23 February, 2017 FS: various updates to reflect human readable, change to instructions for how to produce this file (above)
+rem 9:01 PM 09 March, 2017 FS: update to human readable
+rem ***********
+echo processing vd files...
+@echo off
+rem The following allows us to insert text which is otherwise outlawed in DOS:
+setlocal enableDelayedExpansion
+rem delete the SQL script if it exists - code below (re-) generates it.
+IF EXIST MainBatchUpload.sql del /F MainBatchUpload.sql
+rem need to define some variables which contain DOS reserved words. These are replaced by the preprocessor in the script:
+set "texta=IF"
+set "textb=IF NOT"
+set "textc=~"
+set "textd=^"
+set "texte=&"
+rem this block creates the 2 temp table definitions. First stores the unformatted data from the VD file, second parses this into fields and inserts into the "vedastore" table against which the 
+rem queries are run.
+echo CREATE temp TABLE !textb! EXISTS vedastore( tablename varchar(100), id serial, attribute varchar(50), commodity varchar(50), process varchar(50), period varchar(50), region varchar(50), vintage varchar(50), timeslice varchar(50), userconstraint varchar(50), pv numeric ); drop table !texta! exists veda; create temp table veda( id serial, stuff varchar(1000) ); >> MainBatchUpload.sql
+rem the following creates a block of sql for each VD file to upload it, delete the header rows and break the entries into fields
+for /f "delims=|" %%i in ('dir /b *.vd') do echo delete from veda; ALTER SEQUENCE veda_id_seq RESTART WITH 1; copy veda (stuff) from '%%~fi'; insert into vedastore (tablename, attribute ,commodity ,process ,period ,region ,vintage ,timeslice ,userconstraint ,pv) select '%%~ni', trim(both '"' from a[1]), trim(both '"' from a[2]), trim(both '"' from a[3]), trim(both '"' from a[4]), trim(both '"' from a[5]), trim(both '"' from a[6]), trim(both '"' from a[7]), trim(both '"' from a[8]), cast(a[9] as numeric) from ( select string_to_array(stuff, ',') from veda order by id offset 13 ) as dt(a); >> MainBatchUpload.sql
+<%= sql_to_run %>
+rem following line actually runs the SQL code generated by the above using the postgres command utility "psql".
+echo running sql code and generating cross tabs
+rem Comment this line out if you just want the SQL code to create the populated temp tables + the associated analysis queries:
+"C:\Program Files\PostgreSQL\9.4\bin\psql.exe" -h localhost -p 5432 -U postgres -d gams -f %~dp0MainBatchUpload.sql
+rem following concatenates individual results to the GHGout.csv
+type GHGOut.csv >> dummiesout.csv
+type GHGsectorOut.csv >> dummiesout.csv
+type IndSubGHG.csv >> dummiesout.csv
+type ElecGenOut.csv >> dummiesout.csv
+type ElecStor.csv >> dummiesout.csv
+type ElecCap.csv >> dummiesout.csv
+type CostsBySec.csv >> dummiesout.csv
+type MarginalPricesOut.csv >> dummiesout.csv
+type ResWholeHeatOut.csv >> dummiesout.csv
+type NewResHeatOut.csv >> dummiesout.csv
+type ServWholeHeatOut.csv >> dummiesout.csv
+type NewServHeatOut.csv >> dummiesout.csv
+type FinEnOut.csv >> dummiesout.csv
+type PriEnOut.csv >> dummiesout.csv
+rem before deleting the individual files and renaming dummiesout as ResultsOut
+IF EXIST ResultsOut.csv del /F ResultsOut.csv
+IF EXIST GHGOut.csv del /F GHGOut.csv
+IF EXIST GHGsectorOut.csv del /F GHGsectorOut.csv
+IF EXIST IndSubGHG.csv del /F IndSubGHG.csv
+IF EXIST ElecGenOut.csv del /F ElecGenOut.csv
+IF EXIST ElecStor.csv del /F ElecStor.csv
+IF EXIST ElecCap.csv del /F ElecCap.csv
+IF EXIST CostsBySec.csv del /F CostsBySec.csv
+IF EXIST MarginalPricesOut.csv del /F MarginalPricesOut.csv
+IF EXIST ResWholeHeatOut.csv del /F ResWholeHeatOut.csv
+IF EXIST NewResHeatOut.csv del /F NewResHeatOut.csv
+IF EXIST ServWholeHeatOut.csv del /F ServWholeHeatOut.csv
+IF EXIST NewServHeatOut.csv del /F NewServHeatOut.csv
+IF EXIST FinEnOut.csv del /F FinEnOut.csv
+IF EXIST PriEnOut.csv del /F PriEnOut.csv
+rename dummiesout.csv ResultsOut.csv
+rem finally, delete dummiesout.csv if it exists
+IF EXIST dummiesout.csv del /F dummiesout.csv
