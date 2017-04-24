@@ -57,10 +57,10 @@ Run manual postgres queries with PostgreSQL by:
 *  Ag_&_LULUCF.bat. Queries relating to agriculture and Land Use and Land Use Change and Forestry (LULUCF)
 *  Elec.bat. More detailed queries relating to electricity generation which are not in the main script
 
-*4)	Creating the BAT files from the HumanReadableQueries master*
+*5)	Creating the BAT files from the HumanReadableQueries master*
 
 BAT files can now be generated from the HumanReadableQueries.sql master file. To do so, you need to download the template folder and the Convert_SQL_to_bat.rb script. Place the templates folder in the same place as the script but at the same level [i.e. don't put the script _in_ the folder]. Run using the command line and pass the location of "human readable" as a parameter, e.g.
 
    ruby "C:\FS\workspace\Build_BATs\Convert_SQL_to_bat.rb" "C:\0\HumanReadableQueries.sql"
 
-The BAT files should be produced in the same folder as "human readable". This arrangement will be robust to changes in the actual SQL which is included in each BAT (e.g. due to changes in technologies modelled), but not to changes in the number of crosstabs--if these change the BAT templates will need to change too.
+The BAT files should be produced in the same folder as "human readable". This arrangement will be robust to changes in the actual SQL which defines each table (e.g. due to changes in technologies modelled), but not to changes in the number of these --if tables are added or removed the BAT templates will need to change too.
