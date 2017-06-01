@@ -1402,7 +1402,7 @@ with emissions_chp as (
 --This is the total waste heat to be divvidied up between candidate gen processes
     select tablename, process,userconstraint,attribute,commodity,period,sum(pv) "pv"
     from vedastore
-    where process='EWSTHEAT-OFF-01' --Filter 85
+    where process='EWSTHEAT-OFF-01' and commodity='ELCGEN' and attribute='VAR_FIn'--Filter 85
     group by tablename, process,userconstraint,attribute,commodity, period
     order by tablename, process,userconstraint,attribute,commodity, period
 )
@@ -1554,7 +1554,7 @@ with emissions_chp as (
     from fuel_shares_to_groups a
     left join (
             select tablename, period,
-            sum(case when commodity='ELCGEN' then pv else 0 end) "ELCGEN"
+            sum(pv) "ELCGEN"
             from elc_waste_heat_process
             group by tablename, period
         ) b
@@ -2505,6 +2505,8 @@ chp_fuels_used as (
 , chp as(
 -- This table brings the outputs and inputs for chp together to give the chp correction found in the xls
 -- See "Fuel use in CHP plants for electricity generation*" row 615
+-- Note in the original template says Based on 'DUKES methodology: "twice as many units of fuel are 
+-- allocated to each unit of electricity generated, as to each unit of heat"'
     select
         elc.tablename, elc.period,
         sum(case when elc.ind_bio+heat.ind_bio>0 then (2*fuel.ind_bio*elc.ind_bio)/(2*elc.ind_bio+heat.ind_bio) else 0 end) "ind_bio_chp",
@@ -3257,3 +3259,4 @@ ORDER BY tablename,analysis
 -- 07:27 6 March, 2017: FS changed "!=" to "<>" in transport query as former difficult to escape in DOS
 -- 8:59 PM 09 March, 2017: FS change to marginal prices to reflect change in filter
 -- 7:34 PM 24 April, 2017: FS change to reflect automated production of BAT files from this master (see ruby code)
+-- 12:22 01 June 2017: FS changed elecgen query to make more robust and efficient (refactored)
