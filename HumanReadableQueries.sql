@@ -1740,7 +1740,7 @@ from (
                 'EBOG-LFE01','EBOG-SWE01','EMSW01') then 'bio' --Filter 100
             when process = 'EBIOQ01' then 'bio-ccs' --Filter 101
             when process in('ECOA00','ECOABIO00', 'ECOARR01') then 'coal' --Filter 102
-            when process in('ECOAQ01' ,'ECOAQDEMO01') then 'coal-ccs' --Filter 103
+            when process in('ECOAQ01' ,'ECOAQDEMO01','ECOAQR01') then 'coal-ccs' --Filter 103
             when process in('EHYGCCT01' ,'EHYGOCT01') then 'h2' --Filter 104
             when process in('ENGACCT00','ENGACCTRR01','ENGAOCT00','ENGAOCT01','ENGARCPE00','ENGARCPE01') then
                 'nga' --Filter 105
@@ -3260,3 +3260,4 @@ ORDER BY tablename,analysis
 -- 8:59 PM 09 March, 2017: FS change to marginal prices to reflect change in filter
 -- 7:34 PM 24 April, 2017: FS change to reflect automated production of BAT files from this master (see ruby code)
 -- 12:22 01 June 2017: FS changed elecgen query to make more robust and efficient (refactored)
+-- 16:36 05 June 2017: FS correction to filter 103
