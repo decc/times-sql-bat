@@ -285,11 +285,17 @@ echo ,'INMCHPGT01','INMCHPNGA00','IOICHPBIOG01','IOICHPBIOS00','IOICHPBIOS01','I
 echo ,'IPPCHPBIOG01','IPPCHPBIOS00','IPPCHPBIOS01','IPPCHPCCGT01','IPPCHPCCGTH01','IPPCHPCOA00','IPPCHPCOA01','IPPCHPFCH01','IPPCHPGT01','IPPCHPNGA00','IPPCHPWST00','IPPCHPWST01') >> MainBatchUpload.sql
 echo then 'CHP IND SECTOR' >> MainBatchUpload.sql
 echo when process in('PCHP-CCP00','PCHP-CCP01') then 'CHP PRC SECTOR' >> MainBatchUpload.sql
-echo when process in('SCHP-ADM01','SCHP-CCG00','SCHP-CCG01','SCHP-CCH01','SCHP-FCH01','SCHP-GES00','SCHP-GES01','SCHP-STM01','SCHP-STW00','SCHP-STW01','SHHFCLRH01','SHLCHPRG01' >> MainBatchUpload.sql
-echo ,'SHLCHPRH01','SHLCHPRW01','SCHP-EFW01') then 'CHP SER SECTOR' >> MainBatchUpload.sql
+echo when process in('SCHP-ADM01','SCHP-CCG00','SCHP-CCG01', >> MainBatchUpload.sql
+echo 'SCHP-CCH01','SCHP-FCH01','SCHP-GES00','SCHP-GES01', >> MainBatchUpload.sql
+echo 'SCHP-STM01','SCHP-STW00','SCHP-STW01','SHLCHPRG01', >> MainBatchUpload.sql
+echo 'SHLCHPRH01','SHLCHPRW01','SCHP-EFW01') then 'CHP SER SECTOR' >> MainBatchUpload.sql
 echo when process in('UCHP-CCG00','UCHP-CCG01') then 'CHP UPS SECTOR' >> MainBatchUpload.sql
-echo when process in('RHEACHPRG01','RHEACHPRH01','RHEACHPRW01','RHFCCHPRG01','RHFCCHPRH01','RHFCCHPRW01','RHFSCHPRG01','RHFSCHPRH01','RHFSCHPRW01','RHHCCHPRG01','RHHCCHPRH01','RHHCCHPRW01' >> MainBatchUpload.sql
-echo ,'RHHSCHPRG01','RHHSCHPRH01','RHHSCHPRW01','RHNACHPRG01','RHNACHPRH01','RHNACHPRW01') then 'CHP RES MICRO' >> MainBatchUpload.sql
+echo when process in('RHEACHPRG01','RHEACHPRH01','RHEACHPRW01', >> MainBatchUpload.sql
+echo 'RHFCCHPRG01','RHFCCHPRH01','RHFCCHPRW01','RHFSCHPRG01', >> MainBatchUpload.sql
+echo 'RHFSCHPRH01','RHFSCHPRW01','RHHCCHPRG01','RHHCCHPRH01', >> MainBatchUpload.sql
+echo 'RHHCCHPRW01','RHHSCHPRG01','RHHSCHPRH01','RHHSCHPRW01', >> MainBatchUpload.sql
+echo 'RHNACHPRG01','RHNACHPRH01','RHNACHPRW01' >> MainBatchUpload.sql
+echo ) then 'CHP RES MICRO' >> MainBatchUpload.sql
 echo end proc_set >> MainBatchUpload.sql
 echo from vedastore >> MainBatchUpload.sql
 echo where attribute='VAR_FOut' and commodity in('RESCH4N','SERN2ON','INDCO2N','SERCH4N','INDCH4N','INDN2ON','UPSN2ON','UPSCO2N','UPSCH4N','PRCCH4N','PRCCO2N','PRCN2ON' >> MainBatchUpload.sql
@@ -300,10 +306,15 @@ echo case >> MainBatchUpload.sql
 echo when process in('ICHCHPBIOG01','ICHCHPBIOS00','ICHCHPBIOS01','IFDCHPBIOG01','IFDCHPBIOS00','IFDCHPBIOS01','IISCHPBIOG01','IISCHPBIOS01','INMCHPBIOG01','INMCHPBIOS01','IOICHPBIOG01' >> MainBatchUpload.sql
 echo ,'IOICHPBIOS00','IOICHPBIOS01','IPPCHPBIOG01','IPPCHPBIOS00','IPPCHPBIOS01','IPPCHPWST00','IPPCHPWST01') then 'CHP IND BIO' >> MainBatchUpload.sql
 echo when process in('SCHP-ADM01','SCHP-GES00','SCHP-GES01','SCHP-STM01','SCHP-STW00','SCHP-STW01','SHLCHPRW01','SCHP-EFW01') then 'CHP SER BIO' >> MainBatchUpload.sql
-echo when process in('SHHFCLRH01','SHLCHPRG01','SHLCHPRH01','SHLCHPRW01') then 'CHP SER MICRO' >> MainBatchUpload.sql
-echo when process in('RCHPEA-CCG00','RCHPEA-CCG01','RCHPEA-CCH01','RCHPEA-FCH01','RCHPEA-STW01','RCHPNA-CCG01','RCHPNA-CCH01','RCHPNA-FCH01','RCHPNA-STW01','RHEACHPRG01','RHEACHPRH01','RHEACHPRW01' >> MainBatchUpload.sql
-echo ,'RHNACHPRG01','RHNACHPRH01','RHNACHPRW01','RCHPEA-EFW01','RCHPNA-EFW01') >> MainBatchUpload.sql
-echo then 'CHP RES SECTOR' >> MainBatchUpload.sql
+echo when process in('SHLCHPRG01','SHLCHPRH01','SHLCHPRW01') then 'CHP SER MICRO' >> MainBatchUpload.sql
+echo when process in('RCHPEA-CCG00','RCHPEA-CCG01','RCHPEA-CCH01', >> MainBatchUpload.sql
+echo 'RCHPEA-FCH01','RCHPEA-STW01','RCHPNA-CCG01','RCHPNA-CCH01', >> MainBatchUpload.sql
+echo 'RCHPNA-FCH01','RCHPNA-STW01','RHEACHPRG01','RHEACHPRH01', >> MainBatchUpload.sql
+echo 'RHEACHPRW01','RHNACHPRG01','RHNACHPRH01','RHNACHPRW01', >> MainBatchUpload.sql
+echo 'RCHPEA-EFW01','RCHPNA-EFW01','RHFCCHPRH01','RHFSCHPRH01', >> MainBatchUpload.sql
+echo 'RHHCCHPRH01','RHHSCHPRH01','RHFCCHPRG01','RHFSCHPRG01', >> MainBatchUpload.sql
+echo 'RHHCCHPRG01','RHHSCHPRG01','RHFCCHPRW01','RHFSCHPRW01', >> MainBatchUpload.sql
+echo 'RHHCCHPRW01','RHHSCHPRW01') then 'CHP RES SECTOR' >> MainBatchUpload.sql
 echo else null >> MainBatchUpload.sql
 echo end proc_set >> MainBatchUpload.sql
 echo from vedastore >> MainBatchUpload.sql
@@ -399,8 +410,8 @@ echo when process in('EHFOIGCCQ01') then 'ELC FROM OIL CCS' >> MainBatchUpload.s
 echo when process in('ESOL00','ESOL01','ESOLPV00','ESOLPV01') then 'ELC FROM SOL-PV' >> MainBatchUpload.sql
 echo when process in('ETIB101','ETIR101','ETIS101') then 'ELC FROM TIDAL' >> MainBatchUpload.sql
 echo when process in('EWAV101') then 'ELC FROM WAVE' >> MainBatchUpload.sql
-echo when process in('EWNDOFF00','EWNDOFF101','EWNDOFF201','EWNDOFF301') then 'ELC FROM WIND-OFFSH' >> MainBatchUpload.sql
-echo when process in('EWNDONS00','EWNDONS101','EWNDONS201','EWNDONS301','EWNDONS401','EWNDONS501','EWNDONS601','EWNDONS701','EWNDONS801','EWNDONS901') then 'ELC FROM WIND-ONSH' >> MainBatchUpload.sql
+echo when process in('EWNDOFF00','EWNDOFF101','EWNDOFF201') then 'ELC FROM WIND-OFFSH' >> MainBatchUpload.sql
+echo when process in('EWNDONS00','EWNDONS101','EWNDONS201') then 'ELC FROM WIND-ONSH' >> MainBatchUpload.sql
 echo when process in('ELCEE00','ELCEE01','ELCEI00','ELCEI01') then 'ELC TO EXPORTS' >> MainBatchUpload.sql
 echo end as proc_set >> MainBatchUpload.sql
 echo from vedastore >> MainBatchUpload.sql
@@ -412,20 +423,36 @@ echo union all >> MainBatchUpload.sql
 echo select proc_set,tablename,period, sum(pv) "pv" >> MainBatchUpload.sql
 echo from ( >> MainBatchUpload.sql
 echo select tablename,period, pv, >> MainBatchUpload.sql
-echo case when process in( >> MainBatchUpload.sql
-echo 'ICHCHPBIOG01','ICHCHPBIOS00','ICHCHPBIOS01','ICHCHPCCGT01','ICHCHPCCGTH01','ICHCHPCOA00','ICHCHPCOA01','ICHCHPFCH01', >> MainBatchUpload.sql
-echo 'ICHCHPGT01','ICHCHPHFO00','ICHCHPLFO00','ICHCHPLPG00','ICHCHPLPG01','ICHCHPNGA00','ICHCHPPRO00','ICHCHPPRO01', >> MainBatchUpload.sql
-echo 'IFDCHPBIOG01','IFDCHPBIOS00','IFDCHPBIOS01','IFDCHPCCGT01','IFDCHPCCGTH01','IFDCHPCOA00','IFDCHPCOA01','IFDCHPFCH01', >> MainBatchUpload.sql
-echo 'IFDCHPGT01','IFDCHPHFO00','IFDCHPLFO00','IFDCHPNGA00','IISCHPBFG00','IISCHPBFG01','IISCHPBIOG01','IISCHPBIOS01', >> MainBatchUpload.sql
-echo 'IISCHPCCGT01','IISCHPCCGTH01','IISCHPCOG00','IISCHPCOG01','IISCHPFCH01','IISCHPGT01','IISCHPHFO00','IISCHPNGA00', >> MainBatchUpload.sql
-echo 'INMCHPBIOG01','INMCHPBIOS01','INMCHPCCGT01','INMCHPCCGTH01','INMCHPCOA01','INMCHPCOG00','INMCHPCOG01','INMCHPFCH01', >> MainBatchUpload.sql
-echo 'INMCHPGT01','INMCHPNGA00','IOICHPBIOG01','IOICHPBIOS00','IOICHPBIOS01','IOICHPCCGT01','IOICHPCCGTH01','IOICHPCOA01', >> MainBatchUpload.sql
-echo 'IOICHPFCH01','IOICHPGT01','IOICHPHFO00','IOICHPNGA00','IPPCHPBIOG01','IPPCHPBIOS00','IPPCHPBIOS01','IPPCHPCCGT01', >> MainBatchUpload.sql
-echo 'IPPCHPCCGTH01','IPPCHPCOA00','IPPCHPCOA01','IPPCHPFCH01','IPPCHPGT01','IPPCHPNGA00','IPPCHPWST00','IPPCHPWST01', >> MainBatchUpload.sql
-echo 'PCHP-CCP00','PCHP-CCP01','RCHPEA-CCG00','RCHPEA-CCG01','RCHPEA-CCH01','RCHPEA-FCH01','RCHPEA-STW01','RCHPNA-CCG01', >> MainBatchUpload.sql
-echo 'RCHPNA-CCH01','RCHPNA-FCH01','RCHPNA-STW01','RHEACHPRG01','RHEACHPRH01','RHEACHPRW01','RHNACHPRG01','RHNACHPRH01', >> MainBatchUpload.sql
-echo 'RHNACHPRW01','RCHPEA-EFW01','RCHPNA-EFW01','SCHP-ADM01','SCHP-CCG00','SCHP-CCG01','SCHP-CCH01','SCHP-FCH01','SCHP-GES00','SCHP-GES01','SCHP-STM01', >> MainBatchUpload.sql
-echo 'SCHP-STW00','SCHP-STW01','SHHFCLRH01','SHLCHPRG01','SHLCHPRH01','SHLCHPRW01','SCHP-EFW01','UCHP-CCG00','UCHP-CCG01') then 'elec-gen_chp' else null >> MainBatchUpload.sql
+echo case when process in('ICHCHPBIOG01','ICHCHPBIOS00','ICHCHPBIOS01', >> MainBatchUpload.sql
+echo 'ICHCHPCCGT01','ICHCHPCCGTH01','ICHCHPCOA00','ICHCHPCOA01', >> MainBatchUpload.sql
+echo 'ICHCHPFCH01','ICHCHPGT01','ICHCHPHFO00','ICHCHPLFO00', >> MainBatchUpload.sql
+echo 'ICHCHPLPG00','ICHCHPLPG01','ICHCHPNGA00','ICHCHPPRO00', >> MainBatchUpload.sql
+echo 'ICHCHPPRO01','IFDCHPBIOG01','IFDCHPBIOS00','IFDCHPBIOS01', >> MainBatchUpload.sql
+echo 'IFDCHPCCGT01','IFDCHPCCGTH01','IFDCHPCOA00','IFDCHPCOA01', >> MainBatchUpload.sql
+echo 'IFDCHPFCH01','IFDCHPGT01','IFDCHPHFO00','IFDCHPLFO00', >> MainBatchUpload.sql
+echo 'IFDCHPNGA00','IISCHPBFG00','IISCHPBFG01','IISCHPBIOG01', >> MainBatchUpload.sql
+echo 'IISCHPBIOS01','IISCHPCCGT01','IISCHPCCGTH01','IISCHPCOG00', >> MainBatchUpload.sql
+echo 'IISCHPCOG01','IISCHPFCH01','IISCHPGT01','IISCHPHFO00', >> MainBatchUpload.sql
+echo 'IISCHPNGA00','INMCHPBIOG01','INMCHPBIOS01','INMCHPCCGT01', >> MainBatchUpload.sql
+echo 'INMCHPCCGTH01','INMCHPCOA01','INMCHPCOG00','INMCHPCOG01', >> MainBatchUpload.sql
+echo 'INMCHPFCH01','INMCHPGT01','INMCHPNGA00','IOICHPBIOG01', >> MainBatchUpload.sql
+echo 'IOICHPBIOS00','IOICHPBIOS01','IOICHPCCGT01','IOICHPCCGTH01', >> MainBatchUpload.sql
+echo 'IOICHPCOA01','IOICHPFCH01','IOICHPGT01','IOICHPHFO00', >> MainBatchUpload.sql
+echo 'IOICHPNGA00','IPPCHPBIOG01','IPPCHPBIOS00','IPPCHPBIOS01', >> MainBatchUpload.sql
+echo 'IPPCHPCCGT01','IPPCHPCCGTH01','IPPCHPCOA00','IPPCHPCOA01', >> MainBatchUpload.sql
+echo 'IPPCHPFCH01','IPPCHPGT01','IPPCHPNGA00','IPPCHPWST00', >> MainBatchUpload.sql
+echo 'IPPCHPWST01','PCHP-CCP00','PCHP-CCP01','RCHPEA-CCG00', >> MainBatchUpload.sql
+echo 'RCHPEA-CCG01','RCHPEA-CCH01','RCHPEA-FCH01','RCHPEA-STW01', >> MainBatchUpload.sql
+echo 'RCHPNA-CCG01','RCHPNA-CCH01','RCHPNA-FCH01','RCHPNA-STW01', >> MainBatchUpload.sql
+echo 'RHEACHPRG01','RHEACHPRH01','RHEACHPRW01','RHNACHPRG01', >> MainBatchUpload.sql
+echo 'RHNACHPRH01','RHNACHPRW01','RCHPEA-EFW01','RCHPNA-EFW01', >> MainBatchUpload.sql
+echo 'SCHP-ADM01','SCHP-CCG00','SCHP-CCG01','SCHP-CCH01', >> MainBatchUpload.sql
+echo 'SCHP-FCH01','SCHP-GES00','SCHP-GES01','SCHP-STM01', >> MainBatchUpload.sql
+echo 'SCHP-STW00','SCHP-STW01','SHLCHPRG01','SHLCHPRH01', >> MainBatchUpload.sql
+echo 'SHLCHPRW01','SCHP-EFW01','UCHP-CCG00','UCHP-CCG01', >> MainBatchUpload.sql
+echo 'RHFCCHPRH01','RHFSCHPRH01','RHHCCHPRH01','RHHSCHPRH01', >> MainBatchUpload.sql
+echo 'RHFCCHPRG01','RHFSCHPRG01','RHHCCHPRG01','RHHSCHPRG01', >> MainBatchUpload.sql
+echo 'RHFCCHPRW01','RHFSCHPRW01','RHHCCHPRW01','RHHSCHPRW01') then 'elec-gen_chp' else null >> MainBatchUpload.sql
 echo end proc_set >> MainBatchUpload.sql
 echo from vedastore >> MainBatchUpload.sql
 echo where period in('2010','2011','2012','2015','2020','2025','2030','2035','2040','2045','2050','2055','2060') and attribute='VAR_FOut' >> MainBatchUpload.sql
@@ -801,37 +828,44 @@ echo 'nga' >> MainBatchUpload.sql
 echo when process in('ENGACCTQ01','ENGACCTQDEMO01','ENGAQR01') then 'nga-ccs' >> MainBatchUpload.sql
 echo when process in('ENUCPWR00','ENUCPWR101','ENUCPWR102') then >> MainBatchUpload.sql
 echo 'nuclear' >> MainBatchUpload.sql
-echo when process in('EWNDOFF00' ,'EWNDOFF101' ,'EWNDOFF201' ,'EWNDOFF301') then >> MainBatchUpload.sql
-echo 'offw' >> MainBatchUpload.sql
-echo when process in('EWNDONS00','EWNDONS101','EWNDONS201','EWNDONS301','EWNDONS401','EWNDONS501', >> MainBatchUpload.sql
-echo 'EWNDONS601','EWNDONS701','EWNDONS801','EWNDONS901') then 'onw' >> MainBatchUpload.sql
+echo when process in('EWNDOFF00','EWNDOFF101','EWNDOFF201') then 'offw' >> MainBatchUpload.sql
+echo when process in('EWNDONS00','EWNDONS101','EWNDONS201') then 'onw' >> MainBatchUpload.sql
 echo when process ='EHFOIGCCQ01' then 'other-ccs' >> MainBatchUpload.sql
 echo when process in('EOILL00','EOILL01','EMANOCT00','EMANOCT01','EOILS00','EOILS01','EHFOIGCC01','EDSTRCPE00','EDSTRCPE01') then >> MainBatchUpload.sql
 echo 'other-ff' >> MainBatchUpload.sql
 echo when process in('EHYD00','EHYD01','EGEO01','ETIR101','ETIB101','ETIS101','EWAV101') then >> MainBatchUpload.sql
 echo 'other-rens' >> MainBatchUpload.sql
 echo when process in('ESOL00','ESOLPV00','ESOL01','ESOLPV01') then 'solar' >> MainBatchUpload.sql
-echo when process in('ICHCHPBIOG01','ICHCHPBIOS00','ICHCHPBIOS01','ICHCHPCCGT01','ICHCHPCCGTH01', >> MainBatchUpload.sql
-echo 'ICHCHPCOA00','ICHCHPCOA01','ICHCHPFCH01','ICHCHPGT01','ICHCHPHFO00', >> MainBatchUpload.sql
-echo 'ICHCHPLFO00','ICHCHPLPG00','ICHCHPLPG01','ICHCHPNGA00','ICHCHPPRO00', >> MainBatchUpload.sql
-echo 'ICHCHPPRO01','IFDCHPBIOG01','IFDCHPBIOS00','IFDCHPBIOS01','IFDCHPCCGT01', >> MainBatchUpload.sql
-echo 'IFDCHPCCGTH01','IFDCHPCOA00','IFDCHPCOA01','IFDCHPFCH01','IFDCHPGT01', >> MainBatchUpload.sql
-echo 'IFDCHPHFO00','IFDCHPLFO00','IFDCHPNGA00','IISCHPBFG00','IISCHPBFG01', >> MainBatchUpload.sql
-echo 'IISCHPBIOG01','IISCHPBIOS01','IISCHPCCGT01','IISCHPCCGTH01','IISCHPCOG00', >> MainBatchUpload.sql
-echo 'IISCHPCOG01','IISCHPFCH01','IISCHPGT01','IISCHPHFO00','IISCHPNGA00', >> MainBatchUpload.sql
-echo 'INMCHPBIOG01','INMCHPBIOS01','INMCHPCCGT01','INMCHPCCGTH01','INMCHPCOA01', >> MainBatchUpload.sql
-echo 'INMCHPCOG00','INMCHPCOG01','INMCHPFCH01','INMCHPGT01','INMCHPNGA00', >> MainBatchUpload.sql
-echo 'IOICHPBIOG01','IOICHPBIOS00','IOICHPBIOS01','IOICHPCCGT01','IOICHPCCGTH01', >> MainBatchUpload.sql
-echo 'IOICHPCOA01','IOICHPFCH01','IOICHPGT01','IOICHPHFO00','IOICHPNGA00', >> MainBatchUpload.sql
-echo 'IPPCHPBIOG01','IPPCHPBIOS00','IPPCHPBIOS01','IPPCHPCCGT01','IPPCHPCCGTH01', >> MainBatchUpload.sql
-echo 'IPPCHPCOA00','IPPCHPCOA01','IPPCHPFCH01','IPPCHPGT01','IPPCHPNGA00', >> MainBatchUpload.sql
-echo 'IPPCHPWST00','IPPCHPWST01','PCHP-CCP00','PCHP-CCP01','RCHPEA-CCG00', >> MainBatchUpload.sql
-echo 'RCHPEA-CCG01','RCHPEA-CCH01','RCHPEA-FCH01','RCHPEA-STW01','RCHPNA-CCG01', >> MainBatchUpload.sql
-echo 'RCHPNA-CCH01','RCHPNA-FCH01','RCHPNA-STW01','RHEACHPRG01','RHEACHPRH01', >> MainBatchUpload.sql
-echo 'RHEACHPRW01','RHNACHPRG01','RHNACHPRH01','RHNACHPRW01','RCHPEA-EFW01','RCHPNA-EFW01', >> MainBatchUpload.sql
-echo 'SCHP-ADM01','SCHP-CCG00','SCHP-CCG01','SCHP-CCH01','SCHP-FCH01','SCHP-GES00','SCHP-GES01', >> MainBatchUpload.sql
-echo 'SCHP-STM01','SCHP-STW00','SCHP-STW01','SHHFCLRH01','SHLCHPRG01','SHLCHPRH01','SHLCHPRW01','SCHP-EFW01', >> MainBatchUpload.sql
-echo 'UCHP-CCG00','UCHP-CCG01') then 'chp' >> MainBatchUpload.sql
+echo when process in('ICHCHPBIOG01','ICHCHPBIOS00','ICHCHPBIOS01', >> MainBatchUpload.sql
+echo 'ICHCHPCCGT01','ICHCHPCCGTH01','ICHCHPCOA00','ICHCHPCOA01', >> MainBatchUpload.sql
+echo 'ICHCHPFCH01','ICHCHPGT01','ICHCHPHFO00','ICHCHPLFO00', >> MainBatchUpload.sql
+echo 'ICHCHPLPG00','ICHCHPLPG01','ICHCHPNGA00','ICHCHPPRO00', >> MainBatchUpload.sql
+echo 'ICHCHPPRO01','IFDCHPBIOG01','IFDCHPBIOS00','IFDCHPBIOS01', >> MainBatchUpload.sql
+echo 'IFDCHPCCGT01','IFDCHPCCGTH01','IFDCHPCOA00','IFDCHPCOA01', >> MainBatchUpload.sql
+echo 'IFDCHPFCH01','IFDCHPGT01','IFDCHPHFO00','IFDCHPLFO00', >> MainBatchUpload.sql
+echo 'IFDCHPNGA00','IISCHPBFG00','IISCHPBFG01','IISCHPBIOG01', >> MainBatchUpload.sql
+echo 'IISCHPBIOS01','IISCHPCCGT01','IISCHPCCGTH01','IISCHPCOG00', >> MainBatchUpload.sql
+echo 'IISCHPCOG01','IISCHPFCH01','IISCHPGT01','IISCHPHFO00', >> MainBatchUpload.sql
+echo 'IISCHPNGA00','INMCHPBIOG01','INMCHPBIOS01','INMCHPCCGT01', >> MainBatchUpload.sql
+echo 'INMCHPCCGTH01','INMCHPCOA01','INMCHPCOG00','INMCHPCOG01', >> MainBatchUpload.sql
+echo 'INMCHPFCH01','INMCHPGT01','INMCHPNGA00','IOICHPBIOG01', >> MainBatchUpload.sql
+echo 'IOICHPBIOS00','IOICHPBIOS01','IOICHPCCGT01','IOICHPCCGTH01', >> MainBatchUpload.sql
+echo 'IOICHPCOA01','IOICHPFCH01','IOICHPGT01','IOICHPHFO00', >> MainBatchUpload.sql
+echo 'IOICHPNGA00','IPPCHPBIOG01','IPPCHPBIOS00','IPPCHPBIOS01', >> MainBatchUpload.sql
+echo 'IPPCHPCCGT01','IPPCHPCCGTH01','IPPCHPCOA00','IPPCHPCOA01', >> MainBatchUpload.sql
+echo 'IPPCHPFCH01','IPPCHPGT01','IPPCHPNGA00','IPPCHPWST00', >> MainBatchUpload.sql
+echo 'IPPCHPWST01','PCHP-CCP00','PCHP-CCP01','RCHPEA-CCG00', >> MainBatchUpload.sql
+echo 'RCHPEA-CCG01','RCHPEA-CCH01','RCHPEA-FCH01','RCHPEA-STW01', >> MainBatchUpload.sql
+echo 'RCHPNA-CCG01','RCHPNA-CCH01','RCHPNA-FCH01','RCHPNA-STW01', >> MainBatchUpload.sql
+echo 'RHEACHPRG01','RHEACHPRH01','RHEACHPRW01','RHNACHPRG01', >> MainBatchUpload.sql
+echo 'RHNACHPRH01','RHNACHPRW01','RCHPEA-EFW01','RCHPNA-EFW01', >> MainBatchUpload.sql
+echo 'SCHP-ADM01','SCHP-CCG00','SCHP-CCG01','SCHP-CCH01', >> MainBatchUpload.sql
+echo 'SCHP-FCH01','SCHP-GES00','SCHP-GES01','SCHP-STM01', >> MainBatchUpload.sql
+echo 'SCHP-STW00','SCHP-STW01','SHLCHPRG01','SHLCHPRH01', >> MainBatchUpload.sql
+echo 'SHLCHPRW01','SCHP-EFW01','UCHP-CCG00','UCHP-CCG01', >> MainBatchUpload.sql
+echo 'RHFCCHPRH01','RHFSCHPRH01','RHHCCHPRH01','RHHSCHPRH01', >> MainBatchUpload.sql
+echo 'RHFCCHPRG01','RHFSCHPRG01','RHHCCHPRG01','RHHSCHPRG01', >> MainBatchUpload.sql
+echo 'RHFCCHPRW01','RHFSCHPRW01','RHHCCHPRW01','RHHSCHPRW01') then 'chp' >> MainBatchUpload.sql
 echo when process in('ELCIE00','ELCII00','ELCIE01','ELCII01') then 'intercon' >> MainBatchUpload.sql
 echo when process in('EHYDPMP00','EHYDPMP01') then 'hyd' >> MainBatchUpload.sql
 echo when process in ('ECAESCON01','ESTGCAES01','ECAESTUR01','ESTGAACAES01') then 'caes' >> MainBatchUpload.sql
@@ -974,10 +1008,13 @@ echo 'hyb-boil+hp-h2' >> MainBatchUpload.sql
 echo when process in('RHEAAHBRE01','RHEAAHBUE01', >> MainBatchUpload.sql
 echo 'RHEAGHBRE01','RHEAGHBUE01','RHNAAHBRE01','RHNAAHBUE01','RHNAGHBRE01','RHNAGHBUE01') then >> MainBatchUpload.sql
 echo 'hyb-boil+hp-nga' >> MainBatchUpload.sql
-echo when process in('RHEACHPRW01','RHNACHPRW01') then 'microchp-bio' >> MainBatchUpload.sql
-echo when process in('RHEACHBRH01','RHEACHPRH01', >> MainBatchUpload.sql
-echo 'RHNACHBRH01','RHNACHPRH01') then 'microchp-h2' >> MainBatchUpload.sql
-echo when process in('RHEACHPRG01','RHNACHPRG01') then 'microchp-nga' >> MainBatchUpload.sql
+echo when process in('RHEACHPRW01','RHNACHPRW01','RHFCCHPRW01', >> MainBatchUpload.sql
+echo 'RHFSCHPRW01','RHHCCHPRW01','RHHSCHPRW01') then 'microchp-bio' >> MainBatchUpload.sql
+echo when process in('RHEACHBRH01','RHEACHPRH01','RHNACHBRH01', >> MainBatchUpload.sql
+echo 'RHNACHPRH01','RHFCCHPRH01','RHFSCHPRH01','RHHCCHPRH01','RHHSCHPRH01' >> MainBatchUpload.sql
+echo ) then 'microchp-h2' >> MainBatchUpload.sql
+echo when process in('RHEACHPRG01','RHNACHPRG01','RHFCCHPRG01', >> MainBatchUpload.sql
+echo 'RHFSCHPRG01','RHHCCHPRG01','RHHSCHPRG01') then 'microchp-nga' >> MainBatchUpload.sql
 echo when process in('RHEANSTRE00','RHEANSTRE01','RHEASTGNT00','RHEASTGNT01', >> MainBatchUpload.sql
 echo 'RHNANSTRE01','RHNASTGNT01') then 'storheater-elec' >> MainBatchUpload.sql
 echo else 'heat-res_other' >> MainBatchUpload.sql
@@ -1041,10 +1078,13 @@ echo 'hyb-boil+hp-h2' >> MainBatchUpload.sql
 echo when process in('RHEAAHBRE01','RHEAAHBUE01', >> MainBatchUpload.sql
 echo 'RHEAGHBRE01','RHEAGHBUE01','RHNAAHBRE01','RHNAAHBUE01','RHNAGHBRE01','RHNAGHBUE01') then >> MainBatchUpload.sql
 echo 'hyb-boil+hp-nga' >> MainBatchUpload.sql
-echo when process in('RHEACHPRW01','RHNACHPRW01') then 'microchp-bio' >> MainBatchUpload.sql
-echo when process in('RHEACHBRH01','RHEACHPRH01', >> MainBatchUpload.sql
-echo 'RHNACHBRH01','RHNACHPRH01') then 'microchp-h2' >> MainBatchUpload.sql
-echo when process in('RHEACHPRG01','RHNACHPRG01') then 'microchp-nga' >> MainBatchUpload.sql
+echo when process in('RHEACHPRW01','RHNACHPRW01','RHFCCHPRW01', >> MainBatchUpload.sql
+echo 'RHFSCHPRW01','RHHCCHPRW01','RHHSCHPRW01') then 'microchp-bio' >> MainBatchUpload.sql
+echo when process in('RHEACHBRH01','RHEACHPRH01','RHNACHBRH01', >> MainBatchUpload.sql
+echo 'RHNACHPRH01','RHFCCHPRH01','RHFSCHPRH01','RHHCCHPRH01','RHHSCHPRH01' >> MainBatchUpload.sql
+echo ) then 'microchp-h2' >> MainBatchUpload.sql
+echo when process in('RHEACHPRG01','RHNACHPRG01','RHFCCHPRG01', >> MainBatchUpload.sql
+echo 'RHFSCHPRG01','RHHCCHPRG01','RHHSCHPRG01') then 'microchp-nga' >> MainBatchUpload.sql
 echo when process in('RHEANSTRE01','RHEASTGNT01','RHNANSTRE01','RHNASTGNT01') then 'storheater-elec' >> MainBatchUpload.sql
 echo end as "analysis", >> MainBatchUpload.sql
 echo tablename, attribute >> MainBatchUpload.sql
@@ -1109,7 +1149,7 @@ echo when process in('SHHVACAE02') then 'hvac-ad' >> MainBatchUpload.sql
 echo when process in('SHLAHHUE01','SHLGHHRE01','SHLGHHUE01','SHLAHHRE01') then 'hyb-boil+hp-h2' >> MainBatchUpload.sql
 echo when process in('SHLDHP101','SHHDHP100','SHHDHP101','SHLDHP100') then 'dh' >> MainBatchUpload.sql
 echo when process in('SHLCHPRW01') then 'microchp-bio' >> MainBatchUpload.sql
-echo when process in('SHLCHBRH01','SHHFCLRH01','SHLCHPRH01') then 'microchp-h2' >> MainBatchUpload.sql
+echo when process in('SHLCHBRH01','SHLCHPRH01') then 'microchp-h2' >> MainBatchUpload.sql
 echo when process in('SHLCHPRG01') then 'microchp-nga' >> MainBatchUpload.sql
 echo when process in('SHLNSTRE01','SHLNSTRE00') then 'storheater-elec' >> MainBatchUpload.sql
 echo when process in('SHH-DUM-PIP01') then 'dummy-process' >> MainBatchUpload.sql
@@ -1168,7 +1208,7 @@ echo when process in('SHHVACAE02') then 'hvac-ad' >> MainBatchUpload.sql
 echo when process in('SHLAHHUE01','SHLGHHRE01','SHLGHHUE01','SHLAHHRE01') then 'hyb-boil+hp-h2' >> MainBatchUpload.sql
 echo when process in('SHLDHP101','SHHDHP101') then 'dh' >> MainBatchUpload.sql
 echo when process in('SHLCHPRW01') then 'microchp-bio' >> MainBatchUpload.sql
-echo when process in('SHLCHBRH01','SHHFCLRH01','SHLCHPRH01') then 'microchp-h2' >> MainBatchUpload.sql
+echo when process in('SHLCHBRH01','SHLCHPRH01') then 'microchp-h2' >> MainBatchUpload.sql
 echo when process in('SHLCHPRG01') then 'microchp-nga' >> MainBatchUpload.sql
 echo when process in('SHLNSTRE01') then 'storheater-elec' >> MainBatchUpload.sql
 echo else 'new-other' >> MainBatchUpload.sql
@@ -1191,10 +1231,12 @@ echo from ( >> MainBatchUpload.sql
 echo select case >> MainBatchUpload.sql
 echo when process in ('RHEABLCRH01','RHEACHBRH01','RHFCBLCRH01','RHFCCHBRH01','RHFSBLCRH01','RHFSCHBRH01','RHHCBLCRH01' >> MainBatchUpload.sql
 echo ,'RHHCCHBRH01','RHHSBLCRH01','RHHSCHBRH01','RHNABLCRH01','RHNACHBRH01') then 'RES BOI HYG' >> MainBatchUpload.sql
-echo when process in ('RHFCCHPRH01','RHFSCHPRH01','RHHCCHPRH01','RHHSCHPRH01','RHNACHPRH01','RHEACHPRH01') then 'RES MCHP HYG' >> MainBatchUpload.sql
+echo when process in('RHFCCHPRH01','RHFSCHPRH01','RHHCCHPRH01', >> MainBatchUpload.sql
+echo 'RHHSCHPRH01','RHNACHPRH01','RHEACHPRH01' >> MainBatchUpload.sql
+echo ) then 'RES MCHP HYG' >> MainBatchUpload.sql
 echo when process in ('RHEAREFCG01','RHFCREFCG01','RHFSREFCG01','RHHCREFCG01','RHHSREFCG01','RHNAREFCG01') then 'RES REFORMER' >> MainBatchUpload.sql
 echo when process in ('SHHBLRRH01','SHLBLCRH01','SHLCHBRH01') then 'SER BOI HYG' >> MainBatchUpload.sql
-echo when process in ('SHHFCLRH01','SHLCHPRH01') then 'SER MCHP HYG' >> MainBatchUpload.sql
+echo when process in('SHLCHPRH01') then 'SER MCHP HYG' >> MainBatchUpload.sql
 echo when process in ('SHLREFCG01') then 'SER REFORMER' >> MainBatchUpload.sql
 echo else null >> MainBatchUpload.sql
 echo end as chp_hyd, >> MainBatchUpload.sql
@@ -1263,11 +1305,18 @@ echo ,'INMCHPGT01','INMCHPNGA00','IOICHPBIOG01','IOICHPBIOS00','IOICHPBIOS01','I
 echo ,'IPPCHPBIOG01','IPPCHPBIOS00','IPPCHPBIOS01','IPPCHPCCGT01','IPPCHPCCGTH01','IPPCHPCOA00','IPPCHPCOA01','IPPCHPFCH01','IPPCHPGT01','IPPCHPNGA00','IPPCHPWST00','IPPCHPWST01' >> MainBatchUpload.sql
 echo ) then 'CHP IND SECTOR' >> MainBatchUpload.sql
 echo when process in('PCHP-CCP00','PCHP-CCP01') then 'CHP PRC SECTOR' >> MainBatchUpload.sql
-echo when process in('RCHPEA-CCG00','RCHPEA-CCG01','RCHPEA-CCH01','RCHPEA-FCH01','RCHPEA-STW01','RCHPNA-CCG01','RCHPNA-CCH01','RCHPNA-FCH01','RCHPNA-STW01','RHEACHPRG01','RHEACHPRH01' >> MainBatchUpload.sql
-echo ,'RHEACHPRW01','RHNACHPRG01','RHNACHPRH01','RHNACHPRW01','RCHPEA-EFW01','RCHPNA-EFW01') >> MainBatchUpload.sql
-echo then 'CHP RES SECTOR' >> MainBatchUpload.sql
-echo when process in('SCHP-ADM01','SCHP-CCG00','SCHP-CCG01','SCHP-CCH01','SCHP-FCH01','SCHP-GES00','SCHP-GES01','SCHP-STM01','SCHP-STW00','SCHP-STW01','SHHFCLRH01','SHLCHPRG01' >> MainBatchUpload.sql
-echo ,'SHLCHPRH01','SHLCHPRW01','SCHP-EFW01') then 'CHP SER SECTOR' >> MainBatchUpload.sql
+echo when process in('RCHPEA-CCG00','RCHPEA-CCG01','RCHPEA-CCH01', >> MainBatchUpload.sql
+echo 'RCHPEA-FCH01','RCHPEA-STW01','RCHPNA-CCG01','RCHPNA-CCH01', >> MainBatchUpload.sql
+echo 'RCHPNA-FCH01','RCHPNA-STW01','RHEACHPRG01','RHEACHPRH01', >> MainBatchUpload.sql
+echo 'RHEACHPRW01','RHNACHPRG01','RHNACHPRH01','RHNACHPRW01', >> MainBatchUpload.sql
+echo 'RCHPEA-EFW01','RCHPNA-EFW01','RHFCCHPRH01','RHFSCHPRH01', >> MainBatchUpload.sql
+echo 'RHHCCHPRH01','RHHSCHPRH01','RHFCCHPRG01','RHFSCHPRG01', >> MainBatchUpload.sql
+echo 'RHHCCHPRG01','RHHSCHPRG01','RHFCCHPRW01','RHFSCHPRW01', >> MainBatchUpload.sql
+echo 'RHHCCHPRW01','RHHSCHPRW01') then 'CHP RES SECTOR' >> MainBatchUpload.sql
+echo when process in('SCHP-ADM01','SCHP-CCG00','SCHP-CCG01', >> MainBatchUpload.sql
+echo 'SCHP-CCH01','SCHP-FCH01','SCHP-GES00','SCHP-GES01', >> MainBatchUpload.sql
+echo 'SCHP-STM01','SCHP-STW00','SCHP-STW01','SHLCHPRG01', >> MainBatchUpload.sql
+echo 'SHLCHPRH01','SHLCHPRW01','SCHP-EFW01') then 'CHP SER SECTOR' >> MainBatchUpload.sql
 echo when process in('UCHP-CCG00','UCHP-CCG01') then 'CHP UPS SECTOR' >> MainBatchUpload.sql
 echo else null >> MainBatchUpload.sql
 echo end as chp_sec,* >> MainBatchUpload.sql
@@ -1344,12 +1393,18 @@ echo ,'IOICHPFCH01','IPPCHPCCGTH01','IPPCHPFCH01') then 'CHP IND HYDROGEN' >> Ma
 echo when process in('IISCHPBFG00','IISCHPBFG01','IISCHPCOG00','IISCHPCOG01','INMCHPCOG00','INMCHPCOG01') then 'CHP IND MAN FUELS' >> MainBatchUpload.sql
 echo when process in('ICHCHPHFO00','ICHCHPLFO00','ICHCHPLPG00','ICHCHPLPG01','IFDCHPHFO00','IFDCHPLFO00','IISCHPHFO00','IOICHPHFO00') then 'CHP IND OIL PRODUCTS' >> MainBatchUpload.sql
 echo when process in('PCHP-CCP00','PCHP-CCP01') then 'CHP PRC SECTOR' >> MainBatchUpload.sql
-echo when process in('RCHPEA-STW01','RCHPNA-STW01','RHEACHPRW01','RHNACHPRW01','RCHPEA-EFW01','RCHPNA-EFW01') then 'CHP RES BIO' >> MainBatchUpload.sql
-echo when process in('RCHPEA-CCG00','RCHPEA-CCG01','RCHPNA-CCG01','RHEACHPRG01','RHNACHPRG01') then 'CHP RES GAS' >> MainBatchUpload.sql
-echo when process in('RCHPEA-CCH01','RCHPEA-FCH01','RCHPNA-CCH01','RCHPNA-FCH01','RHEACHPRH01','RHNACHPRH01') then 'CHP RES HYDROGEN' >> MainBatchUpload.sql
+echo when process in('RCHPEA-STW01','RCHPNA-STW01','RHEACHPRW01', >> MainBatchUpload.sql
+echo 'RHNACHPRW01','RCHPEA-EFW01','RCHPNA-EFW01','RHFCCHPRW01', >> MainBatchUpload.sql
+echo 'RHFSCHPRW01','RHHCCHPRW01','RHHSCHPRW01') then 'CHP RES BIO' >> MainBatchUpload.sql
+echo when process in('RCHPEA-CCG00','RCHPEA-CCG01','RCHPNA-CCG01', >> MainBatchUpload.sql
+echo 'RHEACHPRG01','RHNACHPRG01','RHFCCHPRG01','RHFSCHPRG01', >> MainBatchUpload.sql
+echo 'RHHCCHPRG01','RHHSCHPRG01') then 'CHP RES GAS' >> MainBatchUpload.sql
+echo when process in('RCHPEA-CCH01','RCHPEA-FCH01','RCHPNA-CCH01', >> MainBatchUpload.sql
+echo 'RCHPNA-FCH01','RHEACHPRH01','RHNACHPRH01','RHFCCHPRH01','RHFSCHPRH01','RHHCCHPRH01','RHHSCHPRH01' >> MainBatchUpload.sql
+echo ) then 'CHP RES HYDROGEN' >> MainBatchUpload.sql
 echo when process in('SCHP-ADM01','SCHP-GES00','SCHP-GES01','SCHP-STM01','SCHP-STW00','SCHP-STW01','SHLCHPRW01','SCHP-EFW01') then 'CHP SER BIO' >> MainBatchUpload.sql
 echo when process in('SCHP-CCG00','SCHP-CCG01','SHLCHPRG01') then 'CHP SER GAS' >> MainBatchUpload.sql
-echo when process in('SCHP-CCH01','SCHP-FCH01','SHHFCLRH01','SHLCHPRH01') then 'CHP SER HYDROGEN' >> MainBatchUpload.sql
+echo when process in('SHLCHPRG01','SHLCHPRH01','SHLCHPRW01') then 'CHP SER MICRO' >> MainBatchUpload.sql
 echo when process in('UCHP-CCG00','UCHP-CCG01') then 'CHP UPS SECTOR' >> MainBatchUpload.sql
 echo end as chp_sec, * from vedastore >> MainBatchUpload.sql
 echo where attribute='VAR_FOut' and commodity in ('ICHSTM','IFDSTM','IISLTH','INMSTM','IOISTM','IPPLTH','PCHPHEAT','RESLTH-NA','RHEATPIPE-NA', >> MainBatchUpload.sql
@@ -1420,12 +1475,18 @@ echo ,'IPPCHPCCGTH01','IPPCHPFCH01') then 'CHP IND HYDROGEN' >> MainBatchUpload.
 echo when process in('IISCHPBFG00','IISCHPBFG01','IISCHPCOG00','IISCHPCOG01','INMCHPCOG00','INMCHPCOG01') then 'CHP IND MAN FUELS' >> MainBatchUpload.sql
 echo when process in('ICHCHPHFO00','ICHCHPLFO00','ICHCHPLPG00','ICHCHPLPG01','IFDCHPHFO00','IFDCHPLFO00','IISCHPHFO00','IOICHPHFO00') then 'CHP IND OIL PRODUCTS' >> MainBatchUpload.sql
 echo when process in('PCHP-CCP00','PCHP-CCP01') then 'CHP PRC SECTOR' >> MainBatchUpload.sql
-echo when process in('RCHPEA-STW01','RCHPNA-STW01','RHEACHPRW01','RHNACHPRW01','RCHPEA-EFW01','RCHPNA-EFW01') then 'CHP RES BIO' >> MainBatchUpload.sql
-echo when process in('RCHPEA-CCG00','RCHPEA-CCG01','RCHPNA-CCG01','RHEACHPRG01','RHNACHPRG01') then 'CHP RES GAS' >> MainBatchUpload.sql
-echo when process in('RCHPEA-CCH01','RCHPEA-FCH01','RCHPNA-CCH01','RCHPNA-FCH01','RHEACHPRH01','RHNACHPRH01') then 'CHP RES HYDROGEN' >> MainBatchUpload.sql
+echo when process in('RCHPEA-STW01','RCHPNA-STW01','RHEACHPRW01', >> MainBatchUpload.sql
+echo 'RHNACHPRW01','RCHPEA-EFW01','RCHPNA-EFW01','RHFCCHPRW01', >> MainBatchUpload.sql
+echo 'RHFSCHPRW01','RHHCCHPRW01','RHHSCHPRW01') then 'CHP RES BIO' >> MainBatchUpload.sql
+echo when process in('RCHPEA-CCG00','RCHPEA-CCG01','RCHPNA-CCG01', >> MainBatchUpload.sql
+echo 'RHEACHPRG01','RHNACHPRG01','RHFCCHPRG01','RHFSCHPRG01', >> MainBatchUpload.sql
+echo 'RHHCCHPRG01','RHHSCHPRG01') then 'CHP RES GAS' >> MainBatchUpload.sql
+echo when process in('RCHPEA-CCH01','RCHPEA-FCH01','RCHPNA-CCH01', >> MainBatchUpload.sql
+echo 'RCHPNA-FCH01','RHEACHPRH01','RHNACHPRH01','RHFCCHPRH01','RHFSCHPRH01','RHHCCHPRH01','RHHSCHPRH01' >> MainBatchUpload.sql
+echo ) then 'CHP RES HYDROGEN' >> MainBatchUpload.sql
 echo when process in('SCHP-ADM01','SCHP-GES00','SCHP-GES01','SCHP-STM01','SCHP-STW00','SCHP-STW01','SHLCHPRW01','SCHP-EFW01') then 'CHP SER BIO' >> MainBatchUpload.sql
 echo when process in('SCHP-CCG00','SCHP-CCG01','SHLCHPRG01') then 'CHP SER GAS' >> MainBatchUpload.sql
-echo when process in('SCHP-CCH01','SCHP-FCH01','SHHFCLRH01','SHLCHPRH01') then 'CHP SER HYDROGEN' >> MainBatchUpload.sql
+echo when process in('SHLCHPRG01','SHLCHPRH01','SHLCHPRW01') then 'CHP SER MICRO' >> MainBatchUpload.sql
 echo when process in('UCHP-CCG00','UCHP-CCG01') then 'CHP UPS SECTOR' >> MainBatchUpload.sql
 echo end as chp_sec >> MainBatchUpload.sql
 echo from vedastore >> MainBatchUpload.sql
@@ -1615,8 +1676,8 @@ echo when process in('EHFOIGCCQ01') then 'ELC FROM OIL CCS' >> MainBatchUpload.s
 echo when process in('ESOL00','ESOL01','ESOLPV00','ESOLPV01') then 'ELC FROM SOL-PV' >> MainBatchUpload.sql
 echo when process in('ETIB101','ETIR101','ETIS101') then 'ELC FROM TIDAL' >> MainBatchUpload.sql
 echo when process in('EWAV101') then 'ELC FROM WAVE' >> MainBatchUpload.sql
-echo when process in('EWNDOFF00','EWNDOFF101','EWNDOFF201','EWNDOFF301') then 'ELC FROM WIND-OFFSH' >> MainBatchUpload.sql
-echo when process in('EWNDONS00','EWNDONS101','EWNDONS201','EWNDONS301','EWNDONS401','EWNDONS501','EWNDONS601','EWNDONS701','EWNDONS801','EWNDONS901') then 'ELC FROM WIND-ONSH' >> MainBatchUpload.sql
+echo when process in('EWNDOFF00','EWNDOFF101','EWNDOFF201') then 'ELC FROM WIND-OFFSH' >> MainBatchUpload.sql
+echo when process in('EWNDONS00','EWNDONS101','EWNDONS201') then 'ELC FROM WIND-ONSH' >> MainBatchUpload.sql
 echo when process in('ELCEE00','ELCEE01','ELCEI00','ELCEI01') then 'ELC TO EXPORTS' >> MainBatchUpload.sql
 echo end as proc_set >> MainBatchUpload.sql
 echo from vedastore >> MainBatchUpload.sql
@@ -2075,7 +2136,7 @@ echo ) TO '%~dp0PriEnOut.csv' delimiter ',' CSV; >> MainBatchUpload.sql
 rem following line actually runs the SQL code generated by the above using the postgres command utility "psql".
 echo running sql code and generating cross tabs
 rem Comment this line out if you just want the SQL code to create the populated temp tables + the associated analysis queries:
-"C:\Program Files\PostgreSQL\9.4\bin\psql.exe" -h localhost -p 5432 -U postgres -d gams -f %~dp0MainBatchUpload.sql
+"C:\Program Files\PostgreSQL\9.4\bin\psql.exe" -h localhost -p 5432 -U postgres -d postgres -f %~dp0MainBatchUpload.sql
 rem following concatenates individual results to the GHGout.csv
 type GHGOut.csv >> dummiesout.csv
 type GHGsectorOut.csv >> dummiesout.csv

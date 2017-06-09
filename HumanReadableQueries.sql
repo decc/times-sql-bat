@@ -1179,11 +1179,17 @@ with emissions_chp as (
                 ,'IPPCHPBIOG01','IPPCHPBIOS00','IPPCHPBIOS01','IPPCHPCCGT01','IPPCHPCCGTH01','IPPCHPCOA00','IPPCHPCOA01','IPPCHPFCH01','IPPCHPGT01','IPPCHPNGA00','IPPCHPWST00','IPPCHPWST01')
                 then 'CHP IND SECTOR'      --Filter 270
             when process in('PCHP-CCP00','PCHP-CCP01') then 'CHP PRC SECTOR'      --Filter 333
-            when process in('SCHP-ADM01','SCHP-CCG00','SCHP-CCG01','SCHP-CCH01','SCHP-FCH01','SCHP-GES00','SCHP-GES01','SCHP-STM01','SCHP-STW00','SCHP-STW01','SHHFCLRH01','SHLCHPRG01'
-                ,'SHLCHPRH01','SHLCHPRW01','SCHP-EFW01') then 'CHP SER SECTOR'      --Filter 230
+            when process in('SCHP-ADM01','SCHP-CCG00','SCHP-CCG01',
+                'SCHP-CCH01','SCHP-FCH01','SCHP-GES00','SCHP-GES01',
+                'SCHP-STM01','SCHP-STW00','SCHP-STW01','SHLCHPRG01',
+                'SHLCHPRH01','SHLCHPRW01','SCHP-EFW01') then 'CHP SER SECTOR' --Filter 230
             when process in('UCHP-CCG00','UCHP-CCG01') then 'CHP UPS SECTOR'      --Filter 337
-            when process in('RHEACHPRG01','RHEACHPRH01','RHEACHPRW01','RHFCCHPRG01','RHFCCHPRH01','RHFCCHPRW01','RHFSCHPRG01','RHFSCHPRH01','RHFSCHPRW01','RHHCCHPRG01','RHHCCHPRH01','RHHCCHPRW01'
-                ,'RHHSCHPRG01','RHHSCHPRH01','RHHSCHPRW01','RHNACHPRG01','RHNACHPRH01','RHNACHPRW01') then 'CHP RES MICRO' --Filter 393
+            when process in('RHEACHPRG01','RHEACHPRH01','RHEACHPRW01',
+                'RHFCCHPRG01','RHFCCHPRH01','RHFCCHPRW01','RHFSCHPRG01',
+                'RHFSCHPRH01','RHFSCHPRW01','RHHCCHPRG01','RHHCCHPRH01',
+                'RHHCCHPRW01','RHHSCHPRG01','RHHSCHPRH01','RHHSCHPRW01',
+                'RHNACHPRG01','RHNACHPRH01','RHNACHPRW01'
+                ) then 'CHP RES MICRO' --Filter 393
         end proc_set
         from vedastore
         where attribute='VAR_FOut' and commodity in('RESCH4N','SERN2ON','INDCO2N','SERCH4N','INDCH4N','INDN2ON','UPSN2ON','UPSCO2N','UPSCH4N','PRCCH4N','PRCCO2N','PRCN2ON'
@@ -1194,10 +1200,15 @@ with emissions_chp as (
             when process in('ICHCHPBIOG01','ICHCHPBIOS00','ICHCHPBIOS01','IFDCHPBIOG01','IFDCHPBIOS00','IFDCHPBIOS01','IISCHPBIOG01','IISCHPBIOS01','INMCHPBIOG01','INMCHPBIOS01','IOICHPBIOG01'
                 ,'IOICHPBIOS00','IOICHPBIOS01','IPPCHPBIOG01','IPPCHPBIOS00','IPPCHPBIOS01','IPPCHPWST00','IPPCHPWST01') then 'CHP IND BIO'      --Filter 336
             when process in('SCHP-ADM01','SCHP-GES00','SCHP-GES01','SCHP-STM01','SCHP-STW00','SCHP-STW01','SHLCHPRW01','SCHP-EFW01') then 'CHP SER BIO'      --Filter 368
-            when process in('SHHFCLRH01','SHLCHPRG01','SHLCHPRH01','SHLCHPRW01') then 'CHP SER MICRO'      --Filter 324
-            when process in('RCHPEA-CCG00','RCHPEA-CCG01','RCHPEA-CCH01','RCHPEA-FCH01','RCHPEA-STW01','RCHPNA-CCG01','RCHPNA-CCH01','RCHPNA-FCH01','RCHPNA-STW01','RHEACHPRG01','RHEACHPRH01','RHEACHPRW01'
-                ,'RHNACHPRG01','RHNACHPRH01','RHNACHPRW01','RCHPEA-EFW01','RCHPNA-EFW01') 
-                then 'CHP RES SECTOR'      --Filter 303
+            when process in('SHLCHPRG01','SHLCHPRH01','SHLCHPRW01') then 'CHP SER MICRO' --Filter 324
+            when process in('RCHPEA-CCG00','RCHPEA-CCG01','RCHPEA-CCH01',
+                'RCHPEA-FCH01','RCHPEA-STW01','RCHPNA-CCG01','RCHPNA-CCH01',
+                'RCHPNA-FCH01','RCHPNA-STW01','RHEACHPRG01','RHEACHPRH01',
+                'RHEACHPRW01','RHNACHPRG01','RHNACHPRH01','RHNACHPRW01',
+                'RCHPEA-EFW01','RCHPNA-EFW01','RHFCCHPRH01','RHFSCHPRH01',
+                'RHHCCHPRH01','RHHSCHPRH01','RHFCCHPRG01','RHFSCHPRG01',
+                'RHHCCHPRG01','RHHSCHPRG01','RHFCCHPRW01','RHFSCHPRW01',
+                'RHHCCHPRW01','RHHSCHPRW01') then 'CHP RES SECTOR' --Filter 303
             else null
         end proc_set
         from vedastore
@@ -1298,8 +1309,8 @@ with emissions_chp as (
             when process in('ESOL00','ESOL01','ESOLPV00','ESOLPV01') then 'ELC FROM SOL-PV' --Filter 366
             when process in('ETIB101','ETIR101','ETIS101') then 'ELC FROM TIDAL' --Filter 352
             when process in('EWAV101') then 'ELC FROM WAVE' --Filter 239
-            when process in('EWNDOFF00','EWNDOFF101','EWNDOFF201','EWNDOFF301') then 'ELC FROM WIND-OFFSH' --Filter 299
-            when process in('EWNDONS00','EWNDONS101','EWNDONS201','EWNDONS301','EWNDONS401','EWNDONS501','EWNDONS601','EWNDONS701','EWNDONS801','EWNDONS901') then 'ELC FROM WIND-ONSH' --Filter 236
+            when process in('EWNDOFF00','EWNDOFF101','EWNDOFF201') then 'ELC FROM WIND-OFFSH' --Filter 299
+            when process in('EWNDONS00','EWNDONS101','EWNDONS201') then 'ELC FROM WIND-ONSH' --Filter 236
             when process in('ELCEE00','ELCEE01','ELCEI00','ELCEI01') then 'ELC TO EXPORTS' --Filter 298
          end as proc_set
         from vedastore
@@ -1311,20 +1322,36 @@ with emissions_chp as (
     select proc_set,tablename,period, sum(pv) "pv"
         from (
             select tablename,period, pv,
-            case when process in(
-                'ICHCHPBIOG01','ICHCHPBIOS00','ICHCHPBIOS01','ICHCHPCCGT01','ICHCHPCCGTH01','ICHCHPCOA00','ICHCHPCOA01','ICHCHPFCH01',
-                'ICHCHPGT01','ICHCHPHFO00','ICHCHPLFO00','ICHCHPLPG00','ICHCHPLPG01','ICHCHPNGA00','ICHCHPPRO00','ICHCHPPRO01',
-                'IFDCHPBIOG01','IFDCHPBIOS00','IFDCHPBIOS01','IFDCHPCCGT01','IFDCHPCCGTH01','IFDCHPCOA00','IFDCHPCOA01','IFDCHPFCH01',
-                'IFDCHPGT01','IFDCHPHFO00','IFDCHPLFO00','IFDCHPNGA00','IISCHPBFG00','IISCHPBFG01','IISCHPBIOG01','IISCHPBIOS01',
-                'IISCHPCCGT01','IISCHPCCGTH01','IISCHPCOG00','IISCHPCOG01','IISCHPFCH01','IISCHPGT01','IISCHPHFO00','IISCHPNGA00',
-                'INMCHPBIOG01','INMCHPBIOS01','INMCHPCCGT01','INMCHPCCGTH01','INMCHPCOA01','INMCHPCOG00','INMCHPCOG01','INMCHPFCH01',
-                'INMCHPGT01','INMCHPNGA00','IOICHPBIOG01','IOICHPBIOS00','IOICHPBIOS01','IOICHPCCGT01','IOICHPCCGTH01','IOICHPCOA01',
-                'IOICHPFCH01','IOICHPGT01','IOICHPHFO00','IOICHPNGA00','IPPCHPBIOG01','IPPCHPBIOS00','IPPCHPBIOS01','IPPCHPCCGT01',
-                'IPPCHPCCGTH01','IPPCHPCOA00','IPPCHPCOA01','IPPCHPFCH01','IPPCHPGT01','IPPCHPNGA00','IPPCHPWST00','IPPCHPWST01',
-                'PCHP-CCP00','PCHP-CCP01','RCHPEA-CCG00','RCHPEA-CCG01','RCHPEA-CCH01','RCHPEA-FCH01','RCHPEA-STW01','RCHPNA-CCG01',
-                'RCHPNA-CCH01','RCHPNA-FCH01','RCHPNA-STW01','RHEACHPRG01','RHEACHPRH01','RHEACHPRW01','RHNACHPRG01','RHNACHPRH01',
-                'RHNACHPRW01','RCHPEA-EFW01','RCHPNA-EFW01','SCHP-ADM01','SCHP-CCG00','SCHP-CCG01','SCHP-CCH01','SCHP-FCH01','SCHP-GES00','SCHP-GES01','SCHP-STM01',
-                'SCHP-STW00','SCHP-STW01','SHHFCLRH01','SHLCHPRG01','SHLCHPRH01','SHLCHPRW01','SCHP-EFW01','UCHP-CCG00','UCHP-CCG01') then 'elec-gen_chp' else null --Filter 79
+            case when process in('ICHCHPBIOG01','ICHCHPBIOS00','ICHCHPBIOS01',
+                'ICHCHPCCGT01','ICHCHPCCGTH01','ICHCHPCOA00','ICHCHPCOA01',
+                'ICHCHPFCH01','ICHCHPGT01','ICHCHPHFO00','ICHCHPLFO00',
+                'ICHCHPLPG00','ICHCHPLPG01','ICHCHPNGA00','ICHCHPPRO00',
+                'ICHCHPPRO01','IFDCHPBIOG01','IFDCHPBIOS00','IFDCHPBIOS01',
+                'IFDCHPCCGT01','IFDCHPCCGTH01','IFDCHPCOA00','IFDCHPCOA01',
+                'IFDCHPFCH01','IFDCHPGT01','IFDCHPHFO00','IFDCHPLFO00',
+                'IFDCHPNGA00','IISCHPBFG00','IISCHPBFG01','IISCHPBIOG01',
+                'IISCHPBIOS01','IISCHPCCGT01','IISCHPCCGTH01','IISCHPCOG00',
+                'IISCHPCOG01','IISCHPFCH01','IISCHPGT01','IISCHPHFO00',
+                'IISCHPNGA00','INMCHPBIOG01','INMCHPBIOS01','INMCHPCCGT01',
+                'INMCHPCCGTH01','INMCHPCOA01','INMCHPCOG00','INMCHPCOG01',
+                'INMCHPFCH01','INMCHPGT01','INMCHPNGA00','IOICHPBIOG01',
+                'IOICHPBIOS00','IOICHPBIOS01','IOICHPCCGT01','IOICHPCCGTH01',
+                'IOICHPCOA01','IOICHPFCH01','IOICHPGT01','IOICHPHFO00',
+                'IOICHPNGA00','IPPCHPBIOG01','IPPCHPBIOS00','IPPCHPBIOS01',
+                'IPPCHPCCGT01','IPPCHPCCGTH01','IPPCHPCOA00','IPPCHPCOA01',
+                'IPPCHPFCH01','IPPCHPGT01','IPPCHPNGA00','IPPCHPWST00',
+                'IPPCHPWST01','PCHP-CCP00','PCHP-CCP01','RCHPEA-CCG00',
+                'RCHPEA-CCG01','RCHPEA-CCH01','RCHPEA-FCH01','RCHPEA-STW01',
+                'RCHPNA-CCG01','RCHPNA-CCH01','RCHPNA-FCH01','RCHPNA-STW01',
+                'RHEACHPRG01','RHEACHPRH01','RHEACHPRW01','RHNACHPRG01',
+                'RHNACHPRH01','RHNACHPRW01','RCHPEA-EFW01','RCHPNA-EFW01',
+                'SCHP-ADM01','SCHP-CCG00','SCHP-CCG01','SCHP-CCH01',
+                'SCHP-FCH01','SCHP-GES00','SCHP-GES01','SCHP-STM01',
+                'SCHP-STW00','SCHP-STW01','SHLCHPRG01','SHLCHPRH01',
+                'SHLCHPRW01','SCHP-EFW01','UCHP-CCG00','UCHP-CCG01',
+                'RHFCCHPRH01','RHFSCHPRH01','RHHCCHPRH01','RHHSCHPRH01',
+                'RHFCCHPRG01','RHFSCHPRG01','RHHCCHPRG01','RHHSCHPRG01',
+                'RHFCCHPRW01','RHFSCHPRW01','RHHCCHPRW01','RHHSCHPRW01') then 'elec-gen_chp' else null --Filter 79
     -- NB This is different from the Veda BE chp gen q as that only looks at centralised chp generation - not all chp generation which is what we report in the overall q here
             end proc_set
             from vedastore
@@ -1747,37 +1774,44 @@ from (
             when process in('ENGACCTQ01','ENGACCTQDEMO01','ENGAQR01') then 'nga-ccs' --Filter 106
             when process in('ENUCPWR00','ENUCPWR101','ENUCPWR102') then
                 'nuclear'  --Filter 107
-            when process in('EWNDOFF00' ,'EWNDOFF101' ,'EWNDOFF201' ,'EWNDOFF301') then
-                'offw' --Filter 108
-            when process in('EWNDONS00','EWNDONS101','EWNDONS201','EWNDONS301','EWNDONS401','EWNDONS501',
-                'EWNDONS601','EWNDONS701','EWNDONS801','EWNDONS901') then 'onw' --Filter 109
+            when process in('EWNDOFF00','EWNDOFF101','EWNDOFF201') then 'offw' --Filter 108
+            when process in('EWNDONS00','EWNDONS101','EWNDONS201') then 'onw' --Filter 109
             when process ='EHFOIGCCQ01' then 'other-ccs' --Filter 110
             when process in('EOILL00','EOILL01','EMANOCT00','EMANOCT01','EOILS00','EOILS01','EHFOIGCC01','EDSTRCPE00','EDSTRCPE01') then
                 'other-ff' --Filter 111
             when process in('EHYD00','EHYD01','EGEO01','ETIR101','ETIB101','ETIS101','EWAV101') then
                 'other-rens' --Filter 112
             when process in('ESOL00','ESOLPV00','ESOL01','ESOLPV01') then 'solar' --Filter 113
-            when process in('ICHCHPBIOG01','ICHCHPBIOS00','ICHCHPBIOS01','ICHCHPCCGT01','ICHCHPCCGTH01',
-                'ICHCHPCOA00','ICHCHPCOA01','ICHCHPFCH01','ICHCHPGT01','ICHCHPHFO00',
-                'ICHCHPLFO00','ICHCHPLPG00','ICHCHPLPG01','ICHCHPNGA00','ICHCHPPRO00',
-                'ICHCHPPRO01','IFDCHPBIOG01','IFDCHPBIOS00','IFDCHPBIOS01','IFDCHPCCGT01',
-                'IFDCHPCCGTH01','IFDCHPCOA00','IFDCHPCOA01','IFDCHPFCH01','IFDCHPGT01',
-                'IFDCHPHFO00','IFDCHPLFO00','IFDCHPNGA00','IISCHPBFG00','IISCHPBFG01',
-                'IISCHPBIOG01','IISCHPBIOS01','IISCHPCCGT01','IISCHPCCGTH01','IISCHPCOG00',
-                'IISCHPCOG01','IISCHPFCH01','IISCHPGT01','IISCHPHFO00','IISCHPNGA00',
-                'INMCHPBIOG01','INMCHPBIOS01','INMCHPCCGT01','INMCHPCCGTH01','INMCHPCOA01',
-                'INMCHPCOG00','INMCHPCOG01','INMCHPFCH01','INMCHPGT01','INMCHPNGA00',
-                'IOICHPBIOG01','IOICHPBIOS00','IOICHPBIOS01','IOICHPCCGT01','IOICHPCCGTH01',
-                'IOICHPCOA01','IOICHPFCH01','IOICHPGT01','IOICHPHFO00','IOICHPNGA00',
-                'IPPCHPBIOG01','IPPCHPBIOS00','IPPCHPBIOS01','IPPCHPCCGT01','IPPCHPCCGTH01',
-                'IPPCHPCOA00','IPPCHPCOA01','IPPCHPFCH01','IPPCHPGT01','IPPCHPNGA00',
-                'IPPCHPWST00','IPPCHPWST01','PCHP-CCP00','PCHP-CCP01','RCHPEA-CCG00',
-                'RCHPEA-CCG01','RCHPEA-CCH01','RCHPEA-FCH01','RCHPEA-STW01','RCHPNA-CCG01',
-                'RCHPNA-CCH01','RCHPNA-FCH01','RCHPNA-STW01','RHEACHPRG01','RHEACHPRH01',
-                'RHEACHPRW01','RHNACHPRG01','RHNACHPRH01','RHNACHPRW01','RCHPEA-EFW01','RCHPNA-EFW01',
-                'SCHP-ADM01','SCHP-CCG00','SCHP-CCG01','SCHP-CCH01','SCHP-FCH01','SCHP-GES00','SCHP-GES01',
-                'SCHP-STM01','SCHP-STW00','SCHP-STW01','SHHFCLRH01','SHLCHPRG01','SHLCHPRH01','SHLCHPRW01','SCHP-EFW01',
-                'UCHP-CCG00','UCHP-CCG01') then 'chp' --Filter 114
+            when process in('ICHCHPBIOG01','ICHCHPBIOS00','ICHCHPBIOS01',
+                'ICHCHPCCGT01','ICHCHPCCGTH01','ICHCHPCOA00','ICHCHPCOA01',
+                'ICHCHPFCH01','ICHCHPGT01','ICHCHPHFO00','ICHCHPLFO00',
+                'ICHCHPLPG00','ICHCHPLPG01','ICHCHPNGA00','ICHCHPPRO00',
+                'ICHCHPPRO01','IFDCHPBIOG01','IFDCHPBIOS00','IFDCHPBIOS01',
+                'IFDCHPCCGT01','IFDCHPCCGTH01','IFDCHPCOA00','IFDCHPCOA01',
+                'IFDCHPFCH01','IFDCHPGT01','IFDCHPHFO00','IFDCHPLFO00',
+                'IFDCHPNGA00','IISCHPBFG00','IISCHPBFG01','IISCHPBIOG01',
+                'IISCHPBIOS01','IISCHPCCGT01','IISCHPCCGTH01','IISCHPCOG00',
+                'IISCHPCOG01','IISCHPFCH01','IISCHPGT01','IISCHPHFO00',
+                'IISCHPNGA00','INMCHPBIOG01','INMCHPBIOS01','INMCHPCCGT01',
+                'INMCHPCCGTH01','INMCHPCOA01','INMCHPCOG00','INMCHPCOG01',
+                'INMCHPFCH01','INMCHPGT01','INMCHPNGA00','IOICHPBIOG01',
+                'IOICHPBIOS00','IOICHPBIOS01','IOICHPCCGT01','IOICHPCCGTH01',
+                'IOICHPCOA01','IOICHPFCH01','IOICHPGT01','IOICHPHFO00',
+                'IOICHPNGA00','IPPCHPBIOG01','IPPCHPBIOS00','IPPCHPBIOS01',
+                'IPPCHPCCGT01','IPPCHPCCGTH01','IPPCHPCOA00','IPPCHPCOA01',
+                'IPPCHPFCH01','IPPCHPGT01','IPPCHPNGA00','IPPCHPWST00',
+                'IPPCHPWST01','PCHP-CCP00','PCHP-CCP01','RCHPEA-CCG00',
+                'RCHPEA-CCG01','RCHPEA-CCH01','RCHPEA-FCH01','RCHPEA-STW01',
+                'RCHPNA-CCG01','RCHPNA-CCH01','RCHPNA-FCH01','RCHPNA-STW01',
+                'RHEACHPRG01','RHEACHPRH01','RHEACHPRW01','RHNACHPRG01',
+                'RHNACHPRH01','RHNACHPRW01','RCHPEA-EFW01','RCHPNA-EFW01',
+                'SCHP-ADM01','SCHP-CCG00','SCHP-CCG01','SCHP-CCH01',
+                'SCHP-FCH01','SCHP-GES00','SCHP-GES01','SCHP-STM01',
+                'SCHP-STW00','SCHP-STW01','SHLCHPRG01','SHLCHPRH01',
+                'SHLCHPRW01','SCHP-EFW01','UCHP-CCG00','UCHP-CCG01',
+                'RHFCCHPRH01','RHFSCHPRH01','RHHCCHPRH01','RHHSCHPRH01',
+                'RHFCCHPRG01','RHFSCHPRG01','RHHCCHPRG01','RHHSCHPRG01',
+                'RHFCCHPRW01','RHFSCHPRW01','RHHCCHPRW01','RHHSCHPRW01') then 'chp' --Filter 114
             when process in('ELCIE00','ELCII00','ELCIE01','ELCII01') then 'intercon' --Filter 115
             when process in('EHYDPMP00','EHYDPMP01') then 'hyd' --Filter 394
             when process in ('ECAESCON01','ESTGCAES01','ECAESTUR01','ESTGAACAES01') then 'caes' --Filter 395
@@ -1930,10 +1964,13 @@ from (
             when process in('RHEAAHBRE01','RHEAAHBUE01',
                 'RHEAGHBRE01','RHEAGHBUE01','RHNAAHBRE01','RHNAAHBUE01','RHNAGHBRE01','RHNAGHBUE01') then
                 'hyb-boil+hp-nga'  --Filter 135
-            when process in('RHEACHPRW01','RHNACHPRW01') then 'microchp-bio' --Filter 136
-            when process in('RHEACHBRH01','RHEACHPRH01',
-                'RHNACHBRH01','RHNACHPRH01') then 'microchp-h2'  --Filter 137
-            when process in('RHEACHPRG01','RHNACHPRG01') then 'microchp-nga'  --Filter 138
+            when process in('RHEACHPRW01','RHNACHPRW01','RHFCCHPRW01',
+                'RHFSCHPRW01','RHHCCHPRW01','RHHSCHPRW01') then 'microchp-bio' --Filter 136
+            when process in('RHEACHBRH01','RHEACHPRH01','RHNACHBRH01',
+                'RHNACHPRH01','RHFCCHPRH01','RHFSCHPRH01','RHHCCHPRH01','RHHSCHPRH01'
+                ) then 'microchp-h2' --Filter 137
+            when process in('RHEACHPRG01','RHNACHPRG01','RHFCCHPRG01',
+                'RHFSCHPRG01','RHHCCHPRG01','RHHSCHPRG01') then 'microchp-nga'	--Filter 138
             when process in('RHEANSTRE00','RHEANSTRE01','RHEASTGNT00','RHEASTGNT01',
                 'RHNANSTRE01','RHNASTGNT01') then 'storheater-elec' --Filter 139
             else 'heat-res_other'
@@ -1998,10 +2035,13 @@ from (
             when process in('RHEAAHBRE01','RHEAAHBUE01',
                 'RHEAGHBRE01','RHEAGHBUE01','RHNAAHBRE01','RHNAAHBUE01','RHNAGHBRE01','RHNAGHBUE01') then
                 'hyb-boil+hp-nga'  --Filter 135
-            when process in('RHEACHPRW01','RHNACHPRW01') then 'microchp-bio' --Filter 136
-            when process in('RHEACHBRH01','RHEACHPRH01',
-                'RHNACHBRH01','RHNACHPRH01') then 'microchp-h2'  --Filter 137
-            when process in('RHEACHPRG01','RHNACHPRG01') then 'microchp-nga'  --Filter 138
+            when process in('RHEACHPRW01','RHNACHPRW01','RHFCCHPRW01',
+                'RHFSCHPRW01','RHHCCHPRW01','RHHSCHPRW01') then 'microchp-bio' --Filter 136
+            when process in('RHEACHBRH01','RHEACHPRH01','RHNACHBRH01',
+                'RHNACHPRH01','RHFCCHPRH01','RHFSCHPRH01','RHHCCHPRH01','RHHSCHPRH01'
+                ) then 'microchp-h2' --Filter 137
+            when process in('RHEACHPRG01','RHNACHPRG01','RHFCCHPRG01',
+                'RHFSCHPRG01','RHHCCHPRG01','RHHSCHPRG01') then 'microchp-nga'	--Filter 138
             when process in('RHEANSTRE01','RHEASTGNT01','RHNANSTRE01','RHNASTGNT01') then 'storheater-elec' --Filter 153
         end as "analysis",
     tablename, attribute
@@ -2086,7 +2126,7 @@ from (
             when process in('SHLAHHUE01','SHLGHHRE01','SHLGHHUE01','SHLAHHRE01') then 'hyb-boil+hp-h2' --Filter 165
             when process in('SHLDHP101','SHHDHP100','SHHDHP101','SHLDHP100') then 'dh' --Filter 166
             when process in('SHLCHPRW01') then 'microchp-bio' --Filter 167
-            when process in('SHLCHBRH01','SHHFCLRH01','SHLCHPRH01') then 'microchp-h2' --Filter 168
+            when process in('SHLCHBRH01','SHLCHPRH01') then 'microchp-h2' --Filter 168
             when process in('SHLCHPRG01') then 'microchp-nga' --Filter 169
             when process in('SHLNSTRE01','SHLNSTRE00') then 'storheater-elec' --Filter 170
             when process in('SHH-DUM-PIP01') then 'dummy-process' --Filter 224
@@ -2146,7 +2186,7 @@ from (
             when process in('SHLAHHUE01','SHLGHHRE01','SHLGHHUE01','SHLAHHRE01') then 'hyb-boil+hp-h2' --Filter 165
             when process in('SHLDHP101','SHHDHP101') then 'dh' --Filter 183
             when process in('SHLCHPRW01') then 'microchp-bio' --Filter 167
-            when process in('SHLCHBRH01','SHHFCLRH01','SHLCHPRH01') then 'microchp-h2' --Filter 168
+            when process in('SHLCHBRH01','SHLCHPRH01') then 'microchp-h2' --Filter 168
             when process in('SHLCHPRG01') then 'microchp-nga' --Filter 169
             when process in('SHLNSTRE01') then 'storheater-elec' --Filter 187
             else 'new-other'
@@ -2178,10 +2218,12 @@ with hydrogen_chp as (
         select case
             when process in ('RHEABLCRH01','RHEACHBRH01','RHFCBLCRH01','RHFCCHBRH01','RHFSBLCRH01','RHFSCHBRH01','RHHCBLCRH01'
                 ,'RHHCCHBRH01','RHHSBLCRH01','RHHSCHBRH01','RHNABLCRH01','RHNACHBRH01') then 'RES BOI HYG' --Filter 228
-            when process in ('RHFCCHPRH01','RHFSCHPRH01','RHHCCHPRH01','RHHSCHPRH01','RHNACHPRH01','RHEACHPRH01') then 'RES MCHP HYG' --Filter 328
+            when process in('RHFCCHPRH01','RHFSCHPRH01','RHHCCHPRH01',
+                'RHHSCHPRH01','RHNACHPRH01','RHEACHPRH01'
+                ) then 'RES MCHP HYG' --Filter 328
             when process in ('RHEAREFCG01','RHFCREFCG01','RHFSREFCG01','RHHCREFCG01','RHHSREFCG01','RHNAREFCG01') then 'RES REFORMER' --Filter 315
             when process in ('SHHBLRRH01','SHLBLCRH01','SHLCHBRH01') then 'SER BOI HYG' --Filter 275
-            when process in ('SHHFCLRH01','SHLCHPRH01') then 'SER MCHP HYG' --Filter 351
+            when process in('SHLCHPRH01') then 'SER MCHP HYG' --Filter 351
             when process in ('SHLREFCG01') then 'SER REFORMER' --Filter 342
             else null
         end as chp_hyd,
@@ -2266,11 +2308,18 @@ with hydrogen_chp as (
                 ,'IPPCHPBIOG01','IPPCHPBIOS00','IPPCHPBIOS01','IPPCHPCCGT01','IPPCHPCCGTH01','IPPCHPCOA00','IPPCHPCOA01','IPPCHPFCH01','IPPCHPGT01','IPPCHPNGA00','IPPCHPWST00','IPPCHPWST01'
                 ) then 'CHP IND SECTOR' --Filter 270
             when process in('PCHP-CCP00','PCHP-CCP01') then 'CHP PRC SECTOR' --Filter 333
-            when process in('RCHPEA-CCG00','RCHPEA-CCG01','RCHPEA-CCH01','RCHPEA-FCH01','RCHPEA-STW01','RCHPNA-CCG01','RCHPNA-CCH01','RCHPNA-FCH01','RCHPNA-STW01','RHEACHPRG01','RHEACHPRH01'
-                ,'RHEACHPRW01','RHNACHPRG01','RHNACHPRH01','RHNACHPRW01','RCHPEA-EFW01','RCHPNA-EFW01') 
-                then 'CHP RES SECTOR' --Filter 303
-            when process in('SCHP-ADM01','SCHP-CCG00','SCHP-CCG01','SCHP-CCH01','SCHP-FCH01','SCHP-GES00','SCHP-GES01','SCHP-STM01','SCHP-STW00','SCHP-STW01','SHHFCLRH01','SHLCHPRG01'
-                ,'SHLCHPRH01','SHLCHPRW01','SCHP-EFW01') then 'CHP SER SECTOR' --Filter 230
+            when process in('RCHPEA-CCG00','RCHPEA-CCG01','RCHPEA-CCH01',
+                'RCHPEA-FCH01','RCHPEA-STW01','RCHPNA-CCG01','RCHPNA-CCH01',
+                'RCHPNA-FCH01','RCHPNA-STW01','RHEACHPRG01','RHEACHPRH01',
+                'RHEACHPRW01','RHNACHPRG01','RHNACHPRH01','RHNACHPRW01',
+                'RCHPEA-EFW01','RCHPNA-EFW01','RHFCCHPRH01','RHFSCHPRH01',
+                'RHHCCHPRH01','RHHSCHPRH01','RHFCCHPRG01','RHFSCHPRG01',
+                'RHHCCHPRG01','RHHSCHPRG01','RHFCCHPRW01','RHFSCHPRW01',
+                'RHHCCHPRW01','RHHSCHPRW01') then 'CHP RES SECTOR' --Filter 303
+            when process in('SCHP-ADM01','SCHP-CCG00','SCHP-CCG01',
+                'SCHP-CCH01','SCHP-FCH01','SCHP-GES00','SCHP-GES01',
+                'SCHP-STM01','SCHP-STW00','SCHP-STW01','SHLCHPRG01',
+                'SHLCHPRH01','SHLCHPRW01','SCHP-EFW01') then 'CHP SER SECTOR' --Filter 230
             when process in('UCHP-CCG00','UCHP-CCG01') then 'CHP UPS SECTOR' --Filter 337
             else null
         end as chp_sec,*
@@ -2361,12 +2410,18 @@ chp_fuels_used as (
                     when process in('IISCHPBFG00','IISCHPBFG01','IISCHPCOG00','IISCHPCOG01','INMCHPCOG00','INMCHPCOG01') then 'CHP IND MAN FUELS' --Filter 265
                     when process in('ICHCHPHFO00','ICHCHPLFO00','ICHCHPLPG00','ICHCHPLPG01','IFDCHPHFO00','IFDCHPLFO00','IISCHPHFO00','IOICHPHFO00') then 'CHP IND OIL PRODUCTS' --Filter 286
                     when process in('PCHP-CCP00','PCHP-CCP01') then 'CHP PRC SECTOR' --Filter 333
-                    when process in('RCHPEA-STW01','RCHPNA-STW01','RHEACHPRW01','RHNACHPRW01','RCHPEA-EFW01','RCHPNA-EFW01') then 'CHP RES BIO' --Filter 335
-                    when process in('RCHPEA-CCG00','RCHPEA-CCG01','RCHPNA-CCG01','RHEACHPRG01','RHNACHPRG01') then 'CHP RES GAS' --Filter 271
-                    when process in('RCHPEA-CCH01','RCHPEA-FCH01','RCHPNA-CCH01','RCHPNA-FCH01','RHEACHPRH01','RHNACHPRH01') then 'CHP RES HYDROGEN' --Filter 316
+                    when process in('RCHPEA-STW01','RCHPNA-STW01','RHEACHPRW01',
+                        'RHNACHPRW01','RCHPEA-EFW01','RCHPNA-EFW01','RHFCCHPRW01',
+                        'RHFSCHPRW01','RHHCCHPRW01','RHHSCHPRW01') then 'CHP RES BIO' --Filter 335
+                    when process in('RCHPEA-CCG00','RCHPEA-CCG01','RCHPNA-CCG01',
+                        'RHEACHPRG01','RHNACHPRG01','RHFCCHPRG01','RHFSCHPRG01',
+                        'RHHCCHPRG01','RHHSCHPRG01') then 'CHP RES GAS'	--Filter 271
+                    when process in('RCHPEA-CCH01','RCHPEA-FCH01','RCHPNA-CCH01',
+                        'RCHPNA-FCH01','RHEACHPRH01','RHNACHPRH01','RHFCCHPRH01','RHFSCHPRH01','RHHCCHPRH01','RHHSCHPRH01'
+                        ) then 'CHP RES HYDROGEN' --Filter 316
                     when process in('SCHP-ADM01','SCHP-GES00','SCHP-GES01','SCHP-STM01','SCHP-STW00','SCHP-STW01','SHLCHPRW01','SCHP-EFW01') then 'CHP SER BIO' --Filter 368
                     when process in('SCHP-CCG00','SCHP-CCG01','SHLCHPRG01') then 'CHP SER GAS' --Filter 255
-                    when process in('SCHP-CCH01','SCHP-FCH01','SHHFCLRH01','SHLCHPRH01') then 'CHP SER HYDROGEN' --Filter 344
+                    when process in('SHLCHPRG01','SHLCHPRH01','SHLCHPRW01') then 'CHP SER MICRO' --Filter 344
                     when process in('UCHP-CCG00','UCHP-CCG01') then 'CHP UPS SECTOR' --Filter 337
             end as chp_sec, * from vedastore
             where attribute='VAR_FOut' and commodity in ('ICHSTM','IFDSTM','IISLTH','INMSTM','IOISTM','IPPLTH','PCHPHEAT','RESLTH-NA','RHEATPIPE-NA',
@@ -2442,12 +2497,18 @@ chp_fuels_used as (
             when process in('IISCHPBFG00','IISCHPBFG01','IISCHPCOG00','IISCHPCOG01','INMCHPCOG00','INMCHPCOG01') then 'CHP IND MAN FUELS' --Filter 265
             when process in('ICHCHPHFO00','ICHCHPLFO00','ICHCHPLPG00','ICHCHPLPG01','IFDCHPHFO00','IFDCHPLFO00','IISCHPHFO00','IOICHPHFO00') then 'CHP IND OIL PRODUCTS' --Filter 286
             when process in('PCHP-CCP00','PCHP-CCP01') then 'CHP PRC SECTOR' --Filter 333
-            when process in('RCHPEA-STW01','RCHPNA-STW01','RHEACHPRW01','RHNACHPRW01','RCHPEA-EFW01','RCHPNA-EFW01') then 'CHP RES BIO' --Filter 335
-            when process in('RCHPEA-CCG00','RCHPEA-CCG01','RCHPNA-CCG01','RHEACHPRG01','RHNACHPRG01') then 'CHP RES GAS' --Filter 271
-            when process in('RCHPEA-CCH01','RCHPEA-FCH01','RCHPNA-CCH01','RCHPNA-FCH01','RHEACHPRH01','RHNACHPRH01') then 'CHP RES HYDROGEN' --Filter 316
+            when process in('RCHPEA-STW01','RCHPNA-STW01','RHEACHPRW01',
+                'RHNACHPRW01','RCHPEA-EFW01','RCHPNA-EFW01','RHFCCHPRW01',
+                'RHFSCHPRW01','RHHCCHPRW01','RHHSCHPRW01') then 'CHP RES BIO' --Filter 335
+            when process in('RCHPEA-CCG00','RCHPEA-CCG01','RCHPNA-CCG01',
+                'RHEACHPRG01','RHNACHPRG01','RHFCCHPRG01','RHFSCHPRG01',
+                'RHHCCHPRG01','RHHSCHPRG01') then 'CHP RES GAS'	--Filter 271
+            when process in('RCHPEA-CCH01','RCHPEA-FCH01','RCHPNA-CCH01',
+                'RCHPNA-FCH01','RHEACHPRH01','RHNACHPRH01','RHFCCHPRH01','RHFSCHPRH01','RHHCCHPRH01','RHHSCHPRH01'
+                ) then 'CHP RES HYDROGEN' --Filter 316
             when process in('SCHP-ADM01','SCHP-GES00','SCHP-GES01','SCHP-STM01','SCHP-STW00','SCHP-STW01','SHLCHPRW01','SCHP-EFW01') then 'CHP SER BIO' --Filter 368
             when process in('SCHP-CCG00','SCHP-CCG01','SHLCHPRG01') then 'CHP SER GAS' --Filter 255
-            when process in('SCHP-CCH01','SCHP-FCH01','SHHFCLRH01','SHLCHPRH01') then 'CHP SER HYDROGEN' --Filter 344
+            when process in('SHLCHPRG01','SHLCHPRH01','SHLCHPRW01') then 'CHP SER MICRO' --Filter 344
             when process in('UCHP-CCG00','UCHP-CCG01') then 'CHP UPS SECTOR' --Filter 337
         end as chp_sec
         from vedastore
@@ -2656,8 +2717,8 @@ elc_prd_fuel as (
             when process in('ESOL00','ESOL01','ESOLPV00','ESOLPV01') then 'ELC FROM SOL-PV' --Filter 366
             when process in('ETIB101','ETIR101','ETIS101') then 'ELC FROM TIDAL' --Filter 352
             when process in('EWAV101') then 'ELC FROM WAVE' --Filter 239
-            when process in('EWNDOFF00','EWNDOFF101','EWNDOFF201','EWNDOFF301') then 'ELC FROM WIND-OFFSH' --Filter 299
-            when process in('EWNDONS00','EWNDONS101','EWNDONS201','EWNDONS301','EWNDONS401','EWNDONS501','EWNDONS601','EWNDONS701','EWNDONS801','EWNDONS901') then 'ELC FROM WIND-ONSH' --Filter 236
+            when process in('EWNDOFF00','EWNDOFF101','EWNDOFF201') then 'ELC FROM WIND-OFFSH' --Filter 299
+            when process in('EWNDONS00','EWNDONS101','EWNDONS201') then 'ELC FROM WIND-ONSH' --Filter 236
             when process in('ELCEE00','ELCEE01','ELCEI00','ELCEI01') then 'ELC TO EXPORTS' --Filter 298
          end as proc_set
         from vedastore
@@ -3261,3 +3322,4 @@ ORDER BY tablename,analysis
 -- 7:34 PM 24 April, 2017: FS change to reflect automated production of BAT files from this master (see ruby code)
 -- 12:22 01 June 2017: FS changed elecgen query to make more robust and efficient (refactored)
 -- 16:36 05 June 2017: FS correction to filter 103
+-- 13:08 09 June 2017: FS change to remove redundant generating techs and add in chp in disaggregated house types. This makes a small difference to the main Q (~10-5)
